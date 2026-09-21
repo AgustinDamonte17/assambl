@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assambl — Ronda 2: Monolith · Compiler · Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;700;800&family=Inter+Tight:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0e0e0f;--fg:#ececec;--mut:#8b8b90;--line:#242427}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+  .deck{height:100vh;display:flex;flex-direction:column}
+  header{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+  header b{color:var(--fg);font-weight:600}
+  header .btn{cursor:pointer;border:1px solid var(--line);padding:6px 12px;border-radius:4px;color:var(--fg);background:transparent;font:inherit;letter-spacing:inherit;text-transform:inherit}
+  header .btn:hover{border-color:#555}
+  .stage{flex:1;position:relative}
+  .slide{position:absolute;inset:0;display:none;grid-template-columns:1.15fr 1fr}
+  .slide.on{display:grid}
+  .hero{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;overflow:hidden}
+  .hero>svg{width:min(80%,720px);height:auto;display:block}
+  .hero .variants{position:absolute;left:32px;right:32px;bottom:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .variants div{height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .variants div span.lbl{position:absolute;bottom:4px;left:8px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.55}
+  .variants svg{height:60%;width:auto}
+  .fam{position:absolute;top:24px;left:32px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.5}
+  .info{padding:34px 40px;overflow-y:auto;border-left:1px solid var(--line);background:#121214}
+  .info h1{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+  .info .num{font-size:12px;color:var(--mut);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+  .info .num em{font-style:normal;color:#d0d0d4}
+  .info .tag{font-size:13px;color:var(--mut);margin:8px 0 22px;line-height:1.5}
+  .info h2{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);margin:22px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+  .info p{font-size:13.5px;line-height:1.6;color:#cfcfd3}
+  .info p code{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:#1c1c20;padding:1px 5px;border-radius:3px}
+  .pal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .sw{border-radius:6px;padding:10px;height:92px;display:flex;flex-direction:column;justify-content:flex-end;font-size:11px;line-height:1.35;border:1px solid rgba(255,255,255,.06)}
+  .sw b{display:block;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px}
+  .sw i{font-style:normal;opacity:.8}
+  .type{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .type .f{background:#18181b;border:1px solid var(--line);border-radius:6px;padding:14px}
+  .type .f small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+  .type .f .smp{font-size:28px;line-height:1.05;margin-bottom:6px;white-space:nowrap;overflow:hidden}
+  .type .f .nm{font-size:12.5px;color:#cfcfd3}
+  .type .f .nm em{font-style:normal;color:var(--mut)}
+  .score{display:grid;grid-template-columns:130px 1fr 28px;gap:6px 10px;align-items:center;font-size:12px}
+  .score .bar{height:6px;background:#222226;border-radius:3px;overflow:hidden}
+  .score .bar i{display:block;height:100%;background:#d8d8dc}
+  .score span:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--mut)}
+  .risk{font-size:12.5px;color:#b8b8bd;line-height:1.55;padding:10px 12px;border-left:2px solid #555;background:#161618;border-radius:0 4px 4px 0}
+  footer{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)}
+  footer .dots{display:flex;gap:6px;align-items:center}
+  footer .dots i{width:20px;height:3px;background:#2a2a2e;border-radius:2px;cursor:pointer}
+  footer .dots i.on{background:var(--fg)}
+  footer .dots s{width:1px;height:12px;background:#3a3a3f;margin:0 4px}
+  footer button{background:none;border:1px solid var(--line);color:var(--fg);padding:6px 14px;border-radius:4px;cursor:pointer;font:inherit}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  .blink{animation:blink 1.1s steps(1) infinite}
+  .ov{position:fixed;inset:0;background:rgba(10,10,11,.97);display:none;padding:48px 60px;overflow:auto;z-index:9}
+  .ov.on{display:block}
+  .ov h1{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+  .ov p{color:var(--mut);font-size:13px;margin-bottom:26px;max-width:860px;line-height:1.55}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:500}
+  td.n{font-family:'IBM Plex Mono',monospace;text-align:center}
+  td.tot{font-family:'IBM Plex Mono',monospace;text-align:center;font-weight:700;color:#fff}
+  td.code{font-family:'IBM Plex Mono',monospace;color:#d0d0d4}
+  tr.top td{background:#17171a}
+  tr.sep td{padding:4px 12px;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);background:#101012;border-bottom:none}
+  .rec{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .rec div{background:#151517;border:1px solid var(--line);border-radius:6px;padding:16px;font-size:13px;line-height:1.55;color:#cfcfd3}
+  .rec div b{display:block;color:#fff;margin-bottom:6px;font-size:14px}
+  .close{position:fixed;top:18px;right:28px;background:none;border:1px solid #444;color:#fff;padding:6px 14px;border-radius:4px;cursor:pointer;font:inherit;font-size:12px}
+</style>
+</head>
+<body>
+<div class="deck">
+<header>
+  <div><b>Assambl</b> &nbsp;·&nbsp; Ronda 2 — Monolith ×4 · Compiler ×4 · Blueprint ×4</div>
+  <div style="display:flex;gap:10px;align-items:center"><span>← → para navegar</span><button class="btn" onclick="ov(true)">Comparativa &amp; recomendación</button></div>
+</header>
+<div class="stage">
+
+<!-- ================= FAMILIA A · MONOLITH ================= -->
+
+<!-- A1 CURSOR -->
+<section class="slide">
+  <div class="hero" style="background:#E8E6E1">
+    <span class="fam" style="color:#111">Monolith · A1</span>
+    <svg viewBox="0 0 720 200"><text x="330" y="150" text-anchor="middle" font-family="Archivo Black" font-size="130" letter-spacing="-8" fill="#111">ASSAMBL</text><rect class="blink" x="642" y="52" width="58" height="98" fill="#FF4F1F"/></svg>
+    <div class="variants">
+      <div style="background:#111"><svg viewBox="0 0 400 100"><text x="184" y="78" text-anchor="middle" font-family="Archivo Black" font-size="68" letter-spacing="-4" fill="#E8E6E1">ASSAMBL</text><rect x="348" y="26" width="30" height="52" fill="#FF4F1F"/></svg><span class="lbl" style="color:#E8E6E1">Negativo</span></div>
+      <div style="background:#E8E6E1"><svg viewBox="0 0 400 100"><text x="184" y="78" text-anchor="middle" font-family="Archivo Black" font-size="68" letter-spacing="-4" fill="#111">ASSAMBL</text><rect x="348" y="26" width="30" height="52" fill="#111"/></svg><span class="lbl" style="color:#111">Monocromo</span></div>
+      <div style="background:#111"><svg viewBox="0 0 100 100"><text x="44" y="80" text-anchor="middle" font-family="Archivo Black" font-size="82" fill="#E8E6E1">A</text><rect x="78" y="22" width="14" height="58" fill="#FF4F1F"/></svg><span class="lbl" style="color:#E8E6E1">Ícono</span></div>
+      <div style="background:#E8E6E1"><svg viewBox="0 0 400 100"><text x="200" y="62" text-anchor="middle" font-family="Space Grotesk" font-weight="500" font-size="26" fill="#111">Assambl<tspan fill="#FF4F1F">▮</tspan></text><text x="200" y="84" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" letter-spacing="3" fill="#7A7A78">RESOLVING…</text></svg><span class="lbl" style="color:#111">Estado UI</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>A1</em> · 01 / 12 · Familia Monolith</div>
+    <h1>Cursor</h1>
+    <div class="tag">La pieza naranja crece hasta la altura de la letra y se convierte en un cursor de bloque. Parpadea: el sistema está esperando tu próxima decisión.</div>
+    <h2>Concepto</h2>
+    <p>Mínimo cambio, máxima carga semántica. El bloque final del Monolith original ya parecía una pieza colocada; ahora es un <em>block cursor</em> de terminal. El logo queda “vivo” en la UI (parpadeo) y estático en impresión. El naranja pasa de acento decorativo a indicador de estado: naranja = esperando input, verde = resolved.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#111111;color:#eee"><b>#111111</b><i>Ink — principal</i></div>
+      <div class="sw" style="background:#E8E6E1;color:#111"><b>#E8E6E1</b><i>Concrete — fondo</i></div>
+      <div class="sw" style="background:#FF4F1F;color:#111"><b>#FF4F1F</b><i>Signal — cursor</i></div>
+      <div class="sw" style="background:#7A7A78;color:#fff"><b>#7A7A78</b><i>Rebar — UI neutro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Archivo Black'">ASSAMBL▮</div><div class="nm">Archivo Black <em>— sin cambios respecto al original</em></div></div>
+      <div class="f"><small>UI / código</small><div class="smp" style="font-family:'IBM Plex Mono'">Assambl 0123</div><div class="nm">Space Grotesk + IBM Plex Mono <em>— la mono aparece solo en datos y estados</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El cursor de bloque solo se lee como “código” si parpadea o si el contexto lo sugiere; en estático es un rectángulo. Es la variación más conservadora de la familia.</div>
+  </div>
+</section>
+
+<!-- A2 SEMICOLON -->
+<section class="slide">
+  <div class="hero" style="background:#111">
+    <span class="fam" style="color:#E8E6E1">Monolith · A2</span>
+    <svg viewBox="0 0 720 200"><text x="340" y="150" text-anchor="middle" font-family="Archivo Black" font-size="122" letter-spacing="-7" fill="#E8E6E1">ASSAMBL<tspan fill="#2F6BFF">;</tspan></text></svg>
+    <div class="variants">
+      <div style="background:#E8E6E1"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="64" letter-spacing="-3" fill="#111">ASSAMBL<tspan fill="#2F6BFF">;</tspan></text></svg><span class="lbl" style="color:#111">Positivo</span></div>
+      <div style="background:#2F6BFF"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="64" letter-spacing="-3" fill="#fff">ASSAMBL;</text></svg><span class="lbl" style="color:#fff">Sobre acento</span></div>
+      <div style="background:#111"><svg viewBox="0 0 100 100"><text x="50" y="80" text-anchor="middle" font-family="Archivo Black" font-size="82" fill="#E8E6E1">A<tspan fill="#2F6BFF">;</tspan></text></svg><span class="lbl" style="color:#E8E6E1">Ícono</span></div>
+      <div style="background:#111"><svg viewBox="0 0 400 100"><text x="200" y="60" text-anchor="middle" font-family="Archivo Black" font-size="34" letter-spacing="-1" fill="#E8E6E1">ASSAMBL<tspan fill="#2F6BFF">;</tspan></text><text x="200" y="84" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" letter-spacing="3" fill="#7A7A78">DESIGN; RESOLVE; BUILD;</text></svg><span class="lbl" style="color:#E8E6E1">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>A2</em> · 02 / 12 · Familia Monolith</div>
+    <h1>Statement</h1>
+    <div class="tag">El nombre termina en punto y coma. Una sentencia completa, ejecutable. Nada más que agregar.</div>
+    <h2>Concepto</h2>
+    <p>El <code>;</code> es el signo más reconocible de la sintaxis de programación y a la vez el más silencioso: un no-programador lo lee como puntuación enfática. El tagline se construye con la misma lógica: <code>design; resolve; build;</code> — tres sentencias, un programa. El azul eléctrico reemplaza al naranja para alejarse del look “startup 2023” y acercarse al azul de sintaxis de los editores.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#111111;color:#eee"><b>#111111</b><i>Ink — fondo principal</i></div>
+      <div class="sw" style="background:#E8E6E1;color:#111"><b>#E8E6E1</b><i>Concrete — texto</i></div>
+      <div class="sw" style="background:#2F6BFF;color:#fff"><b>#2F6BFF</b><i>Syntax blue — el “;”</i></div>
+      <div class="sw" style="background:#7A7A78;color:#fff"><b>#7A7A78</b><i>Rebar — comentarios</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Archivo Black'">ASSAMBL;</div><div class="nm">Archivo Black <em>— el “;” también en Archivo, no en mono</em></div></div>
+      <div class="f"><small>UI / código</small><div class="smp" style="font-family:'IBM Plex Mono'">design; build;</div><div class="nm">IBM Plex Mono <em>— taglines y microcopy en sintaxis</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Distintividad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El punto y coma como marca lo usan algunos proyectos (Project Semicolon, varias agencias dev). En favicon “A;” funciona, pero el “;” a 16 px puede parecer suciedad. Verificar en tamaño real.</div>
+  </div>
+</section>
+
+<!-- A3 COMMENT -->
+<section class="slide">
+  <div class="hero" style="background:#F4F4F0">
+    <span class="fam" style="color:#111">Monolith · A3</span>
+    <svg viewBox="0 0 720 200"><text x="360" y="150" text-anchor="middle" font-family="Archivo Black" font-size="112" letter-spacing="-6" fill="#111"><tspan fill="#B9F000">//</tspan> ASSAMBL</text></svg>
+    <div class="variants">
+      <div style="background:#111"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="58" letter-spacing="-3" fill="#F4F4F0"><tspan fill="#B9F000">//</tspan> ASSAMBL</text></svg><span class="lbl" style="color:#F4F4F0">Negativo</span></div>
+      <div style="background:#B9F000"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="58" letter-spacing="-3" fill="#111">// ASSAMBL</text></svg><span class="lbl" style="color:#111">Sobre acento</span></div>
+      <div style="background:#111"><svg viewBox="0 0 100 100"><text x="50" y="78" text-anchor="middle" font-family="Archivo Black" font-size="78" letter-spacing="-6" fill="#B9F000">//</text></svg><span class="lbl" style="color:#F4F4F0">Ícono</span></div>
+      <div style="background:#F4F4F0"><svg viewBox="0 0 400 100"><text x="200" y="58" text-anchor="middle" font-family="Archivo Black" font-size="30" letter-spacing="-1" fill="#111"><tspan fill="#B9F000">//</tspan> ASSAMBL</text><text x="200" y="84" text-anchor="middle" font-family="IBM Plex Mono" font-style="italic" font-size="12" fill="#7A7A78">// you design. it figures out how to build it.</text></svg><span class="lbl" style="color:#111">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>A3</em> · 03 / 12 · Familia Monolith</div>
+    <h1>Comment</h1>
+    <div class="tag">Doble barra delante del nombre: el prefijo de comentario. Lo que sigue es una nota humana dentro del código.</div>
+    <h2>Concepto</h2>
+    <p>Un comentario es la parte del código escrita para personas, no para la máquina. Es exactamente el lugar del usuario en Assambl: escribe intención en lenguaje natural; el compilador hace el resto. El <code>//</code> además evoca dos studs paralelos o dos líneas de cota. Funciona solo como ícono y como prefijo de todo el sistema de microcopy (<code>// wall moved. structure updated.</code>).</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#111111;color:#eee"><b>#111111</b><i>Ink — texto</i></div>
+      <div class="sw" style="background:#F4F4F0;color:#111"><b>#F4F4F0</b><i>Paper — fondo</i></div>
+      <div class="sw" style="background:#B9F000;color:#111"><b>#B9F000</b><i>Acid — el “//”</i></div>
+      <div class="sw" style="background:#7A7A78;color:#fff"><b>#7A7A78</b><i>Comment gray — microcopy</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Archivo Black'">// ASSAMBL</div><div class="nm">Archivo Black <em>— las barras en la misma fuente, kerning ajustado</em></div></div>
+      <div class="f"><small>UI / código</small><div class="smp" style="font-family:'IBM Plex Mono';font-style:italic">// comment</div><div class="nm">IBM Plex Mono Italic <em>— los comentarios en itálica, como en un editor</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Distintividad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El logotipo se alarga (10 caracteres) y pierde compacidad. El “//” aislado puede confundirse con un ícono de “pausa” o con URL. El verde ácido cansa como color dominante; usarlo solo en el prefijo.</div>
+  </div>
+</section>
+
+<!-- A4 CALL -->
+<section class="slide">
+  <div class="hero" style="background:#E8E6E1">
+    <span class="fam" style="color:#111">Monolith · A4</span>
+    <svg viewBox="0 0 720 200"><text x="360" y="150" text-anchor="middle" font-family="Archivo Black" font-size="112" letter-spacing="-6" fill="#111">ASSAMBL<tspan fill="#FF4F1F">()</tspan></text></svg>
+    <div class="variants">
+      <div style="background:#111"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="58" letter-spacing="-3" fill="#E8E6E1">ASSAMBL<tspan fill="#FF4F1F">()</tspan></text></svg><span class="lbl" style="color:#E8E6E1">Negativo</span></div>
+      <div style="background:#E8E6E1"><svg viewBox="0 0 400 100"><text x="200" y="76" text-anchor="middle" font-family="Archivo Black" font-size="50" letter-spacing="-3" fill="#111">ASSAMBL<tspan fill="#7A7A78">(</tspan><tspan fill="#FF4F1F" font-size="28" dy="-3">house</tspan><tspan fill="#7A7A78" dy="3">)</tspan></text></svg><span class="lbl" style="color:#111">Con argumento</span></div>
+      <div style="background:#111"><svg viewBox="0 0 100 100"><text x="50" y="78" text-anchor="middle" font-family="Archivo Black" font-size="66" fill="#E8E6E1">A<tspan fill="#FF4F1F" font-size="50">()</tspan></text></svg><span class="lbl" style="color:#E8E6E1">Ícono</span></div>
+      <div style="background:#E8E6E1"><svg viewBox="0 0 400 100"><text x="200" y="66" text-anchor="middle" font-family="IBM Plex Mono" font-weight="500" font-size="22" fill="#111">assambl(<tspan fill="#FF4F1F">intent</tspan>) <tspan fill="#7A7A78">→</tspan> building</text></svg><span class="lbl" style="color:#111">Firma de función</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>A4</em> · 04 / 12 · Familia Monolith</div>
+    <h1>Call</h1>
+    <div class="tag">El nombre como llamada a función. Assambl no es una cosa: es una acción que recibe una intención y devuelve un edificio.</div>
+    <h2>Concepto</h2>
+    <p>Los paréntesis convierten el sustantivo en verbo. La firma de función es el pitch entero en una línea: <code>assambl(intent) → building</code>. Permite jugar con el argumento en cada contexto: <code>ASSAMBL(house)</code>, <code>ASSAMBL(cabin)</code>, <code>ASSAMBL(your idea)</code>. Los paréntesis además dibujan dos arcos que “abrazan” y cierran, como un ensamble.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#111111;color:#eee"><b>#111111</b><i>Ink — principal</i></div>
+      <div class="sw" style="background:#E8E6E1;color:#111"><b>#E8E6E1</b><i>Concrete — fondo</i></div>
+      <div class="sw" style="background:#FF4F1F;color:#111"><b>#FF4F1F</b><i>Signal — paréntesis / argumento</i></div>
+      <div class="sw" style="background:#7A7A78;color:#fff"><b>#7A7A78</b><i>Rebar — operadores</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Archivo Black'">ASSAMBL()</div><div class="nm">Archivo Black <em>— paréntesis pesados, misma fuente</em></div></div>
+      <div class="f"><small>UI / código</small><div class="smp" style="font-family:'IBM Plex Mono'">assambl(x)</div><div class="nm">IBM Plex Mono <em>— firmas y ejemplos en minúscula</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Es la variación más “para programadores” de la familia: un constructor puede no leer los paréntesis como función. En favicon “A()” se aprieta. El argumento variable es potente pero exige disciplina de marca.</div>
+  </div>
+</section>
+
+<!-- ================= FAMILIA B · COMPILER ================= -->
+
+<!-- B1 PROMPT -->
+<section class="slide">
+  <div class="hero" style="background:#0B0F0C">
+    <span class="fam" style="color:#E9EFE9">Compiler · B1</span>
+    <svg viewBox="0 0 720 200"><text x="360" y="142" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="112" letter-spacing="-4" fill="#E9EFE9"><tspan fill="#FFB000">$</tspan> assambl</text><text x="60" y="48" font-family="IBM Plex Mono" font-size="15" fill="#4F5B52">~/projects/cabin-01</text><text x="60" y="190" font-family="IBM Plex Mono" font-size="15" fill="#4F5B52">✓ resolved in 0.8s</text></svg>
+    <div class="variants">
+      <div style="background:#E9EFE9"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="58" letter-spacing="-2" fill="#0B0F0C"><tspan fill="#C97A00">$</tspan> assambl</text></svg><span class="lbl" style="color:#0B0F0C">Positivo</span></div>
+      <div style="background:#FFB000"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="58" letter-spacing="-2" fill="#0B0F0C">$ assambl</text></svg><span class="lbl" style="color:#0B0F0C">Sobre acento</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 100 100"><text x="50" y="76" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="76" fill="#FFB000">$</text></svg><span class="lbl" style="color:#E9EFE9">Ícono</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 400 100"><text x="200" y="64" text-anchor="middle" font-family="IBM Plex Mono" font-size="20" fill="#E9EFE9"><tspan fill="#FFB000">$</tspan> assambl <tspan fill="#4F5B52">"a-frame cabin, 2 bed"</tspan></text></svg><span class="lbl" style="color:#E9EFE9">Comando</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>B1</em> · 05 / 12 · Familia Compiler</div>
+    <h1>Prompt</h1>
+    <div class="tag">El signo de prompt de la terminal delante del nombre. Assambl es un comando que se invoca; el ámbar es fósforo de monitor antiguo.</div>
+    <h2>Concepto</h2>
+    <p>Reemplaza el <code>_</code> del original por el <code>$</code>: donde el cursor decía “esperando”, el prompt dice “listo para recibir órdenes”. El ámbar (#FFB000) es el color del fósforo P3 de los monitores de los 80: cálido, técnico y muy distinto del verde Vercel/Supabase. El prompt además abre un lenguaje natural para la UI: el usuario literalmente escribe <code>$ assambl "cabaña A-frame, 2 dormitorios"</code>.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#0B0F0C;color:#fff"><b>#0B0F0C</b><i>Terminal — fondo</i></div>
+      <div class="sw" style="background:#E9EFE9;color:#0B0F0C"><b>#E9EFE9</b><i>Phosphor white — texto</i></div>
+      <div class="sw" style="background:#FFB000;color:#0B0F0C"><b>#FFB000</b><i>Amber — prompt</i></div>
+      <div class="sw" style="background:#4F5B52;color:#fff"><b>#4F5B52</b><i>Dim — output secundario</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'IBM Plex Mono';font-weight:700">$ assambl</div><div class="nm">IBM Plex Mono Bold <em>— sin cambios respecto al original</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Inter">Assambl Ag 0123</div><div class="nm">Inter <em>— la UI general; la mono queda para prompt y output</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Distintividad</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El “$” aislado se lee como dinero, no como prompt, para cualquier persona fuera del mundo dev. Evitarlo como favicon solitario; usar “$a” o “a”. Fuertemente asociado a herramientas CLI (Warp, Fig).</div>
+  </div>
+</section>
+
+<!-- B2 METHOD -->
+<section class="slide">
+  <div class="hero" style="background:#0B0F0C">
+    <span class="fam" style="color:#E9EFE9">Compiler · B2</span>
+    <svg viewBox="0 0 720 200"><text x="360" y="140" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="76" letter-spacing="-3" fill="#E9EFE9">assambl<tspan fill="#4F5B52">.</tspan><tspan fill="#3DFF7A">build</tspan><tspan fill="#4F5B52">()</tspan></text></svg>
+    <div class="variants">
+      <div style="background:#E9EFE9"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="40" letter-spacing="-1" fill="#0B0F0C">assambl<tspan fill="#8a8f8b">.</tspan><tspan fill="#0E9B4A">build</tspan><tspan fill="#8a8f8b">()</tspan></text></svg><span class="lbl" style="color:#0B0F0C">Positivo</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="40" letter-spacing="-1" fill="#E9EFE9">assambl<tspan fill="#4F5B52">.</tspan><tspan fill="#3DFF7A">resolve</tspan><tspan fill="#4F5B52">()</tspan></text></svg><span class="lbl" style="color:#E9EFE9">Otro método</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 100 100"><text x="50" y="76" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="70" fill="#E9EFE9">a<tspan fill="#3DFF7A">.</tspan></text></svg><span class="lbl" style="color:#E9EFE9">Ícono</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="56" letter-spacing="-2" fill="#E9EFE9">assambl<tspan fill="#3DFF7A">.</tspan></text></svg><span class="lbl" style="color:#E9EFE9">Corto: solo el punto</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>B2</em> · 06 / 12 · Familia Compiler</div>
+    <h1>Method</h1>
+    <div class="tag">Notación de punto: <code>assambl.build()</code>. El nombre es el objeto; lo que hace son sus métodos. La versión corta es solo el nombre con un punto verde.</div>
+    <h2>Concepto</h2>
+    <p>Cada capacidad del producto se vuelve un método legible: <code>assambl.build()</code>, <code>assambl.resolve()</code>, <code>assambl.quote()</code>, <code>assambl.export(bim)</code>. El naming de features sale gratis y siempre suena a sistema. Para uso general se usa la forma corta <code>assambl.</code>: el punto verde es la promesa de que algo sigue. El punto solo, sobre la “a”, es un ícono limpio y muy escalable.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#0B0F0C;color:#fff"><b>#0B0F0C</b><i>Terminal — fondo</i></div>
+      <div class="sw" style="background:#E9EFE9;color:#0B0F0C"><b>#E9EFE9</b><i>Phosphor white — objeto</i></div>
+      <div class="sw" style="background:#3DFF7A;color:#0B0F0C"><b>#3DFF7A</b><i>Signal green — método</i></div>
+      <div class="sw" style="background:#4F5B52;color:#fff"><b>#4F5B52</b><i>Dim — puntuación</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'IBM Plex Mono';font-weight:700;font-size:22px">assambl.build()</div><div class="nm">IBM Plex Mono Bold <em>— tres pesos de color = tres roles sintácticos</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Inter">Assambl Ag 0123</div><div class="nm">Inter <em>— igual que el original</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:100%"></i></div><span>10</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Distintividad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">La forma larga es un logotipo de 15 caracteres: no sirve como marca principal, solo como sistema. Hay que comprometerse con “assambl.” como logo real, que es sutil hasta el punto de pasar desapercibido.</div>
+  </div>
+</section>
+
+<!-- B3 DIFF -->
+<section class="slide">
+  <div class="hero" style="background:#0D1117">
+    <span class="fam" style="color:#E6EDF3">Compiler · B3</span>
+    <svg viewBox="0 0 720 200">
+      <rect x="0" y="22" width="720" height="58" fill="#F85149" opacity=".10"/><rect x="0" y="96" width="720" height="92" fill="#3FB950" opacity=".12"/>
+      <text x="60" y="66" font-family="IBM Plex Mono" font-weight="500" font-size="40" fill="#F85149" opacity=".85">- <tspan text-decoration="line-through" fill="#8B949E">drawings</tspan></text>
+      <text x="60" y="168" font-family="IBM Plex Mono" font-weight="700" font-size="92" letter-spacing="-3" fill="#E6EDF3"><tspan fill="#3FB950">+</tspan> assambl</text>
+    </svg>
+    <div class="variants">
+      <div style="background:#E6EDF3"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="56" letter-spacing="-2" fill="#0D1117"><tspan fill="#1A7F37">+</tspan> assambl</text></svg><span class="lbl" style="color:#0D1117">Positivo</span></div>
+      <div style="background:#0D1117"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="56" letter-spacing="-2" fill="#E6EDF3"><tspan fill="#3FB950">+</tspan> assambl</text></svg><span class="lbl" style="color:#E6EDF3">Solo la adición</span></div>
+      <div style="background:#0D1117"><svg viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="#3FB950" opacity=".15"/><text x="50" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="84" fill="#3FB950">+</text></svg><span class="lbl" style="color:#E6EDF3">Ícono</span></div>
+      <div style="background:#0D1117"><svg viewBox="0 0 400 100"><text x="40" y="44" font-family="IBM Plex Mono" font-size="15" fill="#F85149">- 3 weeks of detailing</text><text x="40" y="70" font-family="IBM Plex Mono" font-size="15" fill="#3FB950">+ 0.8 seconds</text></svg><span class="lbl" style="color:#E6EDF3">Tagline en diff</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>B3</em> · 07 / 12 · Familia Compiler</div>
+    <h1>Diff</h1>
+    <div class="tag">El logo como un diff de Git: se elimina una línea en rojo, se agrega Assambl en verde. La marca es el cambio que introduce.</div>
+    <h2>Concepto</h2>
+    <p>Todo programador reconoce la vista de diff al instante: rojo tachado arriba, verde con <code>+</code> abajo. Trasladado al producto: <code>- drawings</code> / <code>+ assambl</code>, <code>- 3 weeks</code> / <code>+ 0.8 s</code>. Es un formato de comunicación, no solo un logo: cada beneficio se puede expresar como un diff. La forma reducida <code>+ assambl</code> es el logotipo del día a día; el <code>+</code> verde es el ícono.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#0D1117;color:#fff"><b>#0D1117</b><i>Editor dark — fondo</i></div>
+      <div class="sw" style="background:#E6EDF3;color:#0D1117"><b>#E6EDF3</b><i>Editor text</i></div>
+      <div class="sw" style="background:#3FB950;color:#0D1117"><b>#3FB950</b><i>Diff green — adición</i></div>
+      <div class="sw" style="background:#F85149;color:#fff"><b>#F85149</b><i>Diff red — eliminación</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'IBM Plex Mono';font-weight:700">+ assambl</div><div class="nm">IBM Plex Mono Bold <em>— línea eliminada en peso Medium</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Inter">Assambl Ag 0123</div><div class="nm">Inter <em>— igual que el original</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Distintividad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El verde y el rojo de GitHub son de GitHub: la asociación es inmediata y puede parecer derivativa. El “+” como ícono es genérico (salud, agregar). La forma completa con dos líneas solo funciona en formatos grandes.</div>
+  </div>
+</section>
+
+<!-- B4 EDITOR -->
+<section class="slide">
+  <div class="hero" style="background:#0D1117">
+    <span class="fam" style="color:#E6EDF3">Compiler · B4</span>
+    <svg viewBox="0 0 720 200">
+      <rect x="0" y="86" width="720" height="70" fill="#E6EDF3" opacity=".06"/>
+      <g font-family="IBM Plex Mono" font-size="16" fill="#3D444D" text-anchor="end"><text x="88" y="52">11</text><text x="88" y="128">12</text><text x="88" y="188">13</text></g>
+      <line x1="112" y1="0" x2="112" y2="200" stroke="#E6EDF3" stroke-opacity=".08"/>
+      <text x="140" y="52" font-family="IBM Plex Mono" font-size="20" fill="#8B949E"><tspan fill="#FF7B72">import</tspan> { <tspan fill="#D2A8FF">intent</tspan> } <tspan fill="#FF7B72">from</tspan> <tspan fill="#A5D6FF">'you'</tspan></text>
+      <text x="140" y="140" font-family="IBM Plex Mono" font-weight="700" font-size="94" letter-spacing="-3" fill="#E6EDF3">assambl</text>
+      <text x="140" y="190" font-family="IBM Plex Mono" font-size="20" fill="#8B949E"><tspan fill="#FF7B72">export</tspan> <tspan fill="#D2A8FF">building</tspan></text>
+    </svg>
+    <div class="variants">
+      <div style="background:#E6EDF3"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="60" letter-spacing="-2" fill="#0D1117">assambl</text></svg><span class="lbl" style="color:#0D1117">Positivo</span></div>
+      <div style="background:#0D1117"><svg viewBox="0 0 400 100"><rect x="0" y="28" width="400" height="44" fill="#E6EDF3" opacity=".07"/><text x="52" y="64" text-anchor="end" font-family="IBM Plex Mono" font-size="14" fill="#3D444D">12</text><text x="70" y="66" font-family="IBM Plex Mono" font-weight="700" font-size="42" letter-spacing="-1" fill="#E6EDF3">assambl</text></svg><span class="lbl" style="color:#E6EDF3">Con gutter</span></div>
+      <div style="background:#0D1117"><svg viewBox="0 0 100 100"><rect x="0" y="30" width="100" height="42" fill="#E6EDF3" opacity=".07"/><text x="26" y="62" text-anchor="end" font-family="IBM Plex Mono" font-size="14" fill="#3D444D">12</text><text x="38" y="66" font-family="IBM Plex Mono" font-weight="700" font-size="44" fill="#E6EDF3">a</text></svg><span class="lbl" style="color:#E6EDF3">Ícono</span></div>
+      <div style="background:#0D1117"><svg viewBox="0 0 400 100"><text x="200" y="62" text-anchor="middle" font-family="IBM Plex Mono" font-size="17" fill="#8B949E"><tspan fill="#FF7B72">const</tspan> house = <tspan fill="#D2A8FF">assambl</tspan>(<tspan fill="#A5D6FF">'a-frame'</tspan>)</text></svg><span class="lbl" style="color:#E6EDF3">Syntax highlight</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>B4</em> · 08 / 12 · Familia Compiler</div>
+    <h1>Editor</h1>
+    <div class="tag">El nombre es la línea 12 de un archivo. Gutter con números de línea, línea activa resaltada, syntax highlighting alrededor. Assambl vive dentro del código.</div>
+    <h2>Concepto</h2>
+    <p>Aquí el logo no es un símbolo sino un <em>contexto</em>: la escena de un editor de código. La línea activa resaltada es el marco del logotipo; los números de línea son el ornamento. El texto alrededor cuenta la historia (<code>import { intent } from 'you'</code> … <code>export building</code>) y puede cambiar en cada aplicación. La paleta es la de un tema oscuro estándar: sin color de marca, la identidad es el formato.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#0D1117;color:#fff"><b>#0D1117</b><i>Editor dark — fondo</i></div>
+      <div class="sw" style="background:#E6EDF3;color:#0D1117"><b>#E6EDF3</b><i>Editor text — nombre</i></div>
+      <div class="sw" style="background:#D2A8FF;color:#0D1117"><b>#D2A8FF</b><i>Syntax purple — entidades</i></div>
+      <div class="sw" style="background:#FF7B72;color:#0D1117"><b>#FF7B72</b><i>Syntax coral — keywords</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'IBM Plex Mono';font-weight:700">assambl</div><div class="nm">IBM Plex Mono Bold <em>— la palabra sola; el contexto hace el resto</em></div></div>
+      <div class="f"><small>UI / código</small><div class="smp" style="font-family:'IBM Plex Mono'">12 │ const x</div><div class="nm">IBM Plex Mono Regular <em>— gutter, keywords, strings</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:60%"></i></div><span>6</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:100%"></i></div><span>10</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Sin contexto, el logo es solo “assambl” en mono: pierde toda la personalidad. Depende de formatos grandes (web, deck, video). Puede sentirse demasiado dev y muy cercano al look de GitHub / VS Code.</div>
+  </div>
+</section>
+
+<!-- ================= FAMILIA C · BLUEPRINT ================= -->
+
+<!-- C1 OBJECT -->
+<section class="slide">
+  <div class="hero" style="background:#1B3A8C;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:28px 28px">
+    <span class="fam" style="color:#F4F1EA">Blueprint · C1</span>
+    <svg viewBox="0 0 720 200"><text x="360" y="140" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="110" fill="#F4F1EA"><tspan fill="#5FD3FF">{</tspan>assambl<tspan fill="#5FD3FF">}</tspan></text></svg>
+    <div class="variants">
+      <div style="background:#F4F1EA"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="58" fill="#1B3A8C">{assambl}</text></svg><span class="lbl" style="color:#1B3A8C">Positivo</span></div>
+      <div style="background:#0B1533"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="58" fill="#F4F1EA"><tspan fill="#5FD3FF">{</tspan>assambl<tspan fill="#5FD3FF">}</tspan></text></svg><span class="lbl" style="color:#F4F1EA">Modo oscuro</span></div>
+      <div style="background:#1B3A8C"><svg viewBox="0 0 100 100"><text x="50" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="50" fill="#F4F1EA"><tspan fill="#5FD3FF">{</tspan>a<tspan fill="#5FD3FF">}</tspan></text></svg><span class="lbl" style="color:#F4F1EA">Ícono</span></div>
+      <div style="background:#1B3A8C"><svg viewBox="0 0 400 100"><text x="40" y="38" font-family="JetBrains Mono" font-size="15" fill="#F4F1EA">{ <tspan fill="#5FD3FF">walls</tspan>: 14, <tspan fill="#5FD3FF">studs</tspan>: 212,</text><text x="40" y="60" font-family="JetBrains Mono" font-size="15" fill="#F4F1EA">  <tspan fill="#5FD3FF">windows</tspan>: 6, <tspan fill="#5FD3FF">errors</tspan>: 0 }</text></svg><span class="lbl" style="color:#F4F1EA">Objeto expandido</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>C1</em> · 09 / 12 · Familia Blueprint</div>
+    <h1>Object</h1>
+    <div class="tag">Llaves en lugar de corchetes: <code>{assambl}</code>. Ya no una lista sino un objeto con propiedades. La casa como estructura de datos con nombre.</div>
+    <h2>Concepto</h2>
+    <p>El cambio de <code>[ ]</code> a <code>{ }</code> es pequeño pero conceptualmente exacto: un edificio en BIM es un objeto con propiedades (muros, studs, ventanas, errores: 0), no un array. Las llaves además tienen más “cuerpo” y remiten a las abrazaderas metálicas de una estructura. El objeto expandido es el tagline: el resultado del compilador escrito en JSON.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#1B3A8C;color:#fff"><b>#1B3A8C</b><i>Blueprint — principal</i></div>
+      <div class="sw" style="background:#F4F1EA;color:#1B3A8C"><b>#F4F1EA</b><i>Paper — fondo</i></div>
+      <div class="sw" style="background:#5FD3FF;color:#0B1533"><b>#5FD3FF</b><i>Cyan — llaves / keys</i></div>
+      <div class="sw" style="background:#0B1533;color:#fff"><b>#0B1533</b><i>Night — modo oscuro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:800">{assambl}</div><div class="nm">JetBrains Mono ExtraBold <em>— sin cambios</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'Inter Tight'">Assambl Ag 0123</div><div class="nm">Inter Tight <em>— igual que el original</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Las llaves como marca las usan muchas herramientas dev y agencias (“{code}”). Mejor que los corchetes en distintividad, pero sigue siendo un recurso conocido.</div>
+  </div>
+</section>
+
+<!-- C2 KEY -->
+<section class="slide">
+  <div class="hero" style="background:#F4F1EA;background-image:linear-gradient(rgba(27,58,140,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(27,58,140,.09) 1px,transparent 1px);background-size:28px 28px">
+    <span class="fam" style="color:#1B3A8C">Blueprint · C2</span>
+    <svg viewBox="0 0 720 200">
+      <text x="60" y="96" font-family="JetBrains Mono" font-weight="800" font-size="104" fill="#1B3A8C">assambl<tspan fill="#E63B2E">:</tspan></text>
+      <g font-family="JetBrains Mono" font-size="22" fill="#1B3A8C" opacity=".55"><text x="120" y="140">structure: <tspan fill="#E63B2E">resolved</tspan></text><text x="120" y="170">envelope:  <tspan fill="#E63B2E">resolved</tspan></text></g>
+    </svg>
+    <div class="variants">
+      <div style="background:#1B3A8C"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="58" fill="#F4F1EA">assambl<tspan fill="#FF6A5C">:</tspan></text></svg><span class="lbl" style="color:#F4F1EA">Negativo</span></div>
+      <div style="background:#F4F1EA"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="58" fill="#1B3A8C">assambl:</text></svg><span class="lbl" style="color:#1B3A8C">Monocromo</span></div>
+      <div style="background:#1B3A8C"><svg viewBox="0 0 100 100"><text x="50" y="76" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="72" fill="#F4F1EA">a<tspan fill="#FF6A5C">:</tspan></text></svg><span class="lbl" style="color:#F4F1EA">Ícono</span></div>
+      <div style="background:#F4F1EA"><svg viewBox="0 0 400 100"><g font-family="JetBrains Mono" font-size="14" fill="#1B3A8C"><text x="40" y="32">assambl<tspan fill="#E63B2E">:</tspan></text><text x="40" y="52">  you<tspan fill="#E63B2E">:</tspan>    design</text><text x="40" y="72">  we<tspan fill="#E63B2E">:</tspan>     resolve</text></g></svg><span class="lbl" style="color:#1B3A8C">Tagline en YAML</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>C2</em> · 10 / 12 · Familia Blueprint</div>
+    <h1>Key</h1>
+    <div class="tag">El nombre como clave de un archivo de configuración: <code>assambl:</code> con dos puntos, y debajo, indentado, todo lo que resuelve.</div>
+    <h2>Concepto</h2>
+    <p>YAML es el formato de los archivos de configuración: legible por humanos, jerárquico, sin ruido. <code>assambl:</code> es la clave raíz; lo indentado son las capas del edificio con su estado. Es la variación más silenciosa de la familia: los dos puntos son casi invisibles pero cambian el registro a “declarativo”. Vos declarás qué querés; el sistema lo cumple. Se invierte la paleta: papel claro como fondo, azul como tinta, rojo de lapicera para los dos puntos.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#F4F1EA;color:#1B3A8C"><b>#F4F1EA</b><i>Paper — fondo principal</i></div>
+      <div class="sw" style="background:#1B3A8C;color:#fff"><b>#1B3A8C</b><i>Blueprint — tinta</i></div>
+      <div class="sw" style="background:#E63B2E;color:#fff"><b>#E63B2E</b><i>Red pen — los “:”</i></div>
+      <div class="sw" style="background:#FF6A5C;color:#0B1533"><b>#FF6A5C</b><i>Red pen (dark) — sobre azul</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:800">assambl:</div><div class="nm">JetBrains Mono ExtraBold <em>— sin cambios</em></div></div>
+      <div class="f"><small>UI / config</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:400">key: value</div><div class="nm">JetBrains Mono Regular <em>— listados jerárquicos y specs</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Distintividad</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Los dos puntos son tan discretos que pueden leerse como error tipográfico. Sin la lista indentada debajo, la referencia a YAML se pierde para casi todo el mundo.</div>
+  </div>
+</section>
+
+<!-- C3 DIMENSION -->
+<section class="slide">
+  <div class="hero" style="background:#1B3A8C;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:28px 28px">
+    <span class="fam" style="color:#F4F1EA">Blueprint · C3</span>
+    <svg viewBox="0 0 720 200">
+      <text x="360" y="150" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="118" fill="#F4F1EA">assambl</text>
+      <g stroke="#5FD3FF" stroke-width="2.5" fill="none"><line x1="112" y1="48" x2="608" y2="48"/><line x1="112" y1="34" x2="112" y2="62"/><line x1="608" y1="34" x2="608" y2="62"/><line x1="104" y1="56" x2="120" y2="40"/><line x1="600" y1="56" x2="616" y2="40"/></g>
+      <rect x="300" y="30" width="120" height="30" fill="#1B3A8C"/>
+      <text x="360" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="20" fill="#5FD3FF">7 chars</text>
+    </svg>
+    <div class="variants">
+      <div style="background:#F4F1EA"><svg viewBox="0 0 400 100"><text x="200" y="82" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="56" fill="#1B3A8C">assambl</text><g stroke="#1B3A8C" stroke-width="1.5" fill="none"><line x1="82" y1="24" x2="318" y2="24"/><line x1="82" y1="16" x2="82" y2="32"/><line x1="318" y1="16" x2="318" y2="32"/></g></svg><span class="lbl" style="color:#1B3A8C">Positivo</span></div>
+      <div style="background:#0B1533"><svg viewBox="0 0 400 100"><text x="200" y="82" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="56" fill="#F4F1EA">assambl</text><g stroke="#5FD3FF" stroke-width="1.5" fill="none"><line x1="82" y1="24" x2="318" y2="24"/><line x1="82" y1="16" x2="82" y2="32"/><line x1="318" y1="16" x2="318" y2="32"/></g></svg><span class="lbl" style="color:#F4F1EA">Modo oscuro</span></div>
+      <div style="background:#1B3A8C"><svg viewBox="0 0 100 100"><text x="50" y="82" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="64" fill="#F4F1EA">a</text><g stroke="#5FD3FF" stroke-width="2.5" fill="none"><line x1="24" y1="26" x2="76" y2="26"/><line x1="24" y1="18" x2="24" y2="34"/><line x1="76" y1="18" x2="76" y2="34"/></g></svg><span class="lbl" style="color:#F4F1EA">Ícono</span></div>
+      <div style="background:#1B3A8C"><svg viewBox="0 0 400 100"><text x="200" y="56" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="34" fill="#F4F1EA">assambl</text><text x="200" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="12" letter-spacing="3" fill="#5FD3FF">MEASURED. RESOLVED. BUILT.</text></svg><span class="lbl" style="color:#F4F1EA">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>C3</em> · 11 / 12 · Familia Blueprint</div>
+    <h1>Dimension</h1>
+    <div class="tag">Sin corchetes. La palabra en mono, acotada como un elemento de plano: línea de cota, extremos y valor. Código y dibujo técnico en el mismo gesto.</div>
+    <h2>Concepto</h2>
+    <p>Es el puente más literal entre las dos culturas del producto. La fuente monoespaciada dice “código”; la línea de cota dice “plano”. La mono es, además, la única tipografía donde acotar tiene sentido: cada carácter mide exactamente lo mismo, como una grilla modular. El valor de la cota puede variar en cada aplicación: <code>7 chars</code>, <code>2440 mm</code>, <code>16" o.c.</code>, <code>0 errors</code>.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#1B3A8C;color:#fff"><b>#1B3A8C</b><i>Blueprint — principal</i></div>
+      <div class="sw" style="background:#F4F1EA;color:#1B3A8C"><b>#F4F1EA</b><i>Paper — texto / fondo claro</i></div>
+      <div class="sw" style="background:#5FD3FF;color:#0B1533"><b>#5FD3FF</b><i>Cyan — cotas</i></div>
+      <div class="sw" style="background:#0B1533;color:#fff"><b>#0B1533</b><i>Night — modo oscuro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:800">assambl</div><div class="nm">JetBrains Mono ExtraBold <em>— la palabra sola, acotada</em></div></div>
+      <div class="f"><small>UI / cotas</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:400">2440 mm</div><div class="nm">JetBrains Mono Regular <em>— medidas, cantidades, etiquetas de plano</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Distintividad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">La cota es un detalle fino: en tamaños chicos desaparece y queda solo la palabra en mono. El vínculo con código es más débil que en el resto de la familia; el vínculo con arquitectura es el más fuerte de las 12.</div>
+  </div>
+</section>
+
+<!-- C4 TAG -->
+<section class="slide">
+  <div class="hero" style="background:#F7F5EF;background-image:linear-gradient(rgba(46,91,255,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(46,91,255,.10) 1px,transparent 1px);background-size:28px 28px">
+    <span class="fam" style="color:#2E5BFF">Blueprint · C4</span>
+    <svg viewBox="0 0 720 200"><text x="360" y="140" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="104" fill="#0B1533"><tspan fill="#2E5BFF">&lt;</tspan>assambl<tspan fill="#2E5BFF">/&gt;</tspan></text></svg>
+    <div class="variants">
+      <div style="background:#2E5BFF"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="52" fill="#F7F5EF">&lt;assambl/&gt;</text></svg><span class="lbl" style="color:#F7F5EF">Sobre azul</span></div>
+      <div style="background:#0B1533"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="52" fill="#F7F5EF"><tspan fill="#5FD3FF">&lt;</tspan>assambl<tspan fill="#5FD3FF">/&gt;</tspan></text></svg><span class="lbl" style="color:#F7F5EF">Modo oscuro</span></div>
+      <div style="background:#F7F5EF"><svg viewBox="0 0 100 100"><text x="50" y="72" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="40" fill="#0B1533"><tspan fill="#2E5BFF">&lt;</tspan>a<tspan fill="#2E5BFF">/&gt;</tspan></text></svg><span class="lbl" style="color:#0B1533">Ícono</span></div>
+      <div style="background:#F7F5EF"><svg viewBox="0 0 400 100"><g font-family="JetBrains Mono" font-size="14" fill="#0B1533"><text x="40" y="34"><tspan fill="#2E5BFF">&lt;assambl&gt;</tspan></text><text x="40" y="54">  <tspan fill="#2E5BFF">&lt;wall</tspan> studs=<tspan fill="#8A6D00">"2x6"</tspan> <tspan fill="#2E5BFF">/&gt;</tspan></text><text x="40" y="74"><tspan fill="#2E5BFF">&lt;/assambl&gt;</tspan></text></g></svg><span class="lbl" style="color:#0B1533">Markup expandido</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num"><em>C4</em> · 12 / 12 · Familia Blueprint</div>
+    <h1>Tag</h1>
+    <div class="tag">Etiqueta autocerrada: <code>&lt;assambl/&gt;</code>. Un componente que se coloca y funciona. Papel claro, azul más vivo: la versión “diurna” de la familia.</div>
+    <h2>Concepto</h2>
+    <p>El markup es la sintaxis que más gente reconoce fuera de la programación (HTML). Una etiqueta autocerrada es un componente completo: lo insertás y ya está resuelto. Además, BIM se serializa en IFC/XML; la casa realmente es un árbol de tags anidados: <code>&lt;wall&gt;&lt;stud/&gt;&lt;/wall&gt;</code>. Los <code>&lt; &gt;</code> dibujan dos flechas que apuntan hacia adentro: convergencia, ensamble.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#F7F5EF;color:#0B1533"><b>#F7F5EF</b><i>Paper — fondo principal</i></div>
+      <div class="sw" style="background:#0B1533;color:#fff"><b>#0B1533</b><i>Night — nombre</i></div>
+      <div class="sw" style="background:#2E5BFF;color:#fff"><b>#2E5BFF</b><i>Electric blue — tags</i></div>
+      <div class="sw" style="background:#8A6D00;color:#fff"><b>#8A6D00</b><i>Attribute — valores</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:800">&lt;assambl/&gt;</div><div class="nm">JetBrains Mono ExtraBold <em>— sin cambios</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'Inter Tight'">Assambl Ag 0123</div><div class="nm">Inter Tight <em>— igual que el original</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Vínculo con código</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Distintividad</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">“&lt;/&gt;” es el ícono universal de “código” y lo usan cientos de productos (VS Code, CodePen, agencias). Es el más reconocible y por eso el menos propio. Logotipo largo (10 caracteres).</div>
+  </div>
+</section>
+
+</div>
+<footer>
+  <button onclick="go(-1)">← Anterior</button>
+  <div class="dots" id="dots"></div>
+  <button onclick="go(1)">Siguiente →</button>
+</footer>
+</div>
+
+<div class="ov" id="ov">
+  <button class="close" onclick="ov(false)">Cerrar ✕</button>
+  <h1>Comparativa — 12 variaciones</h1>
+  <p>Respecto a la ronda 1 se reemplazó el criterio “Premium” por <strong>Vínculo con código</strong>, ya que fue el eje pedido para esta ronda. Un patrón a tener en cuenta: cuanto más literal es la referencia a código, menor es la distintividad, porque los signos de sintaxis (<code>{}</code>, <code>&lt;/&gt;</code>, <code>$</code>) ya son íconos de otras marcas. Las variaciones que mejor puntúan son las que toman un signo <em>menos obvio</em> y le dan doble lectura constructiva.</p>
+  <table>
+    <thead><tr><th>#</th><th>Variación</th><th>Logotipo</th><th>Signo de código</th><th>Brutal.</th><th>Código</th><th>Legib.</th><th>Escala</th><th>Distint.</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr class="sep"><td colspan="10">Familia A · Monolith (Archivo Black) — tu preferida</td></tr>
+      <tr><td>A1</td><td>Cursor</td><td class="code">ASSAMBL▮</td><td>Block cursor</td><td class="n">9.5</td><td class="n">7</td><td class="n">9</td><td class="n">8.5</td><td class="n">7</td><td class="tot">41.0</td></tr>
+      <tr class="top"><td>A2</td><td>Statement</td><td class="code">ASSAMBL;</td><td>Punto y coma</td><td class="n">9</td><td class="n">8.5</td><td class="n">9</td><td class="n">8</td><td class="n">8</td><td class="tot">42.5</td></tr>
+      <tr class="top"><td>A3</td><td>Comment</td><td class="code">// ASSAMBL</td><td>Comentario</td><td class="n">8.5</td><td class="n">9</td><td class="n">8.5</td><td class="n">9</td><td class="n">8.5</td><td class="tot">43.5</td></tr>
+      <tr><td>A4</td><td>Call</td><td class="code">ASSAMBL()</td><td>Llamada a función</td><td class="n">8.5</td><td class="n">9.5</td><td class="n">8.5</td><td class="n">7.5</td><td class="n">8.5</td><td class="tot">42.5</td></tr>
+      <tr class="sep"><td colspan="10">Familia B · Compiler (IBM Plex Mono)</td></tr>
+      <tr><td>B1</td><td>Prompt</td><td class="code">$ assambl</td><td>Prompt de shell</td><td class="n">7.5</td><td class="n">9.5</td><td class="n">9</td><td class="n">8</td><td class="n">7.5</td><td class="tot">41.5</td></tr>
+      <tr class="top"><td>B2</td><td>Method</td><td class="code">assambl.build()</td><td>Notación de punto</td><td class="n">6.5</td><td class="n">10</td><td class="n">8</td><td class="n">9</td><td class="n">8</td><td class="tot">41.5</td></tr>
+      <tr><td>B3</td><td>Diff</td><td class="code">+ assambl</td><td>Diff de Git</td><td class="n">7</td><td class="n">9.5</td><td class="n">8</td><td class="n">7</td><td class="n">9</td><td class="tot">40.5</td></tr>
+      <tr><td>B4</td><td>Editor</td><td class="code">12 │ assambl</td><td>Línea activa + gutter</td><td class="n">6</td><td class="n">10</td><td class="n">8.5</td><td class="n">6.5</td><td class="n">7.5</td><td class="tot">38.5</td></tr>
+      <tr class="sep"><td colspan="10">Familia C · Blueprint (JetBrains Mono)</td></tr>
+      <tr><td>C1</td><td>Object</td><td class="code">{assambl}</td><td>Objeto / JSON</td><td class="n">7</td><td class="n">9</td><td class="n">8.5</td><td class="n">8.5</td><td class="n">7</td><td class="tot">40.0</td></tr>
+      <tr><td>C2</td><td>Key</td><td class="code">assambl:</td><td>Clave YAML</td><td class="n">6.5</td><td class="n">8.5</td><td class="n">9</td><td class="n">8</td><td class="n">7.5</td><td class="tot">39.5</td></tr>
+      <tr class="top"><td>C3</td><td>Dimension</td><td class="code">|— assambl —|</td><td>Mono + línea de cota</td><td class="n">7</td><td class="n">7.5</td><td class="n">9</td><td class="n">8</td><td class="n">9</td><td class="tot">40.5</td></tr>
+      <tr><td>C4</td><td>Tag</td><td class="code">&lt;assambl/&gt;</td><td>Etiqueta autocerrada</td><td class="n">6.5</td><td class="n">9.5</td><td class="n">8</td><td class="n">7</td><td class="n">6.5</td><td class="tot">37.5</td></tr>
+    </tbody>
+  </table>
+  <div class="rec">
+    <div><b>Finalistas sugeridos</b><strong>A3 Comment</strong> (// ASSAMBL) y <strong>A2 Statement</strong> (ASSAMBL;) mantienen intacta la brutalidad del Monolith y suman código con un signo que también se lee como puntuación o como dos studs. <strong>B2 Method</strong> en su forma corta (assambl.) es la opción más elegante si querés un logo casi invisible con un sistema de naming enorme detrás.</div>
+    <div><b>Un híbrido que vale probar</b>Las tres familias se pueden combinar: logotipo en Archivo Black (familia A) para la marca, e IBM Plex Mono (familia B) para toda la voz del producto: taglines en sintaxis, estados, microcopy. El “signo de código” del logo (; o //) se repite como prefijo en la UI. Así el código no está solo en el logo sino en cómo habla el producto.</div>
+    <div><b>Qué chequear antes de decidir</b>1) Los signos ; // () a 16 px en la pestaña del navegador. 2) Que el signo elegido no dependa del color para leerse (probar en blanco y negro). 3) Búsqueda de marca: “//” y “;” no son registrables por sí mismos, pero sí en combinación con el nombre. 4) Pronunciación: ninguno de los signos se pronuncia, el nombre sigue siendo “Assambl”.</div>
+  </div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')],dots=document.getElementById('dots');let i=0;
+  slides.forEach((_,k)=>{if(k===4||k===8){const s=document.createElement('s');dots.appendChild(s)}const d=document.createElement('i');d.onclick=()=>show(k);dots.appendChild(d)});
+  function show(k){i=(k+slides.length)%slides.length;slides.forEach((s,j)=>s.classList.toggle('on',j===i));[...dots.querySelectorAll('i')].forEach((d,j)=>d.classList.toggle('on',j===i));location.hash=i+1}
+  function go(d){show(i+d)}
+  function ov(on){document.getElementById('ov').classList.toggle('on',on)}
+  addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1);if(e.key==='Escape')ov(false);if(e.key==='c')ov(true)});
+  const fromHash=()=>show(parseInt(location.hash.slice(1)||1)-1);
+  addEventListener('hashchange',fromHash);fromHash();
+</script>
+</body>
+</html>

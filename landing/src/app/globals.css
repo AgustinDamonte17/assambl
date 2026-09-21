@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #111111;
+  --concrete: #e8e6e1;
+  --signal: #ff4f1f;
+  --rebar: #7a7a78;
+  --resolved: #1fa45a;
+
+  --bg: var(--concrete);
+  --fg: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--ink);
+    --fg: var(--concrete);
+    --rebar: #8b8b88;
+    --resolved: #3dff7a;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-signal: var(--signal);
+  --color-rebar: var(--rebar);
+  --color-resolved: var(--resolved);
+  --font-display: var(--font-archivo-black);
+  --font-mono: var(--font-plex-mono);
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-blink {
+    animation: none;
+  }
+}

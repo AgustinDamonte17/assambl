@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assambl — Exploración de identidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wdth,wght@62..125,400..900&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&family=JetBrains+Mono:wght@400;700;800&family=Inter+Tight:wght@400;600;800;900&family=Instrument+Serif:ital@0;1&family=Saira+Stencil+One&family=Unbounded:wght@600;900&family=Manrope:wght@400;600;800&family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0e0e0f;--fg:#ececec;--mut:#8b8b90;--line:#242427}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+  .deck{height:100vh;display:flex;flex-direction:column}
+  header{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+  header b{color:var(--fg);font-weight:600}
+  header .btn{cursor:pointer;border:1px solid var(--line);padding:6px 12px;border-radius:4px;color:var(--fg);background:transparent;font:inherit;letter-spacing:inherit;text-transform:inherit}
+  header .btn:hover{border-color:#555}
+  .stage{flex:1;position:relative}
+  .slide{position:absolute;inset:0;display:none;grid-template-columns:1.15fr 1fr;gap:0}
+  .slide.on{display:grid}
+  .hero{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;overflow:hidden}
+  .hero svg{width:min(80%,720px);height:auto;display:block}
+  .hero .variants{position:absolute;left:32px;right:32px;bottom:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .variants div{height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:10px;position:relative}
+  .variants div span.lbl{position:absolute;bottom:4px;left:8px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.55}
+  .variants svg{height:60%;width:auto}
+  .info{padding:34px 40px;overflow-y:auto;border-left:1px solid var(--line);background:#121214}
+  .info h1{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+  .info .num{font-size:12px;color:var(--mut);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+  .info .tag{font-size:13px;color:var(--mut);margin:8px 0 22px;line-height:1.5}
+  .info h2{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);margin:22px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+  .info p{font-size:13.5px;line-height:1.6;color:#cfcfd3}
+  .pal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .sw{border-radius:6px;padding:10px;height:92px;display:flex;flex-direction:column;justify-content:flex-end;font-size:11px;line-height:1.35;border:1px solid rgba(255,255,255,.06)}
+  .sw b{display:block;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px}
+  .sw i{font-style:normal;opacity:.8}
+  .type{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .type .f{background:#18181b;border:1px solid var(--line);border-radius:6px;padding:14px}
+  .type .f small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+  .type .f .smp{font-size:30px;line-height:1.05;margin-bottom:6px;white-space:nowrap;overflow:hidden}
+  .type .f .nm{font-size:12.5px;color:#cfcfd3}
+  .type .f .nm em{font-style:normal;color:var(--mut)}
+  .score{display:grid;grid-template-columns:110px 1fr 28px;gap:6px 10px;align-items:center;font-size:12px}
+  .score .bar{height:6px;background:#222226;border-radius:3px;overflow:hidden}
+  .score .bar i{display:block;height:100%;background:#d8d8dc}
+  .score span:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--mut)}
+  .risk{font-size:12.5px;color:#b8b8bd;line-height:1.55;padding:10px 12px;border-left:2px solid #555;background:#161618;border-radius:0 4px 4px 0}
+  footer{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)}
+  footer .dots{display:flex;gap:6px}
+  footer .dots i{width:22px;height:3px;background:#2a2a2e;border-radius:2px;cursor:pointer}
+  footer .dots i.on{background:var(--fg)}
+  footer button{background:none;border:1px solid var(--line);color:var(--fg);padding:6px 14px;border-radius:4px;cursor:pointer;font:inherit}
+  /* overlay comparativa */
+  .ov{position:fixed;inset:0;background:rgba(10,10,11,.96);display:none;padding:48px 60px;overflow:auto;z-index:9}
+  .ov.on{display:block}
+  .ov h1{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+  .ov p{color:var(--mut);font-size:13px;margin-bottom:26px;max-width:820px;line-height:1.55}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:500}
+  td.n{font-family:'IBM Plex Mono',monospace;text-align:center}
+  td.tot{font-family:'IBM Plex Mono',monospace;text-align:center;font-weight:700;color:#fff}
+  tr.top td{background:#17171a}
+  .rec{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .rec div{background:#151517;border:1px solid var(--line);border-radius:6px;padding:16px;font-size:13px;line-height:1.55;color:#cfcfd3}
+  .rec div b{display:block;color:#fff;margin-bottom:6px;font-size:14px}
+  .close{position:fixed;top:18px;right:28px;background:none;border:1px solid #444;color:#fff;padding:6px 14px;border-radius:4px;cursor:pointer;font:inherit;font-size:12px}
+</style>
+</head>
+<body>
+<div class="deck">
+<header>
+  <div><b>Assambl</b> &nbsp;·&nbsp; Exploración de identidad visual — 10 direcciones</div>
+  <div style="display:flex;gap:10px;align-items:center"><span>← → para navegar</span><button class="btn" onclick="ov(true)">Comparativa &amp; recomendación</button></div>
+</header>
+<div class="stage" id="stage">
+
+<!-- ============ 1 MONOLITH ============ -->
+<section class="slide" style="--a:#111111;--b:#E8E6E1;--c:#FF4F1F">
+  <div class="hero" style="background:#E8E6E1">
+    <svg viewBox="0 0 720 200"><text x="340" y="150" text-anchor="middle" font-family="Archivo Black" font-size="136" letter-spacing="-8" fill="#111">ASSAMBL</text><rect x="654" y="118" width="46" height="32" fill="#FF4F1F"/></svg>
+    <div class="variants">
+      <div style="background:#111"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="72" letter-spacing="-4" fill="#E8E6E1">ASSAMBL</text></svg><span class="lbl" style="color:#E8E6E1">Negativo</span></div>
+      <div style="background:#FF4F1F"><svg viewBox="0 0 400 100"><text x="200" y="78" text-anchor="middle" font-family="Archivo Black" font-size="72" letter-spacing="-4" fill="#111">ASSAMBL</text></svg><span class="lbl" style="color:#111">Sobre acento</span></div>
+      <div style="background:#111"><svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#111"/><text x="50" y="80" text-anchor="middle" font-family="Archivo Black" font-size="82" fill="#E8E6E1">A</text><rect x="70" y="62" width="22" height="16" fill="#FF4F1F"/></svg><span class="lbl" style="color:#E8E6E1">Ícono / favicon</span></div>
+      <div style="background:#E8E6E1"><svg viewBox="0 0 400 100"><text x="200" y="70" text-anchor="middle" font-family="Space Grotesk" font-weight="500" font-size="42" letter-spacing="8" fill="#111">ASSAMBL</text></svg><span class="lbl" style="color:#111">Secundario espaciado</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">01 / 10</div>
+    <h1>Monolith</h1>
+    <div class="tag">Un bloque. Sin ícono, sin adorno. El nombre es el logo. El rectángulo naranja funciona como “pieza final” colocada: la casa ya ensamblada.</div>
+    <h2>Concepto</h2>
+    <p>La lectura brutalista de Assambl llevada al extremo. Kerning negativo para que las letras se toquen como piezas encastradas. El acento es un solo bloque sólido que puede usarse como cursor, bullet o marcador de estado en la UI.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#111111;color:#eee"><b>#111111</b><i>Ink — principal</i></div>
+      <div class="sw" style="background:#E8E6E1;color:#111"><b>#E8E6E1</b><i>Concrete — fondo</i></div>
+      <div class="sw" style="background:#FF4F1F;color:#111"><b>#FF4F1F</b><i>Signal — acento</i></div>
+      <div class="sw" style="background:#7A7A78;color:#fff"><b>#7A7A78</b><i>Rebar — UI neutro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Archivo Black'">Assambl Ag</div><div class="nm">Archivo Black <em>— grotesca pesada, ancha, libre (Google Fonts)</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'Space Grotesk'">Assambl Ag 0123</div><div class="nm">Space Grotesk <em>— técnica, legible en tablas y planos</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Distintividad</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Premium</span><div class="bar"><i style="width:60%"></i></div><span>6</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Estética muy usada por startups 2022-2025 (negro + naranja). Diferenciarse dependerá del tono de voz y la UI más que del logo.</div>
+  </div>
+</section>
+
+<!-- ============ 2 BLUEPRINT ============ -->
+<section class="slide">
+  <div class="hero" style="background:#1B3A8C;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:28px 28px">
+    <svg viewBox="0 0 720 200"><text x="360" y="140" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="118" fill="#F4F1EA"><tspan fill="#5FD3FF">[</tspan>assambl<tspan fill="#5FD3FF">]</tspan></text></svg>
+    <div class="variants">
+      <div style="background:#F4F1EA"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="62" fill="#1B3A8C">[assambl]</text></svg><span class="lbl" style="color:#1B3A8C">Positivo</span></div>
+      <div style="background:#0B1533"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="62" fill="#F4F1EA">[assambl]</text></svg><span class="lbl" style="color:#F4F1EA">Modo oscuro</span></div>
+      <div style="background:#1B3A8C"><svg viewBox="0 0 100 100"><rect width="100" height="100" fill="#1B3A8C"/><text x="50" y="76" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="54" fill="#F4F1EA">[<tspan fill="#5FD3FF">a</tspan>]</text></svg><span class="lbl" style="color:#F4F1EA">Ícono</span></div>
+      <div style="background:#F4F1EA"><svg viewBox="0 0 400 100"><text x="200" y="66" text-anchor="middle" font-family="JetBrains Mono" font-weight="400" font-size="34" fill="#1B3A8C">assambl.build</text></svg><span class="lbl" style="color:#1B3A8C">Dominio / URL</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">02 / 10</div>
+    <h1>Blueprint</h1>
+    <div class="tag">Minúscula, monoespaciada, entre corchetes. Lee como código y como plano. El corchete es el “assembly” en sintaxis de programación.</div>
+    <h2>Concepto</h2>
+    <p>Conecta con la tesis del <em>building compiler</em>: la casa como estructura de datos. El azul cianotipo remite al plano tradicional; la mono al terminal. Los corchetes pueden abrirse y cerrarse en animación mientras el sistema “resuelve”.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#1B3A8C;color:#fff"><b>#1B3A8C</b><i>Blueprint — principal</i></div>
+      <div class="sw" style="background:#F4F1EA;color:#1B3A8C"><b>#F4F1EA</b><i>Paper — fondo</i></div>
+      <div class="sw" style="background:#5FD3FF;color:#0B1533"><b>#5FD3FF</b><i>Cyan — acento / sintaxis</i></div>
+      <div class="sw" style="background:#0B1533;color:#fff"><b>#0B1533</b><i>Night — modo oscuro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'JetBrains Mono';font-weight:800">[assambl]</div><div class="nm">JetBrains Mono ExtraBold <em>— mono con personalidad, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'Inter Tight'">Assambl Ag 0123</div><div class="nm">Inter Tight <em>— neutra, compacta, deja el protagonismo a la mono</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+      <span>Premium</span><div class="bar"><i style="width:55%"></i></div><span>5.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Habla más al desarrollador que al arquitecto o al constructor DIY. Puede sentirse “dev tool” y alejar al usuario que solo quiere diseñar.</div>
+  </div>
+</section>
+
+<!-- ============ 3 LAYERS ============ -->
+<section class="slide">
+  <div class="hero" style="background:#F1EDE4">
+    <svg viewBox="0 0 720 200">
+      <g transform="translate(60,40)"><rect x="0" y="0" width="120" height="22" fill="#2B2B2B"/><rect x="0" y="32" width="120" height="22" fill="#5F6B4E"/><rect x="0" y="64" width="120" height="22" fill="#B8A98A"/><rect x="0" y="96" width="120" height="22" fill="#2B2B2B"/></g>
+      <text x="220" y="135" font-family="Inter Tight" font-weight="800" font-size="112" letter-spacing="-5" fill="#2B2B2B">Assambl</text>
+    </svg>
+    <div class="variants">
+      <div style="background:#2B2B2B"><svg viewBox="0 0 400 100"><g transform="translate(40,26)"><rect width="40" height="8" fill="#F1EDE4"/><rect y="13" width="40" height="8" fill="#8A9C6E"/><rect y="26" width="40" height="8" fill="#B8A98A"/><rect y="39" width="40" height="8" fill="#F1EDE4"/></g><text x="100" y="72" font-family="Inter Tight" font-weight="800" font-size="52" letter-spacing="-2" fill="#F1EDE4">Assambl</text></svg><span class="lbl" style="color:#F1EDE4">Negativo</span></div>
+      <div style="background:#5F6B4E"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="Inter Tight" font-weight="800" font-size="52" letter-spacing="-2" fill="#F1EDE4">Assambl</text></svg><span class="lbl" style="color:#F1EDE4">Sobre color</span></div>
+      <div style="background:#F1EDE4"><svg viewBox="0 0 100 100"><rect x="20" y="16" width="60" height="14" fill="#2B2B2B"/><rect x="20" y="36" width="60" height="14" fill="#5F6B4E"/><rect x="20" y="56" width="60" height="14" fill="#B8A98A"/><rect x="20" y="76" width="60" height="10" fill="#2B2B2B"/></svg><span class="lbl" style="color:#2B2B2B">Ícono</span></div>
+      <div style="background:#F1EDE4"><svg viewBox="0 0 400 100"><text x="200" y="60" text-anchor="middle" font-family="Inter Tight" font-weight="800" font-size="40" letter-spacing="-1" fill="#2B2B2B">Assambl</text><text x="200" y="84" text-anchor="middle" font-family="Inter Tight" font-weight="400" font-size="15" letter-spacing="3" fill="#5F6B4E">EVERY LAYER, RESOLVED</text></svg><span class="lbl" style="color:#2B2B2B">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">03 / 10</div>
+    <h1>Layers</h1>
+    <div class="tag">Ícono de cuatro capas horizontales: estructura, aislación, sheathing, terminación. Hereda el concepto Layrd sin abandonar el nombre.</div>
+    <h2>Concepto</h2>
+    <p>La casa como sección constructiva. El ícono es literalmente el detalle de un muro visto de costado y a la vez una pila de capas de software. Paleta orgánica-industrial: grafito, musgo, arena. Es la dirección más “arquitectura contemporánea” del set.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#2B2B2B;color:#fff"><b>#2B2B2B</b><i>Graphite — principal</i></div>
+      <div class="sw" style="background:#F1EDE4;color:#2B2B2B"><b>#F1EDE4</b><i>Plaster — fondo</i></div>
+      <div class="sw" style="background:#5F6B4E;color:#fff"><b>#5F6B4E</b><i>Moss — acento</i></div>
+      <div class="sw" style="background:#B8A98A;color:#2B2B2B"><b>#B8A98A</b><i>Sand — secundario</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Inter Tight';font-weight:800;letter-spacing:-.04em">Assambl Ag</div><div class="nm">Inter Tight ExtraBold <em>— grotesca compacta, muy neutral, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'Inter Tight';font-weight:400">Assambl Ag 0123</div><div class="nm">Inter Tight Regular <em>— una sola familia en todo el sistema</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:55%"></i></div><span>5.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Distintividad</span><div class="bar"><i style="width:60%"></i></div><span>6</span>
+      <span>Premium</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El ícono de capas es común (Figma, Layers, Notion-like tools). Pierde parte de la dureza que hace atractivo el nombre Assambl.</div>
+  </div>
+</section>
+
+<!-- ============ 4 STUD / FRAME ============ -->
+<section class="slide">
+  <div class="hero" style="background:#F5C400">
+    <svg viewBox="0 0 720 200">
+      <g transform="translate(70,30)" fill="#111"><rect x="0" y="0" width="22" height="140"/><rect x="98" y="0" width="22" height="140"/><rect x="0" y="0" width="120" height="22"/><rect x="0" y="62" width="120" height="16"/></g>
+      <text x="215" y="148" font-family="Archivo Black" font-size="108" letter-spacing="-4" fill="#111" textLength="470" lengthAdjust="spacingAndGlyphs">SSAMBL</text>
+    </svg>
+    <div class="variants">
+      <div style="background:#111"><svg viewBox="0 0 400 100"><g transform="translate(48,22)" fill="#F5C400"><rect width="9" height="56"/><rect x="39" width="9" height="56"/><rect width="48" height="9"/><rect y="25" width="48" height="7"/></g><text x="112" y="72" font-family="Archivo" font-weight="900" font-size="54" letter-spacing="-1" fill="#F5C400">SSAMBL</text></svg><span class="lbl" style="color:#F5C400">Negativo</span></div>
+      <div style="background:#fff"><svg viewBox="0 0 400 100"><g transform="translate(48,22)" fill="#111"><rect width="9" height="56"/><rect x="39" width="9" height="56"/><rect width="48" height="9"/><rect y="25" width="48" height="7"/></g><text x="112" y="72" font-family="Archivo" font-weight="900" font-size="54" letter-spacing="-1" fill="#111">SSAMBL</text></svg><span class="lbl" style="color:#111">Blanco</span></div>
+      <div style="background:#F5C400"><svg viewBox="0 0 100 100"><g transform="translate(20,15)" fill="#111"><rect width="12" height="70"/><rect x="48" width="12" height="70"/><rect width="60" height="12"/><rect y="32" width="60" height="9"/></g></svg><span class="lbl" style="color:#111">Ícono “A-frame”</span></div>
+      <div style="background:#111"><svg viewBox="0 0 400 100"><text x="200" y="66" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="34" letter-spacing="6" fill="#F5C400">ASSAMBL</text><text x="200" y="86" text-anchor="middle" font-family="Archivo" font-size="12" letter-spacing="4" fill="#fff">YOU DESIGN. IT BUILDS.</text></svg><span class="lbl" style="color:#fff">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">04 / 10</div>
+    <h1>Stud</h1>
+    <div class="tag">La A reemplazada por un marco de wood frame: dos studs, un top plate y un blocking. El nombre nace del sistema constructivo.</div>
+    <h2>Concepto</h2>
+    <p>Habla directo al constructor y al DIY. Amarillo seguridad + negro: obra, herramientas, cinta métrica. La A-frame funciona sola como ícono y es lo bastante abstracta para leerse también como letra. Es la dirección con más “oficio” y menos “software”.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#F5C400;color:#111"><b>#F5C400</b><i>Safety — principal</i></div>
+      <div class="sw" style="background:#111111;color:#fff"><b>#111111</b><i>Black — texto/logo</i></div>
+      <div class="sw" style="background:#FFFFFF;color:#111"><b>#FFFFFF</b><i>White — UI</i></div>
+      <div class="sw" style="background:#5A5145;color:#fff"><b>#5A5145</b><i>Lumber — neutro cálido</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:Archivo;font-weight:900;font-stretch:110%">Assambl Ag</div><div class="nm">Archivo Black / Archivo 900 <em>— variable, permite ancho expandido</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Archivo;font-weight:400">Assambl Ag 0123</div><div class="nm">Archivo Regular <em>— misma familia, sistema coherente</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Premium</span><div class="bar"><i style="width:45%"></i></div><span>4.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Te ata a wood frame y al mundo “hardware store” (DeWalt, Stanley). Si la visión crece hacia otros sistemas o hacia estudios de arquitectura, el amarillo puede quedar chico.</div>
+  </div>
+</section>
+
+<!-- ============ 5 STENCIL ============ -->
+<section class="slide">
+  <div class="hero" style="background:#C9A76B;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.035) 0 3px,transparent 3px 11px)">
+    <svg viewBox="0 0 720 200"><text x="360" y="148" text-anchor="middle" font-family="Saira Stencil One" font-size="132" letter-spacing="2" fill="#1A1A1A">ASSAMBL</text><text x="640" y="60" text-anchor="end" font-family="IBM Plex Mono" font-weight="700" font-size="18" letter-spacing="3" fill="#C0392B">LOT 01 · 2x6 · 16" O.C.</text></svg>
+    <div class="variants">
+      <div style="background:#1A1A1A"><svg viewBox="0 0 400 100"><text x="200" y="76" text-anchor="middle" font-family="Saira Stencil One" font-size="66" fill="#F3EBDD">ASSAMBL</text></svg><span class="lbl" style="color:#F3EBDD">Negativo</span></div>
+      <div style="background:#F3EBDD"><svg viewBox="0 0 400 100"><text x="200" y="76" text-anchor="middle" font-family="Saira Stencil One" font-size="66" fill="#C0392B">ASSAMBL</text></svg><span class="lbl" style="color:#1A1A1A">Marcador rojo</span></div>
+      <div style="background:#C9A76B"><svg viewBox="0 0 100 100"><text x="50" y="80" text-anchor="middle" font-family="Saira Stencil One" font-size="84" fill="#1A1A1A">A</text></svg><span class="lbl" style="color:#1A1A1A">Ícono</span></div>
+      <div style="background:#1A1A1A"><svg viewBox="0 0 400 100"><text x="200" y="66" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="30" letter-spacing="6" fill="#C9A76B">ASSAMBL</text></svg><span class="lbl" style="color:#C9A76B">Secundario mono</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">05 / 10</div>
+    <h1>Stencil</h1>
+    <div class="tag">Tipografía stencil sobre madera: la marca aplicada con plantilla en una placa de OSB o en un paquete de piezas prefabricadas.</div>
+    <h2>Concepto</h2>
+    <p>El output del software son piezas fabricables. Esta dirección imagina el logo como algo que se estampa físicamente en cada componente cortado. Muy prefab/kit-of-parts. La etiqueta mono en rojo evoca marcas de obra y BOM.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#C9A76B;color:#1A1A1A"><b>#C9A76B</b><i>Plywood — principal</i></div>
+      <div class="sw" style="background:#1A1A1A;color:#fff"><b>#1A1A1A</b><i>Soot — logo</i></div>
+      <div class="sw" style="background:#C0392B;color:#fff"><b>#C0392B</b><i>Marker — acento</i></div>
+      <div class="sw" style="background:#F3EBDD;color:#1A1A1A"><b>#F3EBDD</b><i>Birch — fondo claro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Saira Stencil One'">ASSAMBL</div><div class="nm">Saira Stencil One <em>— stencil geométrica, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'IBM Plex Mono'">Assambl Ag 0123</div><div class="nm">IBM Plex Mono <em>— etiquetas, cotas, listas de materiales</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:60%"></i></div><span>6</span>
+      <span>Distintividad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Premium</span><div class="bar"><i style="width:40%"></i></div><span>4</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Estética militar / “workwear” muy codificada. Puede leerse como marca de ropa o de cajones de embalaje. Difícil de trasladar a una UI limpia de software.</div>
+  </div>
+</section>
+
+<!-- ============ 6 COMPILER ============ -->
+<section class="slide">
+  <div class="hero" style="background:#0B0F0C">
+    <svg viewBox="0 0 720 200"><text x="360" y="140" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="120" letter-spacing="-4" fill="#E9EFE9">assambl<tspan fill="#3DFF7A">_</tspan></text><text x="60" y="48" font-family="IBM Plex Mono" font-size="15" fill="#4F5B52">$ assambl build house.design</text><text x="60" y="190" font-family="IBM Plex Mono" font-size="15" fill="#4F5B52">→ 412 parts · 38 assemblies · 0 errors</text></svg>
+    <div class="variants">
+      <div style="background:#E9EFE9"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="60" letter-spacing="-2" fill="#0B0F0C">assambl<tspan fill="#0E9B4A">_</tspan></text></svg><span class="lbl" style="color:#0B0F0C">Positivo</span></div>
+      <div style="background:#3DFF7A"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="60" letter-spacing="-2" fill="#0B0F0C">assambl_</text></svg><span class="lbl" style="color:#0B0F0C">Sobre acento</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 100 100"><text x="50" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-weight="700" font-size="74" fill="#E9EFE9">a<tspan fill="#3DFF7A">_</tspan></text></svg><span class="lbl" style="color:#E9EFE9">Ícono</span></div>
+      <div style="background:#0B0F0C"><svg viewBox="0 0 400 100"><text x="200" y="66" text-anchor="middle" font-family="IBM Plex Mono" font-weight="400" font-size="26" fill="#E9EFE9">&gt; assambl <tspan fill="#4F5B52">--resolve</tspan></text></svg><span class="lbl" style="color:#E9EFE9">Tratamiento CLI</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">06 / 10</div>
+    <h1>Compiler</h1>
+    <div class="tag">El cursor de terminal como único símbolo. Assambl es el compilador que convierte intención en edificio construible.</div>
+    <h2>Concepto</h2>
+    <p>Lleva al logo la idea de <em>building compiler</em>. El guion bajo parpadea en la UI mientras el motor resuelve. Verde fósforo sobre casi negro: precisión, sistema, cero errores. El copy de producto puede adoptar sintaxis de consola sin caer en cliché.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#0B0F0C;color:#fff"><b>#0B0F0C</b><i>Terminal — fondo</i></div>
+      <div class="sw" style="background:#E9EFE9;color:#0B0F0C"><b>#E9EFE9</b><i>Phosphor white — texto</i></div>
+      <div class="sw" style="background:#3DFF7A;color:#0B0F0C"><b>#3DFF7A</b><i>Signal green — acento</i></div>
+      <div class="sw" style="background:#4F5B52;color:#fff"><b>#4F5B52</b><i>Dim — secundario</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'IBM Plex Mono';font-weight:700">assambl_</div><div class="nm">IBM Plex Mono Bold <em>— mono humanista, muy legible, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Inter">Assambl Ag 0123</div><div class="nm">Inter <em>— UI sin ruido; la mono queda para datos</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:75%"></i></div><span>7.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Distintividad</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Premium</span><div class="bar"><i style="width:60%"></i></div><span>6</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Es el look de Vercel/Linear/Supabase. Excelente para captar early adopters técnicos; puede intimidar a arquitectos y constructores no-dev, que son el mercado real.</div>
+  </div>
+</section>
+
+<!-- ============ 7 ST. SERIF ============ -->
+<section class="slide">
+  <div class="hero" style="background:#F2EDE4">
+    <svg viewBox="0 0 720 200"><text x="340" y="150" text-anchor="middle" font-family="Instrument Serif" font-size="150" letter-spacing="-4" fill="#1C1C1C">Assambl</text><text x="612" y="62" font-family="Instrument Serif" font-style="italic" font-size="40" fill="#8B2E1F">St.</text></svg>
+    <div class="variants">
+      <div style="background:#1C1C1C"><svg viewBox="0 0 400 100"><text x="200" y="80" text-anchor="middle" font-family="Instrument Serif" font-size="84" letter-spacing="-2" fill="#F2EDE4">Assambl</text></svg><span class="lbl" style="color:#F2EDE4">Negativo</span></div>
+      <div style="background:#8B2E1F"><svg viewBox="0 0 400 100"><text x="200" y="80" text-anchor="middle" font-family="Instrument Serif" font-size="84" letter-spacing="-2" fill="#F2EDE4">Assambl</text></svg><span class="lbl" style="color:#F2EDE4">Óxido</span></div>
+      <div style="background:#F2EDE4"><svg viewBox="0 0 100 100"><text x="50" y="82" text-anchor="middle" font-family="Instrument Serif" font-size="100" fill="#1C1C1C">A</text><circle cx="78" cy="26" r="7" fill="#8B2E1F"/></svg><span class="lbl" style="color:#1C1C1C">Ícono</span></div>
+      <div style="background:#F2EDE4"><svg viewBox="0 0 400 100"><text x="200" y="58" text-anchor="middle" font-family="Instrument Serif" font-size="50" letter-spacing="-1" fill="#1C1C1C">Assambl</text><text x="200" y="84" text-anchor="middle" font-family="Space Grotesk" font-size="13" letter-spacing="4" fill="#8B2E1F">DESIGN FREELY. BUILD PRECISELY.</text></svg><span class="lbl" style="color:#1C1C1C">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">07 / 10</div>
+    <h1>Studio</h1>
+    <div class="tag">Serif editorial, tono estudio de arquitectura. Hereda el espíritu de “St. Fabriq” pero con el nombre Assambl. El “St.” en itálica es un sello opcional.</div>
+    <h2>Concepto</h2>
+    <p>La contraposición: una palabra brutalista escrita con una tipografía refinada. Genera tensión y sofisticación. Pensado para el arquitecto/diseñador y para la marca-empresa que quiera crecer más allá del software. El punto óxido es el único “elemento gráfico”.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#F2EDE4;color:#1C1C1C"><b>#F2EDE4</b><i>Bone — fondo</i></div>
+      <div class="sw" style="background:#1C1C1C;color:#fff"><b>#1C1C1C</b><i>Charcoal — texto</i></div>
+      <div class="sw" style="background:#8B2E1F;color:#fff"><b>#8B2E1F</b><i>Oxide — acento</i></div>
+      <div class="sw" style="background:#A9A398;color:#1C1C1C"><b>#A9A398</b><i>Stone — neutro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Instrument Serif'">Assambl <i>St.</i></div><div class="nm">Instrument Serif <em>— serif contemporánea de alto contraste, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:'Space Grotesk'">Assambl Ag 0123</div><div class="nm">Space Grotesk <em>— contraste serif/grotesca para UI técnica</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:35%"></i></div><span>3.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Distintividad</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Premium</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Contradice la brutalidad del nombre (podría ser un acierto). Como logo de software dentro de una UI densa de BIM, una serif puede sentirse ajena. Mejor como marca-empresa que como marca-producto.</div>
+  </div>
+</section>
+
+<!-- ============ 8 WIDE ============ -->
+<section class="slide">
+  <div class="hero" style="background:#1F1FFF">
+    <svg viewBox="0 0 720 200"><text x="360" y="148" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="108" letter-spacing="-3" fill="#fff">ASSAMBL</text></svg>
+    <div class="variants">
+      <div style="background:#fff"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="52" letter-spacing="-1" fill="#1F1FFF">ASSAMBL</text></svg><span class="lbl" style="color:#1F1FFF">Positivo</span></div>
+      <div style="background:#0A0A0A"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="52" letter-spacing="-1" fill="#fff">ASSAMBL</text></svg><span class="lbl" style="color:#fff">Negro</span></div>
+      <div style="background:#1F1FFF"><svg viewBox="0 0 100 100"><text x="50" y="76" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="72" fill="#fff">A</text></svg><span class="lbl" style="color:#fff">Ícono</span></div>
+      <div style="background:#fff"><svg viewBox="0 0 400 100"><text x="200" y="64" text-anchor="middle" font-family="Unbounded" font-weight="600" font-size="24" letter-spacing="10" fill="#0A0A0A">ASSAMBL</text></svg><span class="lbl" style="color:#0A0A0A">Espaciado</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">08 / 10</div>
+    <h1>Wide</h1>
+    <div class="tag">Grotesca extendida, ultra-pesada, sobre azul ultramar. Pura presencia. El logotipo ocupa horizontal como una viga.</div>
+    <h2>Concepto</h2>
+    <p>Si Monolith es un bloque, Wide es una losa. La proporción extendida hace que el nombre se lea como un elemento estructural. El azul saturado se aleja de los códigos de construcción y de dev tools: es más arte/diseño, más Europa. Muy fotogénico en merch y señalética.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#1F1FFF;color:#fff"><b>#1F1FFF</b><i>Ultramarine — principal</i></div>
+      <div class="sw" style="background:#FFFFFF;color:#1F1FFF"><b>#FFFFFF</b><i>White</i></div>
+      <div class="sw" style="background:#0A0A0A;color:#fff"><b>#0A0A0A</b><i>Black</i></div>
+      <div class="sw" style="background:#D9D9FF;color:#1F1FFF"><b>#D9D9FF</b><i>Tint — fondos UI</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:Unbounded;font-weight:900;font-size:24px">ASSAMBL</div><div class="nm">Unbounded Black <em>— extendida, libre (Google Fonts)</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Inter">Assambl Ag 0123</div><div class="nm">Inter <em>— la UI compensa la expresividad del logo</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:65%"></i></div><span>6.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Premium</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El logotipo es muy ancho: en headers de app, tarjetas y favicon obliga a usar solo la “A”. El azul saturado cansa como color dominante de UI; usarlo como acento.</div>
+  </div>
+</section>
+
+<!-- ============ 9 MODULAR GRID ============ -->
+<section class="slide">
+  <div class="hero" style="background:#E4E6E9;background-image:linear-gradient(rgba(0,0,0,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.06) 1px,transparent 1px);background-size:20px 20px">
+    <svg viewBox="0 0 720 200" shape-rendering="crispEdges">
+      <!-- letras pixel 5x7, celda 10px, gap 2 -->
+      <g fill="#1B1D21" transform="translate(30,45)">
+        <!-- A -->
+        <g><rect x="12" y="0" width="36" height="10"/><rect x="0" y="12" width="12" height="82"/><rect x="48" y="12" width="12" height="82"/><rect x="12" y="48" width="36" height="10"/></g>
+        <!-- S -->
+        <g transform="translate(76,0)"><rect x="0" y="0" width="60" height="10"/><rect x="0" y="12" width="12" height="36"/><rect x="0" y="48" width="60" height="10"/><rect x="48" y="60" width="12" height="24"/><rect x="0" y="84" width="60" height="10"/></g>
+        <!-- S -->
+        <g transform="translate(152,0)"><rect x="0" y="0" width="60" height="10"/><rect x="0" y="12" width="12" height="36"/><rect x="0" y="48" width="60" height="10"/><rect x="48" y="60" width="12" height="24"/><rect x="0" y="84" width="60" height="10"/></g>
+        <!-- A -->
+        <g transform="translate(228,0)"><rect x="12" y="0" width="36" height="10"/><rect x="0" y="12" width="12" height="82"/><rect x="48" y="12" width="12" height="82"/><rect x="12" y="48" width="36" height="10"/></g>
+        <!-- M -->
+        <g transform="translate(304,0)"><rect x="0" y="0" width="12" height="94"/><rect x="60" y="0" width="12" height="94"/><rect x="12" y="12" width="12" height="24"/><rect x="48" y="12" width="12" height="24"/><rect x="24" y="36" width="24" height="12"/></g>
+        <!-- B -->
+        <g transform="translate(392,0)"><rect x="0" y="0" width="12" height="94"/><rect x="12" y="0" width="36" height="10"/><rect x="48" y="12" width="12" height="36"/><rect x="12" y="48" width="36" height="10"/><rect x="48" y="60" width="12" height="24"/><rect x="12" y="84" width="36" height="10"/></g>
+        <!-- L -->
+        <g transform="translate(468,0)"><rect x="0" y="0" width="12" height="94"/><rect x="12" y="84" width="48" height="10"/></g>
+        <!-- pieza suelta lime -->
+        <rect x="544" y="84" width="12" height="10" fill="#C6FF00"/>
+      </g>
+    </svg>
+    <div class="variants">
+      <div style="background:#1B1D21"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="56" letter-spacing="2" fill="#E4E6E9">ASSAMBL</text></svg><span class="lbl" style="color:#E4E6E9">Tipográfico</span></div>
+      <div style="background:#C6FF00"><svg viewBox="0 0 400 100"><text x="200" y="72" text-anchor="middle" font-family="Chakra Petch" font-weight="700" font-size="56" letter-spacing="2" fill="#1B1D21">ASSAMBL</text></svg><span class="lbl" style="color:#1B1D21">Sobre acento</span></div>
+      <div style="background:#1B1D21"><svg viewBox="0 0 100 100" shape-rendering="crispEdges"><g fill="#E4E6E9" transform="translate(22,14) scale(.94)"><rect x="12" y="0" width="36" height="10"/><rect x="0" y="12" width="12" height="66"/><rect x="48" y="12" width="12" height="66"/><rect x="12" y="40" width="36" height="10"/></g><rect x="70" y="70" width="10" height="10" fill="#C6FF00"/></svg><span class="lbl" style="color:#E4E6E9">Ícono</span></div>
+      <div style="background:#E4E6E9"><svg viewBox="0 0 400 100"><text x="200" y="66" text-anchor="middle" font-family="Chakra Petch" font-weight="600" font-size="28" letter-spacing="8" fill="#1B1D21">ASSAMBL · v0.1</text></svg><span class="lbl" style="color:#1B1D21">Etiqueta</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">09 / 10</div>
+    <h1>Modular</h1>
+    <div class="tag">Cada letra construida con piezas rectangulares sobre una grilla. Una pieza en lima queda “suelta”: la última que falta ensamblar.</div>
+    <h2>Concepto</h2>
+    <p>El logo se ensambla, literalmente. Encarna la idea de parts → assemblies → building, y de una grilla modular constructiva (16" o.c., 600 mm). Se anima naturalmente: las piezas caen y encajan mientras carga el proyecto. La versión tipográfica (Chakra Petch) resuelve los usos en texto corrido.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#1B1D21;color:#fff"><b>#1B1D21</b><i>Steel — principal</i></div>
+      <div class="sw" style="background:#E4E6E9;color:#1B1D21"><b>#E4E6E9</b><i>Zinc — fondo</i></div>
+      <div class="sw" style="background:#C6FF00;color:#1B1D21"><b>#C6FF00</b><i>Lime — la pieza</i></div>
+      <div class="sw" style="background:#8A8F98;color:#fff"><b>#8A8F98</b><i>Galv — neutro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:'Chakra Petch';font-weight:700;letter-spacing:.04em">ASSAMBL</div><div class="nm">Custom modular + Chakra Petch <em>— geométrica técnica, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Inter">Assambl Ag 0123</div><div class="nm">Inter <em>— neutra; la geometría queda para titulares</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:70%"></i></div><span>7</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Distintividad</span><div class="bar"><i style="width:95%"></i></div><span>9.5</span>
+      <span>Premium</span><div class="bar"><i style="width:60%"></i></div><span>6</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">Puede leerse “retro / pixel-art / gaming” si no se cuida la proporción de las piezas. Requiere dibujo custom del logotipo (no sale de una fuente), lo cual es también su mayor fortaleza.</div>
+  </div>
+</section>
+
+<!-- ============ 10 JOINT ============ -->
+<section class="slide">
+  <div class="hero" style="background:#0F3D2E">
+    <svg viewBox="0 0 720 200">
+      <text x="236" y="146" text-anchor="end" font-family="Manrope" font-weight="800" font-size="112" letter-spacing="-5" fill="#F3EEE3">AS</text>
+      <g transform="translate(288,110)"><circle r="24" fill="none" stroke="#B87333" stroke-width="9"/><circle r="6" fill="#B87333"/></g>
+      <text x="340" y="146" font-family="Manrope" font-weight="800" font-size="112" letter-spacing="-5" fill="#F3EEE3">SAMBL</text>
+    </svg>
+    <div class="variants">
+      <div style="background:#F3EEE3"><svg viewBox="0 0 400 100"><text x="132" y="74" text-anchor="end" font-family="Manrope" font-weight="800" font-size="56" letter-spacing="-2" fill="#0F3D2E">AS</text><g transform="translate(160,56)"><circle r="12" fill="none" stroke="#B87333" stroke-width="5"/><circle r="3" fill="#B87333"/></g><text x="188" y="74" font-family="Manrope" font-weight="800" font-size="56" letter-spacing="-2" fill="#0F3D2E">SAMBL</text></svg><span class="lbl" style="color:#0F3D2E">Positivo</span></div>
+      <div style="background:#0F3D2E"><svg viewBox="0 0 400 100"><text x="200" y="74" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="60" letter-spacing="-2" fill="#F3EEE3">Assambl</text></svg><span class="lbl" style="color:#F3EEE3">Sin nodo</span></div>
+      <div style="background:#B87333"><svg viewBox="0 0 100 100"><g transform="translate(50,50)"><circle r="26" fill="none" stroke="#0F3D2E" stroke-width="10"/><circle r="6" fill="#0F3D2E"/></g></svg><span class="lbl" style="color:#0F3D2E">Ícono nodo</span></div>
+      <div style="background:#F3EEE3"><svg viewBox="0 0 400 100"><text x="200" y="58" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="38" letter-spacing="-1" fill="#0F3D2E">Assambl</text><text x="200" y="84" text-anchor="middle" font-family="Manrope" font-weight="600" font-size="13" letter-spacing="3" fill="#B87333">YOU DESIGN. WE RESOLVE.</text></svg><span class="lbl" style="color:#0F3D2E">Con tagline</span></div>
+    </div>
+  </div>
+  <div class="info">
+    <div class="num">10 / 10</div>
+    <h1>Joint</h1>
+    <div class="tag">Un nodo de unión en el centro exacto de la palabra. AS·SAMBL: el punto donde dos partes se encuentran y se conectan.</div>
+    <h2>Concepto</h2>
+    <p>Assembly es, antes que nada, un encuentro entre piezas. El nodo (anillo + centro) representa el conector, el herraje, el tornillo, y también un nodo de grafo. Verde profundo + cobre: material, calidad, permanencia. Es la dirección con más calidez y la que mejor equilibra software y oficio.</p>
+    <h2>Paleta</h2>
+    <div class="pal">
+      <div class="sw" style="background:#0F3D2E;color:#fff"><b>#0F3D2E</b><i>Forest — principal</i></div>
+      <div class="sw" style="background:#F3EEE3;color:#0F3D2E"><b>#F3EEE3</b><i>Cream — fondo</i></div>
+      <div class="sw" style="background:#B87333;color:#fff"><b>#B87333</b><i>Copper — acento</i></div>
+      <div class="sw" style="background:#5C7268;color:#fff"><b>#5C7268</b><i>Sage — UI neutro</i></div>
+    </div>
+    <h2>Tipografía</h2>
+    <div class="type">
+      <div class="f"><small>Logo</small><div class="smp" style="font-family:Manrope;font-weight:800;letter-spacing:-.04em">Assambl Ag</div><div class="nm">Manrope ExtraBold <em>— geométrica suave, libre</em></div></div>
+      <div class="f"><small>UI / textos</small><div class="smp" style="font-family:Manrope;font-weight:400">Assambl Ag 0123</div><div class="nm">Manrope Regular <em>— única familia, muy buena en pantalla</em></div></div>
+    </div>
+    <h2>Evaluación</h2>
+    <div class="score">
+      <span>Brutalismo</span><div class="bar"><i style="width:55%"></i></div><span>5.5</span>
+      <span>Legibilidad</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+      <span>Escala (favicon)</span><div class="bar"><i style="width:90%"></i></div><span>9</span>
+      <span>Distintividad</span><div class="bar"><i style="width:80%"></i></div><span>8</span>
+      <span>Premium</span><div class="bar"><i style="width:85%"></i></div><span>8.5</span>
+    </div>
+    <h2>Riesgo</h2>
+    <div class="risk">El nodo partiendo la palabra afecta la lectura en tamaños chicos (se resuelve con la versión “sin nodo”). Verde + cobre puede acercarse a marcas de sustentabilidad/fintech si no se maneja con dureza tipográfica.</div>
+  </div>
+</section>
+
+</div>
+<footer>
+  <button onclick="go(-1)">← Anterior</button>
+  <div class="dots" id="dots"></div>
+  <button onclick="go(1)">Siguiente →</button>
+</footer>
+</div>
+
+<!-- ============ OVERLAY COMPARATIVA ============ -->
+<div class="ov" id="ov">
+  <button class="close" onclick="ov(false)">Cerrar ✕</button>
+  <h1>Comparativa y criterios de decisión</h1>
+  <p>Puntajes 1–10 sobre cinco criterios. “Brutalismo” mide fidelidad al carácter del nombre; “Escala” es cómo sobrevive el logo a 16 px (favicon, tab, app icon); “Premium” es la capacidad de funcionar como marca-empresa frente a arquitectos y estudios. Ninguna dirección gana en todo: la decisión es qué audiencia querés que el logo convenza primero.</p>
+  <table>
+    <thead><tr><th>#</th><th>Dirección</th><th>Tipografía logo</th><th>Audiencia primaria</th><th>Brutal.</th><th>Legib.</th><th>Escala</th><th>Distint.</th><th>Premium</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td>01</td><td>Monolith</td><td>Archivo Black</td><td>Producto tech / general</td><td class="n">9.5</td><td class="n">9</td><td class="n">8</td><td class="n">6.5</td><td class="n">6</td><td class="tot">39.0</td></tr>
+      <tr><td>02</td><td>Blueprint</td><td>JetBrains Mono</td><td>Developers / early adopters</td><td class="n">7</td><td class="n">8.5</td><td class="n">8.5</td><td class="n">7.5</td><td class="n">5.5</td><td class="tot">37.0</td></tr>
+      <tr><td>03</td><td>Layers</td><td>Inter Tight</td><td>Arquitectos / diseñadores</td><td class="n">5.5</td><td class="n">9.5</td><td class="n">9</td><td class="n">6</td><td class="n">8</td><td class="tot">38.0</td></tr>
+      <tr><td>04</td><td>Stud</td><td>Archivo 900</td><td>Constructores / DIY</td><td class="n">8</td><td class="n">7.5</td><td class="n">9.5</td><td class="n">8.5</td><td class="n">4.5</td><td class="tot">38.0</td></tr>
+      <tr><td>05</td><td>Stencil</td><td>Saira Stencil One</td><td>Prefab / kit-of-parts</td><td class="n">8.5</td><td class="n">7</td><td class="n">6</td><td class="n">8</td><td class="n">4</td><td class="tot">33.5</td></tr>
+      <tr><td>06</td><td>Compiler</td><td>IBM Plex Mono</td><td>Developers / tech</td><td class="n">7.5</td><td class="n">9</td><td class="n">8</td><td class="n">6.5</td><td class="n">6</td><td class="tot">37.0</td></tr>
+      <tr><td>07</td><td>Studio</td><td>Instrument Serif</td><td>Estudios / marca-empresa</td><td class="n">3.5</td><td class="n">8.5</td><td class="n">7</td><td class="n">7</td><td class="n">9.5</td><td class="tot">35.5</td></tr>
+      <tr class="top"><td>08</td><td>Wide</td><td>Unbounded</td><td>Diseño / marca cultural</td><td class="n">9</td><td class="n">8</td><td class="n">6.5</td><td class="n">8</td><td class="n">7</td><td class="tot">38.5</td></tr>
+      <tr class="top"><td>09</td><td>Modular</td><td>Custom + Chakra Petch</td><td>Producto / todos</td><td class="n">8.5</td><td class="n">7</td><td class="n">8.5</td><td class="n">9.5</td><td class="n">6</td><td class="tot">39.5</td></tr>
+      <tr class="top"><td>10</td><td>Joint</td><td>Manrope</td><td>Arquitectos + constructores</td><td class="n">5.5</td><td class="n">8.5</td><td class="n">9</td><td class="n">8</td><td class="n">8.5</td><td class="tot">39.5</td></tr>
+    </tbody>
+  </table>
+  <div class="rec">
+    <div><b>Si Assambl es el producto (y la empresa es otra, ej. St. Fabriq)</b>Elegí por brutalismo y distintividad: <strong>09 Modular</strong> o <strong>01 Monolith</strong>. El nombre ya carga la personalidad; el logo debe reforzarla, no suavizarla. Modular además da un sistema de animación y un ícono propio.</div>
+    <div><b>Si Assambl es producto y empresa a la vez</b>Necesitás algo que funcione en un pitch deck y en un favicon: <strong>10 Joint</strong> es el más equilibrado (oficio + software, cálido, escala bien). <strong>03 Layers</strong> es la alternativa segura.</div>
+    <div><b>Próximos pasos antes de decidir</b>1) Probar los 3 finalistas a 16 px y en una captura real de la UI. 2) Búsqueda de marca (USPTO / INPI) y dominios: assambl.com, .build, .studio. 3) Verificar licencias de fuentes: todas las propuestas usan Google Fonts (SIL OFL), aptas para logo y uso comercial.</div>
+  </div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')],dots=document.getElementById('dots');let i=0;
+  slides.forEach((_,k)=>{const d=document.createElement('i');d.onclick=()=>show(k);dots.appendChild(d)});
+  function show(k){i=(k+slides.length)%slides.length;slides.forEach((s,j)=>s.classList.toggle('on',j===i));[...dots.children].forEach((d,j)=>d.classList.toggle('on',j===i));location.hash=i+1}
+  function go(d){show(i+d)}
+  function ov(on){document.getElementById('ov').classList.toggle('on',on)}
+  addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1);if(e.key==='Escape')ov(false);if(e.key==='c')ov(true)});
+  const fromHash=()=>show(parseInt(location.hash.slice(1)||1)-1);
+  addEventListener('hashchange',fromHash);fromHash();
+</script>
+</body>
+</html>
