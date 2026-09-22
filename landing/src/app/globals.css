@@ -5,7 +5,7 @@
   --concrete: #e8e6e1;
   --signal: #ff4f1f;
   --rebar: #7a7a78;
-  --resolved: #1fa45a;
+  --resolved: #15803d;
 
   --bg: var(--concrete);
   --fg: var(--ink);
@@ -16,7 +16,7 @@
     --bg: var(--ink);
     --fg: var(--concrete);
     --rebar: #8b8b88;
-    --resolved: #3dff7a;
+    --resolved: #2fd968;
   }
 }
 

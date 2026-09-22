@@ -1,15 +1,43 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 const NAME_TAIL = "SSAMBL";
-const ARGS = ["idea", "design", "house", "structure", "bom", "r2b"] as const;
-const RESOLVED_ARG = "r2b";
+
+type Step = { word: string; speed: number; resolved?: boolean };
+
+const STEPS: readonly Step[] = [
+  { word: "idea", speed: 1 },
+  { word: "design", speed: 1 },
+  { word: "adjust", speed: 1 },
+  { word: "add", speed: 0.9 },
+  { word: "subtract", speed: 0.85 },
+  { word: "redefine", speed: 0.84 },
+  { word: "land", speed: 0.83 },
+  { word: "norms", speed: 0.81 },
+  { word: "blueprints", speed: 0.78 },
+  { word: "3Dmodel", speed: 0.75 },
+  { word: "render", speed: 0.73 },
+  { word: "views", speed: 0.7 },
+  { word: "explore", speed: 0.65 },
+  { word: "re-adjust", speed: 1 },
+  { word: "bom", speed: 0.65 },
+  { word: "cut-list", speed: 0.7 },
+  { word: "panels", speed: 0.73 },
+  { word: "materials", speed: 0.75 },
+  { word: "assembly", speed: 0.78 },
+  { word: "sequence", speed: 0.81 },
+  { word: "house", speed: 1 },
+  { word: "r2b", speed: 1, resolved: true },
+];
+
+const ARG_CLASS = "font-mono text-[0.62em] font-normal tracking-normal";
+const CURSOR_SPACE = "0.19em";
 
 const T = {
-  mark: 1400,
+  mark: 2000,
   typeName: 70,
-  afterName: 900,
+  afterName: 2000,
   typeArg: 75,
   holdArg: 1500,
   resolvedHold: 900,
@@ -17,6 +45,9 @@ const T = {
   betweenArgs: 350,
   emptyPause: 1300,
   deleteName: 45,
+  // floors that keep the fastest steps readable
+  minHold: 260,
+  minGap: 70,
 } as const;
 
 type Frame = {
@@ -54,13 +85,13 @@ function usePrefersReducedMotion() {
 export default function Logo() {
   const reduced = usePrefersReducedMotion();
   const [animated, setFrame] = useState<Frame>(INITIAL_FRAME);
-  const alive = useRef(true);
   const frame = reduced ? STATIC_FRAME : animated;
 
   useEffect(() => {
     if (reduced) return;
 
-    alive.current = true;
+    // scoped to this effect run: a remount must not resurrect the previous loop
+    let alive = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const sleep = (ms: number) =>
@@ -69,42 +100,40 @@ export default function Logo() {
       });
 
     const set = (patch: Partial<Frame>) => {
-      if (alive.current) setFrame((f) => ({ ...f, ...patch }));
+      if (alive) setFrame((f) => ({ ...f, ...patch }));
     };
 
     const run = async () => {
-      while (alive.current) {
+      while (alive) {
         // A()
         set({ tail: 0, arg: "", resolved: false, cursor: false });
         await sleep(T.mark);
 
-        // A() -> ASSAMBL()
+        // A() -> ASSAMBL(), cursor lands with the last letter so the pin is seamless
         for (let i = 1; i <= NAME_TAIL.length; i++) {
-          set({ tail: i });
+          set({ tail: i, cursor: i === NAME_TAIL.length });
           await sleep(T.typeName);
         }
-        set({ cursor: true });
         await sleep(T.afterName);
 
-        // ASSAMBL(arg) for each arg
-        for (const arg of ARGS) {
-          for (let i = 1; i <= arg.length; i++) {
-            set({ arg: arg.slice(0, i) });
-            await sleep(T.typeArg);
+        for (const { word, speed, resolved = false } of STEPS) {
+          for (let i = 1; i <= word.length; i++) {
+            set({ arg: word.slice(0, i) });
+            await sleep(T.typeArg * speed);
           }
-          await sleep(T.holdArg);
+          await sleep(Math.max(T.minHold, T.holdArg * speed));
 
-          if (arg === RESOLVED_ARG) {
+          if (resolved) {
             set({ resolved: true });
             await sleep(T.resolvedHold);
           }
 
-          for (let i = arg.length - 1; i >= 0; i--) {
-            set({ arg: arg.slice(0, i) });
-            await sleep(T.deleteArg);
+          for (let i = word.length - 1; i >= 0; i--) {
+            set({ arg: word.slice(0, i) });
+            await sleep(T.deleteArg * speed);
           }
           set({ resolved: false });
-          await sleep(T.betweenArgs);
+          await sleep(Math.max(T.minGap, T.betweenArgs * speed));
         }
 
         // ASSAMBL() empty, then collapse back to A()
@@ -120,27 +149,37 @@ export default function Logo() {
     run();
 
     return () => {
-      alive.current = false;
+      alive = false;
       if (timer) clearTimeout(timer);
     };
   }, [reduced]);
 
   const label = `ASSAMBL(${frame.arg || " "})`;
+  // the full name is pinned so only the closing paren moves; shorter frames re-center
+  const pinned = frame.tail === NAME_TAIL.length;
 
   return (
     <h1
       aria-label={label}
-      className="font-display whitespace-nowrap leading-none tracking-[-0.045em] select-none text-[clamp(1.9rem,7.4vw,8.5rem)]"
+      className="font-display relative whitespace-nowrap leading-none tracking-[-0.045em] select-none text-[clamp(1.9rem,7.4vw,8.5rem)]"
     >
-      <span aria-hidden="true">
+      {pinned && (
+        <span aria-hidden="true" className="invisible">
+          A{NAME_TAIL}(
+          <span className="inline-block" style={{ width: CURSOR_SPACE }} />)
+        </span>
+      )}
+
+      <span
+        aria-hidden="true"
+        className={pinned ? "absolute top-0 left-0" : undefined}
+      >
         <span>A{NAME_TAIL.slice(0, frame.tail)}</span>
         <span className="text-signal">(</span>
         <span
-          className={
-            frame.resolved
-              ? "text-resolved transition-colors duration-300"
-              : "text-fg transition-colors duration-300"
-          }
+          className={`${ARG_CLASS} transition-colors duration-300 ${
+            frame.resolved ? "text-resolved" : "text-fg"
+          }`}
         >
           {frame.arg}
         </span>
