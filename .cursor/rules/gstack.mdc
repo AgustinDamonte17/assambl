@@ -1,0 +1,22 @@
+---
+description: Uso de gstack (skills de Garry Tan) en el proyecto Assambl
+alwaysApply: true
+---
+
+# gstack
+
+gstack está instalado como skills de Cursor en `~/.cursor/skills` (fuente en `~/.claude/skills/gstack`). Ver `README.md` para instalarlo.
+
+- Para toda navegación web usa el skill `/gstack-browse`. Nunca uses herramientas `mcp__claude-in-chrome__*`.
+- En Cursor los skills llevan el prefijo `gstack-` (ej. `/gstack-office-hours`).
+
+Skills disponibles:
+
+- Planificación: `/gstack-office-hours`, `/gstack-plan-ceo-review`, `/gstack-plan-eng-review`, `/gstack-plan-design-review`, `/gstack-plan-devex-review`, `/gstack-autoplan`
+- Diseño: `/gstack-design-consultation`, `/gstack-design-shotgun`, `/gstack-design-html`, `/gstack-design-review`
+- Código y revisión: `/gstack-review`, `/gstack-deslop-shared-libs`, `/gstack-investigate`, `/gstack-devex-review`, `/gstack-cso`, `/gstack-codex`
+- Deploy: `/gstack-ship`, `/gstack-land-and-deploy`, `/gstack-canary`, `/gstack-benchmark`, `/gstack-setup-deploy`
+- Navegador y QA: `/gstack-browse`, `/gstack-open-gstack-browser` (equivale a `/connect-chrome`), `/gstack-qa`, `/gstack-qa-only`, `/gstack-scrape`, `/gstack-setup-browser-cookies`
+- Documentación y memoria: `/gstack-document-release`, `/gstack-document-generate`, `/gstack-retro`, `/gstack-learn`, `/gstack-setup-gbrain`
+- Seguridad de sesión: `/gstack-careful`, `/gstack-freeze`, `/gstack-guard`, `/gstack-unfreeze`
+- Mantenimiento: `/gstack-upgrade`
