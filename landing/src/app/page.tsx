@@ -5,7 +5,7 @@ const CONTACT_EMAIL = "agusda95@gmail.com";
 export default function Home() {
   return (
     <main className="flex min-h-dvh flex-col px-6 py-6 sm:px-10 sm:py-8">
-      <header className="font-mono text-[11px] uppercase tracking-[0.18em] text-rebar">
+      <header className="font-mono text-xs uppercase tracking-[0.18em] text-rebar">
         assambl
       </header>
 
