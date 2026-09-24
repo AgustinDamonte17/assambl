@@ -31,6 +31,11 @@ const STEPS: readonly Step[] = [
   { word: "r2b", speed: 1, resolved: true },
 ];
 
+const LONGEST_ARG = STEPS.reduce(
+  (longest, { word }) => (word.length > longest.length ? word : longest),
+  "",
+);
+
 const ARG_CLASS = "font-mono text-[0.62em] font-normal tracking-normal";
 const CURSOR_SPACE = "0.19em";
 
@@ -155,25 +160,19 @@ export default function Logo() {
   }, [reduced]);
 
   const label = `ASSAMBL(${frame.arg || " "})`;
-  // the full name is pinned so only the closing paren moves; shorter frames re-center
-  const pinned = frame.tail === NAME_TAIL.length;
 
   return (
     <h1
       aria-label={label}
       className="font-display relative whitespace-nowrap leading-none tracking-[-0.045em] select-none text-[clamp(1.9rem,7.4vw,8.5rem)]"
     >
-      {pinned && (
-        <span aria-hidden="true" className="invisible">
-          A{NAME_TAIL}(
-          <span className="inline-block" style={{ width: CURSOR_SPACE }} />)
-        </span>
-      )}
+      {/* the box is sized for the longest argument so the name never moves and no frame overflows */}
+      <span aria-hidden="true" className="invisible">
+        A{NAME_TAIL}(<span className={ARG_CLASS}>{LONGEST_ARG}</span>
+        <span className="inline-block" style={{ width: CURSOR_SPACE }} />)
+      </span>
 
-      <span
-        aria-hidden="true"
-        className={pinned ? "absolute top-0 left-0" : undefined}
-      >
+      <span aria-hidden="true" className="absolute top-0 left-0">
         <span>A{NAME_TAIL.slice(0, frame.tail)}</span>
         <span className="text-signal">(</span>
         <span
