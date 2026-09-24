@@ -22,7 +22,7 @@ export default function Home() {
         </span>
         <a
           href={`mailto:${CONTACT_EMAIL}?subject=assambl(waitlist)`}
-          className="group inline-flex items-center gap-2 transition-colors hover:text-fg"
+          className="group -my-3 inline-flex items-center gap-2 py-3 text-sm text-fg sm:text-base"
         >
           <span className="text-signal">$</span>
           <span>notify me</span>
