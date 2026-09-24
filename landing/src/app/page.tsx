@@ -12,20 +12,20 @@ export default function Home() {
       <section className="flex flex-1 flex-col items-center justify-center gap-6 sm:gap-8">
         <Logo />
         <p className="font-mono text-sm text-rebar sm:text-base">
-          You design. Assambl solves.
+          Vos diseñás. Assambl resuelve.
         </p>
       </section>
 
       <footer className="flex flex-col gap-3 font-mono text-xs text-rebar sm:flex-row sm:items-center sm:justify-between sm:text-sm">
         <span>
-          <span className="text-signal">{"//"}</span> coming 2027
+          <span className="text-signal">{"//"}</span> llega en 2027
         </span>
         <a
-          href={`mailto:${CONTACT_EMAIL}?subject=assambl(waitlist)`}
+          href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("assambl(lista de espera)")}`}
           className="group -my-3 inline-flex items-center gap-2 py-3 text-sm text-fg sm:text-base"
         >
           <span className="text-signal">$</span>
-          <span>notify me</span>
+          <span>avisame</span>
           <span className="text-rebar transition-colors group-hover:text-fg">
             →
           </span>
