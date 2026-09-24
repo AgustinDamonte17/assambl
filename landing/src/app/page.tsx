@@ -1,6 +1,6 @@
 import Logo from "@/components/Logo";
 
-const CONTACT_EMAIL = "agusda95@gmail.com";
+const CONTACT_EMAIL = "hello@assambl.com";
 
 export default function Home() {
   return (
