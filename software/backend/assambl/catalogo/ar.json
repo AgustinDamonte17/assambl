@@ -1,0 +1,7 @@
+{
+  "esquema": "assambl/catalogo@0.1",
+  "mercado": "AR",
+  "version": "0.0.1",
+  "nota": "Perfil Argentina. Se completa a partir de la capa 03 (MVP_01 §3.3). Los valores deben verificarse con al menos dos proveedores antes de usarse en un pedido real.",
+  "familias": {}
+}

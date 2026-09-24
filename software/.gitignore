@@ -1,0 +1,13 @@
+# El .env lleva el EARTHDATA_TOKEN. También lo ignora el .gitignore de la raíz,
+# pero se repite acá para que siga protegido si este directorio se mueve.
+.env
+.env.*
+
+node_modules/
+dist/
+backend/.venv/
+backend/cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log

@@ -1,0 +1,91 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Identidad Assambl (misma paleta que la landing). */
+:root {
+  --ink: #111111;
+  --concrete: #e8e6e1;
+  --concrete-2: #f3f2ef;
+  --concrete-3: #dcd9d2;
+  --signal: #ff4f1f;
+  --rebar: #7a7a78;
+  --resolved: #15803d;
+  --warn: #b45309;
+  --line: rgba(17, 17, 17, 0.14);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-concrete: var(--concrete);
+  --color-concrete-2: var(--concrete-2);
+  --color-concrete-3: var(--concrete-3);
+  --color-signal: var(--signal);
+  --color-rebar: var(--rebar);
+  --color-resolved: var(--resolved);
+  --color-warn: var(--warn);
+  --color-line: var(--line);
+  --font-display: "Archivo Black", "Arial Black", sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--concrete);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+input[type="number"],
+input[type="text"] {
+  font-family: var(--font-mono);
+}
+
+input[type="range"] {
+  accent-color: var(--signal);
+}
+
+.leaflet-container {
+  font-family: var(--font-mono);
+  background: var(--concrete-3);
+}
+
+.leaflet-control-layers,
+.leaflet-bar a {
+  border-radius: 0 !important;
+  font-family: var(--font-mono);
+}
+
+.vertice-lote {
+  width: 14px;
+  height: 14px;
+  background: var(--concrete);
+  border: 2px solid var(--signal);
+  box-sizing: border-box;
+  cursor: grab;
+}
+.vertice-lote.activo {
+  background: var(--signal);
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.cursor-blink {
+  animation: blink 1.1s steps(1) infinite;
+}
