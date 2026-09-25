@@ -8,28 +8,33 @@ type Step = { word: string; speed: number; resolved?: boolean };
 
 const STEPS: readonly Step[] = [
   { word: "idea", speed: 1 },
-  { word: "design", speed: 1 },
-  { word: "adjust", speed: 1 },
-  { word: "add", speed: 0.9 },
-  { word: "subtract", speed: 0.85 },
-  { word: "redefine", speed: 0.84 },
-  { word: "land", speed: 0.83 },
-  { word: "norms", speed: 0.81 },
-  { word: "blueprints", speed: 0.78 },
-  { word: "3Dmodel", speed: 0.75 },
+  { word: "diseño", speed: 1 },
+  { word: "ajustar", speed: 1 },
+  { word: "agregar", speed: 0.9 },
+  { word: "restar", speed: 0.85 },
+  { word: "redefinir", speed: 0.84 },
+  { word: "terreno", speed: 0.83 },
+  { word: "normas", speed: 0.81 },
+  { word: "planos", speed: 0.78 },
+  { word: "modelo3D", speed: 0.75 },
   { word: "render", speed: 0.73 },
-  { word: "views", speed: 0.7 },
-  { word: "explore", speed: 0.65 },
-  { word: "re-adjust", speed: 1 },
-  { word: "bom", speed: 0.65 },
-  { word: "cut-list", speed: 0.7 },
-  { word: "panels", speed: 0.73 },
-  { word: "materials", speed: 0.75 },
-  { word: "assembly", speed: 0.78 },
-  { word: "sequence", speed: 0.81 },
-  { word: "house", speed: 1 },
+  { word: "vistas", speed: 0.7 },
+  { word: "explorar", speed: 0.65 },
+  { word: "re-ajustar", speed: 1 },
+  { word: "cómputo", speed: 0.65 },
+  { word: "despiece", speed: 0.7 },
+  { word: "paneles", speed: 0.73 },
+  { word: "materiales", speed: 0.75 },
+  { word: "montaje", speed: 0.78 },
+  { word: "secuencia", speed: 0.81 },
+  { word: "casa", speed: 1 },
   { word: "r2b", speed: 1, resolved: true },
 ];
+
+const LONGEST_ARG = STEPS.reduce(
+  (longest, { word }) => (word.length > longest.length ? word : longest),
+  "",
+);
 
 const ARG_CLASS = "font-mono text-[0.62em] font-normal tracking-normal";
 const CURSOR_SPACE = "0.19em";
@@ -59,7 +64,7 @@ type Frame = {
 
 const STATIC_FRAME: Frame = {
   tail: NAME_TAIL.length,
-  arg: "house",
+  arg: "casa",
   resolved: false,
   cursor: false,
 };
@@ -155,25 +160,19 @@ export default function Logo() {
   }, [reduced]);
 
   const label = `ASSAMBL(${frame.arg || " "})`;
-  // the full name is pinned so only the closing paren moves; shorter frames re-center
-  const pinned = frame.tail === NAME_TAIL.length;
 
   return (
     <h1
       aria-label={label}
       className="font-display relative whitespace-nowrap leading-none tracking-[-0.045em] select-none text-[clamp(1.9rem,7.4vw,8.5rem)]"
     >
-      {pinned && (
-        <span aria-hidden="true" className="invisible">
-          A{NAME_TAIL}(
-          <span className="inline-block" style={{ width: CURSOR_SPACE }} />)
-        </span>
-      )}
+      {/* the box is sized for the longest argument so the name never moves and no frame overflows */}
+      <span aria-hidden="true" className="invisible">
+        A{NAME_TAIL}(<span className={ARG_CLASS}>{LONGEST_ARG}</span>
+        <span className="inline-block" style={{ width: CURSOR_SPACE }} />)
+      </span>
 
-      <span
-        aria-hidden="true"
-        className={pinned ? "absolute top-0 left-0" : undefined}
-      >
+      <span aria-hidden="true" className="absolute top-0 left-0">
         <span>A{NAME_TAIL.slice(0, frame.tail)}</span>
         <span className="text-signal">(</span>
         <span

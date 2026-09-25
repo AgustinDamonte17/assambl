@@ -1,6 +1,6 @@
 # assambl.com
 
-Landing page for **Assambl** — _You design. Assambl solves._
+Landing page for **Assambl** — _Vos diseñás. Assambl resuelve._
 
 Minimal, pre-product landing: the `ASSAMBL()` wordmark with a looping
 argument animation (`A()` → `ASSAMBL()` → `ASSAMBL(idea)` → … → `ASSAMBL(r2b)`),

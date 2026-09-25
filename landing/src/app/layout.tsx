@@ -16,7 +16,7 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-const SLOGAN = "You design. Assambl solves.";
+const SLOGAN = "Vos diseñás. Assambl resuelve.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://assambl.com"),
@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     description: SLOGAN,
     url: "https://assambl.com",
     siteName: "Assambl",
+    locale: "es_AR",
     type: "website",
   },
   twitter: {
@@ -46,7 +47,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${archivoBlack.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
