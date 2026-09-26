@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
+import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 
 const NAME_TAIL = "SSAMBL";
 
@@ -69,22 +70,6 @@ const STATIC_FRAME: Frame = {
 };
 
 const INITIAL_FRAME: Frame = { tail: 0, arg: "", resolved: false, cursor: false };
-
-const REDUCED_MQ = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(onChange: () => void) {
-  const mq = window.matchMedia(REDUCED_MQ);
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-
-function usePrefersReducedMotion() {
-  return useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(REDUCED_MQ).matches,
-    () => false,
-  );
-}
 
 export default function Logo() {
   const reduced = usePrefersReducedMotion();
