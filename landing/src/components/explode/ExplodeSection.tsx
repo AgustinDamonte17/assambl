@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "../usePrefersReducedMotion";
-import { CAPTIONS, LAYER_INDEX, STEPS, stepAt } from "./config";
+import { CAPTIONS, STEPS, stepAt } from "./config";
 import { createProgressStore, measureProgress, segment } from "./progress";
 
 const ExplodeScene = dynamic(() => import("./ExplodeScene"), { ssr: false });
@@ -32,7 +32,7 @@ function Poster({
   const alt =
     state === "assembled"
       ? "Angus Ranch: la casa ensamblada sobre su terreno."
-      : "Angus Ranch explotada por capas: techo, envolvente, estructura, instalaciones e interior.";
+      : "Angus Ranch por capas: sin techo ni envolvente, la estructura elevada deja ver instalaciones e interior.";
   return (
     <>
       <Image
@@ -60,7 +60,7 @@ function LayerList({
 }) {
   return (
     <ol className="flex flex-col gap-0.5 font-mono text-[0.68rem] leading-snug text-rebar sm:text-xs">
-      {LAYER_INDEX.map((step, i) => (
+      {STEPS.map((step, i) => (
         <li
           key={step.label}
           ref={(el) => {
@@ -122,9 +122,8 @@ function ScrollExplode() {
         const { label, note } = STEPS[step];
         if (labelRef.current) labelRef.current.textContent = label;
         if (noteRef.current) noteRef.current.textContent = note;
-        LAYER_INDEX.forEach((s, i) => {
-          const el = itemsRef.current[i];
-          if (el) el.dataset.active = String(s.label === label);
+        itemsRef.current.forEach((el, i) => {
+          if (el) el.dataset.active = String(i === step);
         });
       }
       CAPTIONS.forEach(({ range: [a, b] }, i) => {

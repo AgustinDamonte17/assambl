@@ -9,393 +9,393 @@
   },
   "colecciones_sin_grupo": [],
   "glb": "public/models/angus-ranch.glb",
-  "bytes": 3485980,
+  "bytes": 3485164,
   "triangulos": 234648,
   "nodos_animables": 64,
   "primitivas_draw_calls": 69,
   "nodos": [
     {
-      "nodo": "L01_Terreno__alambrado",
-      "piezas": 77,
-      "triangulos": 2156,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L01_Terreno__arboles",
-      "piezas": 228,
-      "triangulos": 12312,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L01_Terreno__lote",
-      "piezas": 1,
-      "triangulos": 76,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L02_Cimientos__platea",
-      "piezas": 199,
-      "triangulos": 5524,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L02_Cimientos__soleras",
-      "piezas": 364,
-      "triangulos": 38368,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L03_Estructura__entramado",
-      "piezas": 557,
-      "triangulos": 6684,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L03_Estructura__galeria",
-      "piezas": 6,
-      "triangulos": 72,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L04_Aislante__lana__E",
+      "nodo": "aislante__lana__E",
       "piezas": 49,
       "triangulos": 588,
       "primitivas": 1
     },
     {
-      "nodo": "L04_Aislante__lana__N",
+      "nodo": "aislante__lana__N",
       "piezas": 71,
       "triangulos": 852,
       "primitivas": 1
     },
     {
-      "nodo": "L04_Aislante__lana__O",
+      "nodo": "aislante__lana__O",
       "piezas": 41,
       "triangulos": 492,
       "primitivas": 1
     },
     {
-      "nodo": "L04_Aislante__lana__OA",
+      "nodo": "aislante__lana__OA",
       "piezas": 8,
       "triangulos": 96,
       "primitivas": 1
     },
     {
-      "nodo": "L04_Aislante__lana__S",
+      "nodo": "aislante__lana__S",
       "piezas": 96,
       "triangulos": 1152,
       "primitivas": 1
     },
     {
-      "nodo": "L05_Siding__listones__E",
-      "piezas": 15,
-      "triangulos": 180,
+      "nodo": "cimientos__platea",
+      "piezas": 199,
+      "triangulos": 5524,
       "primitivas": 1
     },
     {
-      "nodo": "L05_Siding__listones__N",
-      "piezas": 16,
-      "triangulos": 192,
+      "nodo": "cimientos__soleras",
+      "piezas": 364,
+      "triangulos": 38368,
       "primitivas": 1
     },
     {
-      "nodo": "L05_Siding__listones__NE",
-      "piezas": 2,
-      "triangulos": 24,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__listones__NO",
-      "piezas": 2,
-      "triangulos": 24,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__listones__O",
-      "piezas": 12,
-      "triangulos": 144,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__listones__OA",
-      "piezas": 5,
-      "triangulos": 60,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__listones__S",
-      "piezas": 28,
-      "triangulos": 336,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__listones__SE",
-      "piezas": 2,
-      "triangulos": 24,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__listones__SO",
-      "piezas": 6,
-      "triangulos": 72,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__E",
-      "piezas": 130,
-      "triangulos": 1560,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__N",
-      "piezas": 186,
-      "triangulos": 2232,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__NE",
-      "piezas": 3,
-      "triangulos": 44,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__NO",
-      "piezas": 3,
-      "triangulos": 44,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__O",
-      "piezas": 86,
-      "triangulos": 1032,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__OA",
-      "piezas": 19,
-      "triangulos": 228,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__S",
-      "piezas": 220,
-      "triangulos": 2640,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__SE",
-      "piezas": 3,
-      "triangulos": 44,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L05_Siding__siding__SO",
-      "piezas": 9,
-      "triangulos": 132,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L06_Techo__cubierta",
-      "piezas": 45,
-      "triangulos": 844,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L06_Techo__estructura",
-      "piezas": 73,
-      "triangulos": 876,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L06_Techo__tablero",
-      "piezas": 2,
-      "triangulos": 24,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L07_Interior__carpinterias",
-      "piezas": 111,
-      "triangulos": 2228,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L07_Interior__equipamiento",
-      "piezas": 317,
-      "triangulos": 9996,
-      "primitivas": 2
-    },
-    {
-      "nodo": "L07_Interior__pisos",
-      "piezas": 115,
-      "triangulos": 1380,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L07_Interior__tabiques",
-      "piezas": 48,
-      "triangulos": 576,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__carpinterias__E",
-      "piezas": 34,
-      "triangulos": 536,
-      "primitivas": 2
-    },
-    {
-      "nodo": "L08_Terminaciones__carpinterias__N",
-      "piezas": 66,
-      "triangulos": 792,
-      "primitivas": 2
-    },
-    {
-      "nodo": "L08_Terminaciones__carpinterias__O",
-      "piezas": 21,
-      "triangulos": 252,
-      "primitivas": 2
-    },
-    {
-      "nodo": "L08_Terminaciones__carpinterias__OA",
-      "piezas": 1,
-      "triangulos": 12,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__carpinterias__S",
-      "piezas": 64,
-      "triangulos": 768,
-      "primitivas": 2
-    },
-    {
-      "nodo": "L08_Terminaciones__cielorraso",
-      "piezas": 195,
-      "triangulos": 2340,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__galeria",
-      "piezas": 145,
-      "triangulos": 5508,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__osb__E",
-      "piezas": 38,
-      "triangulos": 456,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__osb__N",
-      "piezas": 46,
-      "triangulos": 552,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__osb__O",
-      "piezas": 24,
-      "triangulos": 288,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__osb__OA",
-      "piezas": 6,
-      "triangulos": 72,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__osb__S",
-      "piezas": 68,
-      "triangulos": 816,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__revestimiento_interior",
-      "piezas": 52,
-      "triangulos": 624,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__E",
-      "piezas": 39,
-      "triangulos": 468,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__N",
-      "piezas": 55,
-      "triangulos": 660,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__NE",
-      "piezas": 1,
-      "triangulos": 20,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__NO",
-      "piezas": 1,
-      "triangulos": 20,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__O",
-      "piezas": 27,
-      "triangulos": 324,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__OA",
-      "piezas": 2,
-      "triangulos": 24,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__S",
-      "piezas": 81,
-      "triangulos": 972,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__SE",
-      "piezas": 1,
-      "triangulos": 20,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L08_Terminaciones__wrb__SO",
-      "piezas": 3,
-      "triangulos": 60,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L09_Plomeria__pluviales",
-      "piezas": 36,
-      "triangulos": 2016,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L09_Plomeria__redes",
-      "piezas": 384,
-      "triangulos": 31152,
-      "primitivas": 1
-    },
-    {
-      "nodo": "L10_Electrico__acometida",
+      "nodo": "electrico__acometida",
       "piezas": 7,
       "triangulos": 536,
       "primitivas": 1
     },
     {
-      "nodo": "L10_Electrico__luminarias",
+      "nodo": "electrico__luminarias",
       "piezas": 15,
       "triangulos": 1044,
       "primitivas": 1
     },
     {
-      "nodo": "L10_Electrico__redes",
+      "nodo": "electrico__redes",
       "piezas": 997,
       "triangulos": 91008,
+      "primitivas": 1
+    },
+    {
+      "nodo": "estructura__entramado",
+      "piezas": 557,
+      "triangulos": 6684,
+      "primitivas": 1
+    },
+    {
+      "nodo": "estructura__galeria",
+      "piezas": 6,
+      "triangulos": 72,
+      "primitivas": 1
+    },
+    {
+      "nodo": "interior__carpinterias",
+      "piezas": 111,
+      "triangulos": 2228,
+      "primitivas": 1
+    },
+    {
+      "nodo": "interior__equipamiento",
+      "piezas": 317,
+      "triangulos": 9996,
+      "primitivas": 2
+    },
+    {
+      "nodo": "interior__pisos",
+      "piezas": 115,
+      "triangulos": 1380,
+      "primitivas": 1
+    },
+    {
+      "nodo": "interior__tabiques",
+      "piezas": 48,
+      "triangulos": 576,
+      "primitivas": 1
+    },
+    {
+      "nodo": "plomeria__pluviales",
+      "piezas": 36,
+      "triangulos": 2016,
+      "primitivas": 1
+    },
+    {
+      "nodo": "plomeria__redes",
+      "piezas": 384,
+      "triangulos": 31152,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__E",
+      "piezas": 15,
+      "triangulos": 180,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__N",
+      "piezas": 16,
+      "triangulos": 192,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__NE",
+      "piezas": 2,
+      "triangulos": 24,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__NO",
+      "piezas": 2,
+      "triangulos": 24,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__O",
+      "piezas": 12,
+      "triangulos": 144,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__OA",
+      "piezas": 5,
+      "triangulos": 60,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__S",
+      "piezas": 28,
+      "triangulos": 336,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__SE",
+      "piezas": 2,
+      "triangulos": 24,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__listones__SO",
+      "piezas": 6,
+      "triangulos": 72,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__E",
+      "piezas": 130,
+      "triangulos": 1560,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__N",
+      "piezas": 186,
+      "triangulos": 2232,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__NE",
+      "piezas": 3,
+      "triangulos": 44,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__NO",
+      "piezas": 3,
+      "triangulos": 44,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__O",
+      "piezas": 86,
+      "triangulos": 1032,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__OA",
+      "piezas": 19,
+      "triangulos": 228,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__S",
+      "piezas": 220,
+      "triangulos": 2640,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__SE",
+      "piezas": 3,
+      "triangulos": 44,
+      "primitivas": 1
+    },
+    {
+      "nodo": "siding__siding__SO",
+      "piezas": 9,
+      "triangulos": 132,
+      "primitivas": 1
+    },
+    {
+      "nodo": "techo__cubierta",
+      "piezas": 45,
+      "triangulos": 844,
+      "primitivas": 1
+    },
+    {
+      "nodo": "techo__estructura",
+      "piezas": 73,
+      "triangulos": 876,
+      "primitivas": 1
+    },
+    {
+      "nodo": "techo__tablero",
+      "piezas": 2,
+      "triangulos": 24,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__carpinterias__E",
+      "piezas": 34,
+      "triangulos": 536,
+      "primitivas": 2
+    },
+    {
+      "nodo": "terminaciones__carpinterias__N",
+      "piezas": 66,
+      "triangulos": 792,
+      "primitivas": 2
+    },
+    {
+      "nodo": "terminaciones__carpinterias__O",
+      "piezas": 21,
+      "triangulos": 252,
+      "primitivas": 2
+    },
+    {
+      "nodo": "terminaciones__carpinterias__OA",
+      "piezas": 1,
+      "triangulos": 12,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__carpinterias__S",
+      "piezas": 64,
+      "triangulos": 768,
+      "primitivas": 2
+    },
+    {
+      "nodo": "terminaciones__cielorraso",
+      "piezas": 195,
+      "triangulos": 2340,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__galeria",
+      "piezas": 145,
+      "triangulos": 5508,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__osb__E",
+      "piezas": 38,
+      "triangulos": 456,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__osb__N",
+      "piezas": 46,
+      "triangulos": 552,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__osb__O",
+      "piezas": 24,
+      "triangulos": 288,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__osb__OA",
+      "piezas": 6,
+      "triangulos": 72,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__osb__S",
+      "piezas": 68,
+      "triangulos": 816,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__revestimiento_interior",
+      "piezas": 52,
+      "triangulos": 624,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__E",
+      "piezas": 39,
+      "triangulos": 468,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__N",
+      "piezas": 55,
+      "triangulos": 660,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__NE",
+      "piezas": 1,
+      "triangulos": 20,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__NO",
+      "piezas": 1,
+      "triangulos": 20,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__O",
+      "piezas": 27,
+      "triangulos": 324,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__OA",
+      "piezas": 2,
+      "triangulos": 24,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__S",
+      "piezas": 81,
+      "triangulos": 972,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__SE",
+      "piezas": 1,
+      "triangulos": 20,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terminaciones__wrb__SO",
+      "piezas": 3,
+      "triangulos": 60,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terreno__alambrado",
+      "piezas": 77,
+      "triangulos": 2156,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terreno__arboles",
+      "piezas": 228,
+      "triangulos": 12312,
+      "primitivas": 1
+    },
+    {
+      "nodo": "terreno__lote",
+      "piezas": 1,
+      "triangulos": 76,
       "primitivas": 1
     }
   ]

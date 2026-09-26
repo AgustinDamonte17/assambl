@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
+  CAMERA_FOCUS,
   EASE,
   PART_RULES,
   STEPS,
@@ -53,8 +54,8 @@ export type PreparedModel = {
   setPalette: (palette: Palette) => void;
   apply: (progress: number) => void;
   /**
-   * Cajas de la casa (sin terreno) para encuadrar. `focus`: solo las capas que
-   * siguen visibles tras desvanecer las exteriores, desde ese momento al final.
+   * Cajas de la casa (sin terreno) para encuadrar, de las partes visibles en cada
+   * momento. `focus`: desde el final de CAMERA_FOCUS hasta el final.
    */
   envelopePoints: (focus?: boolean) => THREE.Vector3[];
   dispose: () => void;
@@ -170,7 +171,7 @@ function prepare(scene: THREE.Object3D): PreparedModel {
   const materialsFor = (layer: LayerId) => {
     let entry = byLayer.get(layer);
     if (!entry) {
-      const terrain = layer === "L01_Terreno";
+      const terrain = layer === "terreno";
       const uniforms: Uniforms = {
         ...(terrain ? terrainRamp : modelRamp),
         ...shared,
@@ -214,7 +215,7 @@ function prepare(scene: THREE.Object3D): PreparedModel {
       }
     });
     const size = new THREE.Vector3(...(data.size ?? [0, 0, 0]));
-    if (data.layer === "L03_Estructura" && data.part === "entramado") {
+    if (data.layer === "estructura" && data.part === "entramado") {
       unit = { height: size.y, width: Math.max(size.x, size.z) };
     }
     parts.push({
@@ -231,7 +232,7 @@ function prepare(scene: THREE.Object3D): PreparedModel {
   });
   // El lote se funde con el fondo lejos de la casa: la maqueta no tiene bordes duros.
   layerUniforms
-    .get("L01_Terreno")
+    .get("terreno")
     ?.uFade.value.set(unit.width * 0.45, unit.width * 1.1);
   if (parts.length === 0)
     throw new Error("El GLB no tiene nodos de capa (userData.layer).");
@@ -266,6 +267,18 @@ function prepare(scene: THREE.Object3D): PreparedModel {
     return [rx, ry, rz] as const;
   };
 
+  const fadesByLayer = new Map(LAYER_FADES.map((f) => [f.layer, f.fades]));
+  const opacityAt = (layer: LayerId, progress: number) => {
+    let opacity = 1;
+    for (const f of fadesByLayer.get(layer) ?? []) {
+      const t = EASE[f.ease ?? "inOutSine"](
+        segment(progress, f.range[0], f.range[1]),
+      );
+      opacity += (f.to - opacity) * t;
+    }
+    return opacity;
+  };
+
   const highlightFor = (progress: number) => {
     const levels = new Map<string, number>();
     STEPS.forEach((step, i) => {
@@ -293,17 +306,13 @@ function prepare(scene: THREE.Object3D): PreparedModel {
     }
     const levels = highlightFor(progress);
     layerUniforms.forEach((u, layer) => {
-      const strength = layer === "L01_Terreno" ? 0.05 : 0.78;
+      const strength = layer === "terreno" ? 0.05 : 0.78;
       u.uHighlight.value = (levels.get(layer) ?? 0) * strength;
     });
-    // Capas ya atravesadas: opacidad desde el progreso, nunca acumulada.
+    // Opacidad por capa desde el progreso, nunca acumulada.
     const opacities = new Map<LayerId, number>();
-    for (const f of LAYER_FADES) {
-      const t = EASE[f.ease ?? "inOutSine"](
-        segment(progress, f.range[0], f.range[1]),
-      );
-      opacities.set(f.layer, 1 - t);
-    }
+    for (const layer of fadesByLayer.keys())
+      opacities.set(layer, opacityAt(layer, progress));
     opacities.forEach((opacity, layer) => {
       const entry = byLayer.get(layer);
       if (!entry) return;
@@ -316,19 +325,20 @@ function prepare(scene: THREE.Object3D): PreparedModel {
     }
   };
 
-  const faded = new Set(LAYER_FADES.map((f) => f.layer));
-  const clearEnd = Math.max(...LAYER_FADES.map((f) => f.range[1]), 0);
   const envelopePoints = (focus = false) => {
     const points: THREE.Vector3[] = [];
     const half = new THREE.Vector3();
     const center = new THREE.Vector3();
-    // Los desplazamientos son monótonos: alcanzan los extremos del tramo.
-    const samples = focus ? [clearEnd, 1] : [0, 1];
+    // Muestras del tramo que cubre cada encuadre; solo cuentan las partes visibles.
+    const from = focus ? CAMERA_FOCUS[1] : 0;
+    const samples: number[] = [];
+    for (let p = from; p < 1; p += 0.02) samples.push(p);
+    samples.push(1);
     for (const part of parts) {
-      if (part.layer === "L01_Terreno") continue;
-      if (focus && faded.has(part.layer)) continue;
+      if (part.layer === "terreno") continue;
       half.copy(part.size).multiplyScalar(0.5);
       for (const p of samples) {
+        if (opacityAt(part.layer, p) <= 0.001) continue;
         offsetAt(part, p, offset);
         center.copy(part.rest).add(offset);
         for (let i = 0; i < 8; i++) {
