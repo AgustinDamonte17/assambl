@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api/cliente";
-import { Boton, Campo, Dato, Etiqueta, Seccion } from "../../componentes/ui";
+import { Aviso, Boton, Campo, Dato, Etiqueta, Seccion } from "../../componentes/ui";
 import { useProyecto } from "../../estado/ProyectoContext";
 import { desdeLados, fmt, lados as calcularLados, rectangulo } from "../../modelo/geometria";
 import { cardinal, type AnalisisLote, type Punto } from "../../modelo/proyecto";
 
 export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
-  const { proyecto, despachar, escena } = useProyecto();
+  const { proyecto, operar, escena } = useProyecto();
   const t = proyecto.terreno;
   const v = t.lote.vertices;
   const [frente, setFrente] = useState("12");
@@ -15,7 +15,8 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
   const [analisis, setAnalisis] = useState<AnalisisLote | null>(null);
   const [errorAnalisis, setErrorAnalisis] = useState<string | null>(null);
 
-  // Análisis R01 con retardo para no golpear la API en cada arrastre.
+  // Detalle de R01 para mostrar. El estado del terreno no sale de acá: lo fija la
+  // operación que cambió el lote, en el backend.
   useEffect(() => {
     if (v.length < 3) {
       setAnalisis(null);
@@ -26,20 +27,13 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
         .then((a) => {
           setAnalisis(a);
           setErrorAnalisis(null);
-          despachar({
-            tipo: "lote_estado",
-            estado: a.estado,
-            pendiente: a.pendiente,
-            area_m2: a.area_m2,
-            perimetro_m: a.perimetro_m,
-          });
         })
         .catch((e) => setErrorAnalisis((e as Error).message));
     }, 400);
     return () => clearTimeout(h);
-  }, [v, escena?.ref, t.margen_m, despachar]);
+  }, [v, escena?.ref, t.margen_m]);
 
-  const setVertices = (nuevos: Punto[]) => despachar({ tipo: "lote_vertices", vertices: nuevos.map(([x, y]) => [r2(x), r2(y)]) });
+  const setVertices = (nuevos: Punto[]) => operar({ tipo: "definir_lote", vertices: nuevos.map(([x, y]) => [r2(x), r2(y)]) });
 
   const crearRectangulo = () => {
     const f = num(frente);
@@ -89,7 +83,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
         accion={
           <div className="flex gap-1">
             <Boton disabled={!v.length} onClick={() => setVertices(v.slice(0, -1))} title="Quitar último vértice">
-              Deshacer
+              Quitar último
             </Boton>
             <Boton disabled={!v.length} onClick={() => setVertices([])}>
               Limpiar
@@ -162,6 +156,15 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
       )}
 
       <Seccion titulo="Resultado" accion={<Etiqueta estado={t.estado} />}>
+        {t.estado === "desactualizado" && v.length >= 3 && (
+          <div className="mb-3 space-y-2">
+            <Aviso fuerte>
+              El origen se movió después de dibujar el lote. Los vértices conservan sus medidas respecto del origen nuevo:
+              revisá que el lote siga en su lugar sobre el mapa y confirmalo.
+            </Aviso>
+            <Boton onClick={() => setVertices(v)}>Confirmar lote</Boton>
+          </div>
+        )}
         {v.length < 3 ? (
           <p className="text-rebar">Se necesitan al menos 3 vértices.</p>
         ) : (

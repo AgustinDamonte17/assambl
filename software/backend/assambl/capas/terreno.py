@@ -22,11 +22,9 @@ from ..geometria import malla as gmalla
 from ..geometria import poligono
 from ..geometria.coordenadas import SistemaLocal
 from ..modelo.estados import EstadoFuente
+from ..modelo.proyecto import MARGEN_MAX_M, MARGEN_MIN_M, MARGEN_POR_DEFECTO_M
 from ..modelo.sitio import Fuente, MallaDem, Relieve
 
-MARGEN_MIN_M = 100.0
-MARGEN_MAX_M = 2000.0
-MARGEN_POR_DEFECTO_M = 500.0
 PASO_CONTORNO_M = 2.0
 # Separaciones sobre la superficie del terreno. No son decorativas: con escenas de
 # más de 1 km el búfer de profundidad no distingue diferencias de pocos centímetros

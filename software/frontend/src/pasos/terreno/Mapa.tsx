@@ -19,7 +19,7 @@ const iconoVertice = (i: number) =>
   L.divIcon({ className: "vertice-lote", iconSize: [14, 14], iconAnchor: [7, 7], html: `<span title="Vértice ${i + 1}"></span>` });
 
 export default function Mapa({ modo }: { modo: Modo }) {
-  const { proyecto, despachar } = useProyecto();
+  const { proyecto, operar } = useProyecto();
   const t = proyecto.terreno;
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<L.Map | null>(null);
@@ -61,11 +61,11 @@ export default function Mapa({ modo }: { modo: Modo }) {
 
     m.on("click", (e: L.LeafletMouseEvent) => {
       if (modoRef.current === "ubicacion") {
-        despachar({ tipo: "ubicacion", lat: e.latlng.lat, lon: e.latlng.lng, fuente: "mapa" });
+        operar({ tipo: "definir_ubicacion", lat: round6(e.latlng.lat), lon: round6(e.latlng.lng), fuente: "mapa" });
       } else if (ubicacionRef.current) {
         const s = new SistemaLocal(ubicacionRef.current.lat, ubicacionRef.current.lon);
         const p = s.aLocal(e.latlng.lat, e.latlng.lng);
-        despachar({ tipo: "lote_vertices", vertices: [...verticesRef.current, [round2(p[0]), round2(p[1])]] });
+        operar({ tipo: "definir_lote", vertices: [...verticesRef.current, [round2(p[0]), round2(p[1])]] });
       }
     });
     mapa.current = m;
@@ -75,7 +75,7 @@ export default function Mapa({ modo }: { modo: Modo }) {
       origen.current = null;
       marco.current = null;
     };
-  }, [despachar]);
+  }, [operar]);
 
   // Origen y marco del entorno que se modela. Es un cuadrado, no un círculo:
   // el recorte del relieve se hace sobre la rejilla de posts.
@@ -94,7 +94,7 @@ export default function Mapa({ modo }: { modo: Modo }) {
       origen.current = L.marker(ll, { icon: ICONO_ORIGEN, draggable: true, zIndexOffset: 1000, title: "Origen del proyecto (0, 0)" }).addTo(m);
       origen.current.on("dragend", () => {
         const p = origen.current!.getLatLng();
-        despachar({ tipo: "ubicacion", lat: round6(p.lat), lon: round6(p.lng), fuente: "mapa" });
+        operar({ tipo: "definir_ubicacion", lat: round6(p.lat), lon: round6(p.lng), fuente: "mapa" });
       });
       m.setView(ll, t.margen_m > 1200 ? 14 : t.margen_m > 600 ? 15 : 17);
     } else {
@@ -121,7 +121,7 @@ export default function Mapa({ modo }: { modo: Modo }) {
       marco.current.setBounds(limites);
     }
     origen.current.dragging?.[modo === "ubicacion" ? "enable" : "disable"]();
-  }, [t.ubicacion, t.margen_m, modo, despachar]);
+  }, [t.ubicacion, t.margen_m, modo, operar]);
 
   // Lote: polígono y vértices arrastrables.
   useEffect(() => {
@@ -158,14 +158,14 @@ export default function Mapa({ modo }: { modo: Modo }) {
       });
       marcador.on("dragend", () => {
         const p = s.aLocal(marcador.getLatLng().lat, marcador.getLatLng().lng);
-        despachar({ tipo: "lote_vertices", vertices: v.map((q, k) => (k === i ? [round2(p[0]), round2(p[1])] : q)) });
+        operar({ tipo: "definir_lote", vertices: v.map((q, k) => (k === i ? [round2(p[0]), round2(p[1])] : q)) });
       });
       marcador.on("contextmenu", (e) => {
         L.DomEvent.stop(e);
-        despachar({ tipo: "lote_vertices", vertices: v.filter((_, k) => k !== i) });
+        operar({ tipo: "definir_lote", vertices: v.filter((_, k) => k !== i) });
       });
     });
-  }, [t.lote.vertices, t.ubicacion, modo, despachar]);
+  }, [t.lote.vertices, t.ubicacion, modo, operar]);
 
   return (
     <div className="absolute inset-0">

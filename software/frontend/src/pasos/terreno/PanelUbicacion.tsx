@@ -5,7 +5,7 @@ import { useProyecto } from "../../estado/ProyectoContext";
 import { MARGEN_MAX_M, MARGEN_MIN_M } from "../../modelo/proyecto";
 
 export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | null; irALote: () => void }) {
-  const { proyecto, despachar, escena, setEscena } = useProyecto();
+  const { proyecto, operar, vincularEscena, escena } = useProyecto();
   const t = proyecto.terreno;
   const [busqueda, setBusqueda] = useState("");
   const [resultados, setResultados] = useState<ResultadoGeo[]>([]);
@@ -16,6 +16,16 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
   const [credencial, setCredencial] = useState<EstadoCredencial | null>(null);
   const [lat, setLat] = useState(t.ubicacion?.lat.toFixed(6) ?? "");
   const [lon, setLon] = useState(t.ubicacion?.lon.toFixed(6) ?? "");
+  // El deslizador se mueve localmente y la operación sale cuando se detiene.
+  const [margen, setMargen] = useState(t.margen_m);
+
+  useEffect(() => setMargen(t.margen_m), [t.margen_m]);
+
+  useEffect(() => {
+    if (margen === t.margen_m) return;
+    const h = setTimeout(() => operar({ tipo: "definir_margen", margen_m: margen }), 300);
+    return () => clearTimeout(h);
+  }, [margen, t.margen_m, operar]);
 
   useEffect(() => {
     setLat(t.ubicacion?.lat.toFixed(6) ?? "");
@@ -34,11 +44,11 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
         .inverso(la, lo)
         .then((r) => {
           if (r.direccion)
-            despachar({ tipo: "ubicacion", lat: la, lon: lo, direccion: r.direccion, fuente: t.ubicacion!.fuente });
+            operar({ tipo: "definir_ubicacion", lat: la, lon: lo, direccion: r.direccion, fuente: t.ubicacion!.fuente }, "sistema");
         })
         .catch(() => undefined);
     }
-  }, [t.ubicacion, apiOk, despachar]);
+  }, [t.ubicacion, apiOk, operar]);
 
   const buscar = async () => {
     if (busqueda.trim().length < 3) return;
@@ -59,7 +69,8 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
     const la = parseFloat(lat.replace(",", "."));
     const lo = parseFloat(lon.replace(",", "."));
     if (Number.isFinite(la) && Number.isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180) {
-      despachar({ tipo: "ubicacion", lat: la, lon: lo, fuente: "coordenadas" });
+      if (t.ubicacion?.lat === la && t.ubicacion?.lon === lo) return;
+      operar({ tipo: "definir_ubicacion", lat: la, lon: lo, fuente: "coordenadas" });
     }
   };
 
@@ -69,8 +80,7 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
     setErrorEscena(null);
     try {
       const e = await api.generarEscena(t.ubicacion.lat, t.ubicacion.lon, t.margen_m, t.lote.vertices);
-      setEscena(e);
-      despachar({ tipo: "escena", escena: e });
+      await vincularEscena(e);
     } catch (e) {
       setErrorEscena((e as Error).message);
     } finally {
@@ -108,7 +118,7 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
                 <button
                   className="w-full text-left px-2 py-1.5 hover:bg-concrete-2 leading-snug"
                   onClick={() => {
-                    despachar({ tipo: "ubicacion", lat: r.lat, lon: r.lon, direccion: r.nombre, fuente: "nominatim" });
+                    operar({ tipo: "definir_ubicacion", lat: r.lat, lon: r.lon, direccion: r.nombre, fuente: "nominatim" });
                     setResultados([]);
                   }}
                 >
@@ -136,8 +146,8 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
             min={MARGEN_MIN_M}
             max={MARGEN_MAX_M}
             step={50}
-            value={t.margen_m}
-            onChange={(e) => despachar({ tipo: "margen", margen_m: Number(e.target.value) })}
+            value={margen}
+            onChange={(e) => setMargen(Number(e.target.value))}
             className="flex-1 accent-signal"
           />
           <input
@@ -145,11 +155,8 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
             min={MARGEN_MIN_M}
             max={MARGEN_MAX_M}
             step={50}
-            value={t.margen_m}
-            onChange={(e) => {
-              const v = Math.min(MARGEN_MAX_M, Math.max(MARGEN_MIN_M, Number(e.target.value) || MARGEN_MIN_M));
-              despachar({ tipo: "margen", margen_m: v });
-            }}
+            value={margen}
+            onChange={(e) => setMargen(Math.min(MARGEN_MAX_M, Math.max(MARGEN_MIN_M, Number(e.target.value) || MARGEN_MIN_M)))}
             className="w-20 bg-concrete-2 border border-line px-2 py-1 text-right"
           />
           <span className="text-rebar">m</span>

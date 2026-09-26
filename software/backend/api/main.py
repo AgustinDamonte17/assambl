@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from assambl import __version__
 
-from .rutas import clima, geocodificacion, terreno
+from .rutas import clima, geocodificacion, operaciones, terreno
 
 app = FastAPI(title="Assambl API", version=__version__, docs_url="/docs")
 app.add_middleware(
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(geocodificacion.router, prefix="/api/geocodificar", tags=["geocodificación"])
 app.include_router(terreno.router, prefix="/api/terreno", tags=["terreno"])
 app.include_router(clima.router, prefix="/api", tags=["clima"])
+app.include_router(operaciones.router, prefix="/api/operaciones", tags=["operaciones"])
 
 
 @app.get("/api/salud")

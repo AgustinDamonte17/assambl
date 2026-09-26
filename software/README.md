@@ -9,7 +9,7 @@ software/
   frontend/          Interfaz web (Vite + React + TypeScript + Tailwind 4)
     src/
       modelo/        Tipos del proyecto (espejo TS del esquema casa.assambl.json) y geometría plana
-      estado/        Estado del proyecto en memoria, autosave y guardar/abrir
+      estado/        Estado del proyecto, cola de operaciones, deshacer, autosave y guardar/abrir
       api/           Cliente HTTP hacia el backend
       componentes/   Shell, barra de pasos, controles reutilizables
       pasos/         Un directorio por capa del MVP; la interfaz es secuencial y guiada
@@ -17,7 +17,7 @@ software/
   backend/
     api/             FastAPI: rutas HTTP finas que llaman al paquete assambl
     assambl/         Paquete Python del producto (estructura de MVP_01 §4.6)
-      modelo/        Esquema del proyecto y del sitio (pydantic), estados
+      modelo/        Esquema del proyecto y del sitio (pydantic), estados y operaciones
       geometria/     Polígonos, coordenadas locales, malla del terreno
       fuentes/       Datos externos: nasadem.py, power.py (y nominatim.py solo para buscar)
       clima/         sol.py (posición solar) y resumen.py (temperaturas, vientos, radiación)
@@ -27,13 +27,14 @@ software/
       catalogo/      ar.json (perfil Argentina) — se completa a partir de la capa 03
     tests/           pytest (test_*.py) y sondas manuales (probar_*.py)
     cache/           Mosaicos, clima y salidas; regenerable, ignorada por git
-  docs/              Decisiones técnicas y fuentes de datos
+  docs/              Fuentes de datos y decisiones de arquitectura (docs/decisiones/)
   scripts/           Utilidades de desarrollo
 ```
 
-Dos reglas de oro:
+Tres reglas de oro:
 
 - **El proyecto (`casa.assambl.json`) es la única fuente de verdad** (MVP_01 §4.2). Todo lo descargado o calculado es caché regenerable y se identifica por los parámetros que lo produjeron.
+- **El proyecto solo cambia por operaciones** (MVP_01 §4.4). La interfaz no edita el documento: manda una operación validada al backend (`POST /api/operaciones/aplicar`) y recibe el proyecto nuevo con su registro para el historial. El asistente de IA usará el mismo contrato. Ver [`docs/decisiones/0002_operaciones_e_historial.md`](docs/decisiones/0002_operaciones_e_historial.md).
 - **La NASA es la única fuente externa de datos del modelo.** Relieve de NASADEM, clima de NASA POWER; proyección, malla, sol y sombras se calculan acá. El buscador de direcciones y el mapa base son ayudas de navegación y no aportan geometría. El detalle está en [`docs/fuentes_de_datos_terreno.md`](docs/fuentes_de_datos_terreno.md).
 
 ## Requisitos
@@ -83,7 +84,7 @@ NASA POWER no necesita credencial, así que el clima funciona siempre.
 3. **Modelo 3D y sol.** Visor que carga el `.glb` del backend: relieve, lote apoyado sobre la malla, norte y origen, recorrido solar del día y sombras. Fecha, hora y huso son editables, con atajos a equinoccios y solsticios. Desde el panel se descargan el `.glb` y el script `.py` de Blender.
 4. **Clima.** Temperaturas por mes con grados-día, perfil horario, radiación mensual y rosa de vientos de 16 sectores, calculados sobre 5 años de series horarias de NASA POWER.
 
-El proyecto se guarda automáticamente en el navegador y se exporta/importa como `casa.assambl.json`.
+Cada cambio de diseño es una operación que aplica el backend; **Deshacer** (o Ctrl+Z) vuelve atrás la última. El proyecto se guarda automáticamente en el navegador y se exporta/importa como `casa.assambl.json`; el registro de operaciones queda aparte, también en el navegador, hasta que exista la base de datos ([`docs/decisiones/0001_almacenamiento.md`](docs/decisiones/0001_almacenamiento.md)).
 
 ### Salida de la fase de terreno
 
@@ -95,6 +96,8 @@ GET  /api/terreno/escena/{ref}.glb   el modelo 3D (visor web y Blender)
 GET  /api/terreno/escena/{ref}.py    script de Blender que reconstruye la escena
 GET  /api/terreno/sol                trayectoria del día, muestreada cada 5 minutos
 GET  /api/clima                      resúmenes de NASA POWER con su procedencia
+GET  /api/operaciones                catálogo de operaciones con el esquema de sus parámetros
+POST /api/operaciones/aplicar        aplica una operación al proyecto y devuelve el registro
 ```
 
 El `.glb` se valida con el validador oficial de Khronos:
@@ -123,7 +126,7 @@ La interfaz lo repite en cada panel, y vale repetirlo acá:
 ## Pruebas
 
 ```powershell
-cd backend; .venv\Scripts\python -m pytest -q         # 60 pruebas, sin red
+cd backend; .venv\Scripts\python -m pytest -q         # 83 pruebas, sin red
 .venv\Scripts\python tests\probar_nasa.py --cotas     # coteja NASADEM contra cotas conocidas
 cd ..; npm install --no-save puppeteer gltf-validator
 node scripts/probar_ui.cjs                            # recorrido en navegador headless con capturas

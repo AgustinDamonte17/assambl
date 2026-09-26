@@ -23,7 +23,8 @@ const CAPAS = [
 ] as const;
 
 export default function Shell() {
-  const { proyecto, despachar, setEscena, setTrayectoria, setClima } = useProyecto();
+  const { proyecto, despachar, operar, deshacer, puedeDeshacer, errorOperacion, limpiarError, setEscena, setTrayectoria, setClima } =
+    useProyecto();
 
   /** Al cambiar de proyecto se descarta todo lo descargado: es caché regenerable. */
   const limpiarCache = () => {
@@ -34,6 +35,19 @@ export default function Shell() {
   const [apiOk, setApiOk] = useState<boolean | null>(null);
   const [editandoNombre, setEditandoNombre] = useState(false);
   const archivoRef = useRef<HTMLInputElement>(null);
+
+  // Ctrl+Z / Cmd+Z deshace la última operación, salvo mientras se escribe en un campo.
+  useEffect(() => {
+    const alTeclear = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== "z") return;
+      const destino = e.target as HTMLElement | null;
+      if (destino && (destino.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(destino.tagName))) return;
+      e.preventDefault();
+      deshacer();
+    };
+    window.addEventListener("keydown", alTeclear);
+    return () => window.removeEventListener("keydown", alTeclear);
+  }, [deshacer]);
 
   useEffect(() => {
     let vivo = true;
@@ -78,7 +92,8 @@ export default function Shell() {
               className="bg-concrete-2 border border-line px-2 py-0.5 text-sm w-72 focus:outline-none focus:border-signal"
               defaultValue={proyecto.nombre}
               onBlur={(e) => {
-                despachar({ tipo: "nombre", nombre: e.target.value.trim() || proyecto.nombre });
+                const nombre = e.target.value.trim();
+                if (nombre && nombre !== proyecto.nombre) operar({ tipo: "renombrar_proyecto", nombre });
                 setEditandoNombre(false);
               }}
               onKeyDown={(e) => {
@@ -101,6 +116,18 @@ export default function Shell() {
           <span className={`text-[11px] uppercase tracking-wide ${apiOk ? "text-resolved" : apiOk === false ? "text-signal" : "text-rebar"}`}>
             api {apiOk ? "conectada" : apiOk === false ? "sin conexión" : "…"}
           </span>
+          {errorOperacion && (
+            <button
+              className="text-[11px] text-signal max-w-md truncate text-left"
+              title={`${errorOperacion} (clic para cerrar)`}
+              onClick={limpiarError}
+            >
+              No se aplicó: {errorOperacion}
+            </button>
+          )}
+          <Boton disabled={!puedeDeshacer} onClick={deshacer} title="Deshacer la última operación (Ctrl+Z)">
+            Deshacer
+          </Boton>
           <Boton onClick={nuevo}>Nuevo</Boton>
           <Boton onClick={() => archivoRef.current?.click()}>Abrir</Boton>
           <input

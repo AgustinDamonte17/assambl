@@ -2,6 +2,8 @@
 
 Solo se modela lo que la capa 01 necesita hoy. Las capas siguientes agregan
 sus secciones sin romper las anteriores: el campo `esquema` lleva la versión.
+El espejo TypeScript es frontend/src/modelo/proyecto.ts y deben coincidir: el
+backend valida con este esquema cada proyecto que recibe una operación.
 """
 
 from __future__ import annotations
@@ -10,7 +12,11 @@ from pydantic import BaseModel, Field
 
 from .estados import Estado
 
-ESQUEMA_ACTUAL = "assambl/proyecto@0.1"
+ESQUEMA_ACTUAL = "assambl/proyecto@0.2"
+
+MARGEN_MIN_M = 100.0
+MARGEN_MAX_M = 2000.0
+MARGEN_POR_DEFECTO_M = 500.0
 
 
 class Ubicacion(BaseModel):
@@ -56,18 +62,23 @@ class Retiros(BaseModel):
 class Pendiente(BaseModel):
     porcentaje: float
     direccion_deg: float = Field(description="Azimut hacia donde baja el terreno")
-    fuente: str = "dem"
+    paso_dem_m: float | None = None
 
 
 class Terreno(BaseModel):
     estado: Estado = Estado.PENDIENTE_DATOS
     ubicacion: Ubicacion | None = None
-    radio_contexto_m: float = 500.0
+    margen_m: float = Field(default=MARGEN_POR_DEFECTO_M, ge=MARGEN_MIN_M, le=MARGEN_MAX_M)
     sistema_local: SistemaLocal | None = None
-    contexto_ref: str | None = Field(default=None, description="Clave de caché del contexto")
+    escena_ref: str | None = Field(default=None, description="Clave de caché de la escena generada")
     lote: Lote = Lote()
     retiros: Retiros = Retiros()
     pendiente: Pendiente | None = None
+    # Preferencias de estudio del asoleamiento: no son decisiones de diseño y no
+    # pasan por operaciones (docs/decisiones/0002_operaciones_e_historial.md).
+    fecha_sol: str | None = None
+    hora_sol: float = 12.0
+    huso_h: float | None = None
 
 
 class Proyecto(BaseModel):

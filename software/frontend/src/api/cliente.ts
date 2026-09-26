@@ -1,4 +1,5 @@
-import type { AnalisisLote, Punto, RespuestaClima, RespuestaEscena, Trayectoria } from "../modelo/proyecto";
+import type { Autor, Operacion, ResultadoOperacion } from "../modelo/operaciones";
+import type { AnalisisLote, Proyecto, Punto, RespuestaClima, RespuestaEscena, Trayectoria } from "../modelo/proyecto";
 
 async function pedir<T>(url: string, init?: RequestInit): Promise<T> {
   const r = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } });
@@ -6,13 +7,21 @@ async function pedir<T>(url: string, init?: RequestInit): Promise<T> {
     let detalle = r.statusText;
     try {
       const j = await r.json();
-      detalle = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail);
+      detalle = typeof j.detail === "string" ? j.detail : describirErrores(j.detail);
     } catch {
       /* sin cuerpo */
     }
     throw new Error(`${r.status}: ${detalle}`);
   }
   return (await r.json()) as T;
+}
+
+/** Errores de validación de FastAPI: se muestran como «campo: motivo». */
+function describirErrores(detalle: unknown): string {
+  if (!Array.isArray(detalle)) return JSON.stringify(detalle);
+  return detalle
+    .map((e: { loc?: unknown[]; msg?: string }) => `${(e.loc ?? []).slice(-1).join(".")}: ${e.msg ?? ""}`)
+    .join("; ");
 }
 
 export interface ResultadoGeo {
@@ -60,6 +69,13 @@ export const api = {
 
   clima: (lat: number, lon: number, anios = 5) =>
     pedir<RespuestaClima>(`/api/clima?lat=${lat}&lon=${lon}&anios=${anios}`),
+
+  /** Único camino para modificar el proyecto: el backend valida, aplica y devuelve el registro. */
+  aplicarOperacion: (proyecto: Proyecto, operacion: Operacion, autor: Autor = "usuario") =>
+    pedir<ResultadoOperacion>("/api/operaciones/aplicar", {
+      method: "POST",
+      body: JSON.stringify({ proyecto, operacion, autor }),
+    }),
 
   analizarLote: (vertices: Punto[], escena_ref: string | null, margen_m: number | null) =>
     pedir<AnalisisLote>("/api/terreno/lote/analizar", {

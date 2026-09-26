@@ -18,7 +18,7 @@ const SUBPASOS: { id: SubPaso; n: string; nombre: string }[] = [
 ];
 
 export default function PasoTerreno({ apiOk }: { apiOk: boolean | null }) {
-  const { proyecto, despachar, escena, setEscena, trayectoria, setTrayectoria } = useProyecto();
+  const { proyecto, vincularEscena, escena, trayectoria, setTrayectoria } = useProyecto();
   const [sub, setSub] = useState<SubPaso>("ubicacion");
   const t = proyecto.terreno;
 
@@ -32,8 +32,7 @@ export default function PasoTerreno({ apiOk }: { apiOk: boolean | null }) {
         .generarEscena(t.ubicacion!.lat, t.ubicacion!.lon, t.margen_m, t.lote.vertices)
         .then((e) => {
           if (e.ref === escena.ref) return;
-          setEscena(e);
-          despachar({ tipo: "escena", escena: e });
+          vincularEscena(e);
         })
         .catch(() => undefined);
     }, 500);

@@ -16,6 +16,7 @@ from assambl.capas import terreno as capa
 from assambl.clima import sol as csol
 from assambl.fuentes import nasadem
 from assambl.generadores import blender
+from assambl.modelo.operaciones import EscenaDisponible
 from assambl.modelo.sitio import Relieve
 from assambl.reglas import r01_terreno
 
@@ -56,6 +57,15 @@ def _guardar(escena: capa.EscenaTerreno, pedido: PedidoEscena) -> str:
     while len(_escenas) > _MAX_ESCENAS:
         _escenas.pop(next(iter(_escenas)))
     return ref
+
+
+def escena_disponible(ref: str) -> EscenaDisponible | None:
+    """La escena en caché, en la forma que la leen las operaciones."""
+    e = _escenas.get(ref)
+    if e is None:
+        return None
+    return EscenaDisponible(ref=ref, lat=e.lat, lon=e.lon, margen_m=e.margen_m, malla=e.malla,
+                            provisional=e.relieve.provisional, cota_origen_msnm=e.relieve.cota_origen_msnm)
 
 
 def _escena(ref: str) -> capa.EscenaTerreno:
