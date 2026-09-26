@@ -103,9 +103,12 @@ Everything is in `src/components/explode/config.ts`:
   position in this list; layer ids (`techo`, `siding`…) carry no number, so
   reordering never requires re-exporting the GLB. `viewLayer` keeps the
   original V11 View Layer name.
-- `LAYER_FADES`: per-layer opacity keyframes. After `05_Aislante` the roof and
-  outer envelope fade out; after `06_Estructura` each layer is shown alone
-  (`SOLO`: eléctrico → interior → plomería → cimientos → terreno).
+- `LAYER_FADES`: per-layer opacity keyframes (0 hides, 1 shows, in between
+  ghosts). After `05_Aislante` the roof and outer envelope fade out. After
+  `06_Estructura` (tramos en `STAGE`) the terrain always stays as background:
+  eléctrico over the grey interior, plomería and cimientos → interior on the
+  cimientos → plomería with ghosted cimientos (`FOUNDATION_GHOST`) →
+  cimientos → terreno alone.
 - `CAMERA_FOCUS`: range where the fixed framing eases in to what stays visible.
 - `CAPTIONS`: the three short texts.
 - Scroll length: `.explode-track` in `globals.css` (280svh mobile, 320svh desktop).

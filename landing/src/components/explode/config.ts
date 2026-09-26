@@ -66,21 +66,24 @@ const RISE: Motion = {
 };
 
 /**
- * Vistas aisladas después de la estructura: desde el inicio de cada tramo queda
- * visible solo esa capa (las demás se desvanecen en el mismo tramo). Al subir se
- * recorren al revés.
+ * Tramos después de la estructura: desde el inicio de cada uno la capa pasa a ser
+ * la nombrada y, dentro del tramo, se muestran o quitan las demás (LAYER_FADES).
+ * El terreno queda siempre de fondo. Al subir se recorren al revés.
  */
-const SOLO = {
+const STAGE = {
   electrico: [0.62, 0.67],
-  interior: [0.71, 0.75],
+  interior: [0.71, 0.76],
   plomeria: [0.78, 0.82],
   cimientos: [0.85, 0.89],
   terreno: [0.92, 0.96],
 } as const satisfies Partial<Record<LayerId, readonly [number, number]>>;
 
+/** Opacidad de los cimientos mientras se nombra la plomería: dejan ver las cañerías. */
+const FOUNDATION_GHOST = 0.28;
+
 /** Lo eléctrico que subió con los muros vuelve a su lugar al quedar solo. */
 const SETTLE: Motion = {
-  range: [SOLO.electrico[0], SOLO.electrico[1] + 0.02],
+  range: [STAGE.electrico[0], STAGE.electrico[1] + 0.02],
   lift: -RISE_LIFT,
   ease: "inOutCubic",
 };
@@ -160,13 +163,14 @@ export const PART_RULES: readonly PartRule[] = [
 export type Fade = {
   /** Tramo de progreso en el que la opacidad va hacia `to`. */
   range: readonly [number, number];
-  to: 0 | 1;
+  /** Opacidad final: 0 quita la capa, 1 la muestra, intermedio la transparenta. */
+  to: number;
   ease?: EaseName;
 };
 
 /**
  * Visibilidad por capa: todas arrancan visibles y cada tramo lleva la opacidad a
- * 0 o 1, en orden. Se evalúa desde el progreso: al subir vuelven igual.
+ * `to`, en orden. Se evalúa desde el progreso: al subir vuelven igual.
  */
 export type LayerFade = { layer: LayerId; fades: readonly Fade[] };
 
@@ -185,32 +189,39 @@ const EXTERIOR: readonly LayerId[] = [
  */
 export const CAMERA_FOCUS: readonly [number, number] = [0.5, 0.62];
 
-function soloFades(layer: LayerId): Fade[] {
-  const fades: Fade[] = [];
-  let visible = true;
-  for (const [solo, range] of Object.entries(SOLO)) {
-    const show = solo === layer;
-    if (show !== visible) fades.push({ range, to: show ? 1 : 0 });
-    visible = show;
-  }
-  return fades;
-}
+/** El eléctrico queda en gris un instante tras nombrarse el interior y recién ahí se va. */
+const INTERIOR_CLEAR: Fade["range"] = [
+  STAGE.interior[0] + 0.01,
+  STAGE.interior[1],
+];
 
 export const LAYER_FADES: readonly LayerFade[] = [
-  ...EXTERIOR.map((layer) => ({
-    layer,
-    fades: [{ range: CLEAR, to: 0 as const }],
-  })),
-  ...(
-    [
-      "estructura",
-      "electrico",
-      "interior",
-      "plomeria",
-      "cimientos",
-      "terreno",
-    ] as const
-  ).map((layer) => ({ layer, fades: soloFades(layer) })),
+  ...EXTERIOR.map((layer) => ({ layer, fades: [{ range: CLEAR, to: 0 }] })),
+  // 07_Electrico: la estructura se va; el eléctrico baja sobre el interior,
+  // la plomería, los cimientos y el terreno, en gris.
+  { layer: "estructura", fades: [{ range: STAGE.electrico, to: 0 }] },
+  // 08_Interior: se quitan el eléctrico y la plomería.
+  { layer: "electrico", fades: [{ range: INTERIOR_CLEAR, to: 0 }] },
+  // 09_Plomeria: vuelve la plomería, se quita el interior y los cimientos se
+  // transparentan. 10_Cimientos: se va la plomería y los cimientos vuelven enteros.
+  {
+    layer: "plomeria",
+    fades: [
+      { range: INTERIOR_CLEAR, to: 0 },
+      { range: STAGE.plomeria, to: 1 },
+      { range: STAGE.cimientos, to: 0 },
+    ],
+  },
+  { layer: "interior", fades: [{ range: STAGE.plomeria, to: 0 }] },
+  {
+    layer: "cimientos",
+    fades: [
+      { range: STAGE.plomeria, to: FOUNDATION_GHOST },
+      { range: STAGE.cimientos, to: 1 },
+      // 11_Terreno: solo queda el terreno.
+      { range: STAGE.terreno, to: 0 },
+    ],
+  },
 ];
 
 type StepDef = {
@@ -279,35 +290,35 @@ const STEP_DEFS: readonly StepDef[] = [
     name: "Electrico",
     viewLayer: "10_Electrico",
     note: "Instalación eléctrica y luminarias.",
-    from: SOLO.electrico[0],
+    from: STAGE.electrico[0],
   },
   {
     layer: "interior",
     name: "Interior",
     viewLayer: "07_Interior",
     note: "Pisos, tabiques, puertas interiores y mobiliario.",
-    from: SOLO.interior[0],
+    from: STAGE.interior[0],
   },
   {
     layer: "plomeria",
     name: "Plomeria",
     viewLayer: "09_Plomeria",
     note: "Desagües, agua fría/caliente y pluviales con sus bajadas.",
-    from: SOLO.plomeria[0],
+    from: STAGE.plomeria[0],
   },
   {
     layer: "cimientos",
     name: "Cimientos",
     viewLayer: "02_Cimientos",
     note: "Platea, soleras, barrera capilar, pernos y bases.",
-    from: SOLO.cimientos[0],
+    from: STAGE.cimientos[0],
   },
   {
     layer: "terreno",
     name: "Terreno",
     viewLayer: "01_Terreno",
     note: "Lote de 2.500 m², alambrado y árboles.",
-    from: SOLO.terreno[0],
+    from: STAGE.terreno[0],
   },
 ];
 
@@ -330,7 +341,7 @@ export const CAPTIONS: readonly {
 }[] = [
   { range: [0, 0.09], text: "Angus Ranch. 5.423 piezas modeladas." },
   { range: [0.5, 0.62], text: "Debajo de la envolvente, la estructura." },
-  { range: [SOLO.terreno[0], 1.01], text: "Y todo empieza en el terreno." },
+  { range: [STAGE.terreno[0], 1.01], text: "Y todo empieza en el terreno." },
 ];
 
 /** Resalte con --signal para la capa nombrada: sube y baja dentro de su tramo. */

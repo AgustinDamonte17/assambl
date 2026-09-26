@@ -318,6 +318,8 @@ function prepare(scene: THREE.Object3D): PreparedModel {
       if (!entry) return;
       entry.solid.opacity = opacity;
       entry.solid.transparent = opacity < 1;
+      // Semitransparente (cimientos con la plomería): deja ver lo que tiene detrás.
+      entry.solid.depthWrite = opacity >= 1;
       entry.glass.opacity = GLASS_OPACITY * opacity;
     });
     for (const part of parts) {
