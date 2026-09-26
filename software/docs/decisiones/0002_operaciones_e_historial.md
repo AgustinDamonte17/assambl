@@ -23,7 +23,7 @@ Toda modificación del diseño es una **operación**: un objeto con `tipo` y par
 | --- | --- | --- |
 | `renombrar_proyecto` | Cambia el nombre | — |
 | `definir_ubicacion` | Fija el origen (0, 0) | Si el origen se mueve y hay lote: terreno `desactualizado`, se borran pendiente y cota |
-| `definir_margen` | Metros de relieve alrededor del origen (100–2000) | Recalcula R01 |
+| `definir_margen` | Metros de relieve alrededor del origen (100–1000) | Recalcula R01 |
 | `definir_lote` | Reemplaza la poligonal | Lados, área, perímetro; recalcula R01; saca al terreno de `desactualizado` |
 | `definir_retiros` | Frente, fondo y laterales | — |
 | `vincular_escena` | Asocia una escena ya generada | Cota del origen y pendiente salen de la escena; recalcula R01. No la ofrece el asistente |

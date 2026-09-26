@@ -14,14 +14,9 @@ from pydantic import BaseModel
 from assambl.modelo import operaciones as ops
 from assambl.modelo.proyecto import Proyecto
 
-from .terreno import escena_disponible
+from .terreno import ContextoEscenas
 
 router = APIRouter()
-
-
-class ContextoApi:
-    def escena(self, ref: str) -> ops.EscenaDisponible | None:
-        return escena_disponible(ref)
 
 
 class PedidoOperacion(BaseModel):
@@ -39,6 +34,6 @@ def catalogo() -> list[dict]:
 @router.post("/aplicar", response_model=ops.Resultado)
 def aplicar(pedido: PedidoOperacion) -> ops.Resultado:
     try:
-        return ops.aplicar(pedido.proyecto, pedido.operacion, pedido.autor, ContextoApi())
+        return ops.aplicar(pedido.proyecto, pedido.operacion, pedido.autor, ContextoEscenas())
     except ops.OperacionInvalida as e:
         raise HTTPException(409, str(e)) from e

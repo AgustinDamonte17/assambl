@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api/cliente";
 import { descargarProyecto, leerArchivoProyecto, useProyecto } from "../estado/ProyectoContext";
+import { useSitio } from "../estado/useSitio";
+import PasoDiseno from "../pasos/diseno/PasoDiseno";
 import PasoTerreno from "../pasos/terreno/PasoTerreno";
 import { Boton, Etiqueta } from "./ui";
 
-/** Las 14 capas del MVP_01. Solo la 01 está construida; el resto muestra la secuencia. */
+/** Las 14 capas del MVP_01. La 01 es la etapa de terreno; de la 02 en adelante
+ *  salen del diseño de la casa y todavía solo muestran la secuencia. */
 const CAPAS = [
-  { n: "01", nombre: "Terreno", nivel: "núcleo" },
   { n: "02", nombre: "Cimientos", nivel: "núcleo" },
   { n: "03", nombre: "Estructura woodframe", nivel: "núcleo" },
   { n: "04", nombre: "OSB", nivel: "núcleo" },
@@ -22,9 +24,41 @@ const CAPAS = [
   { n: "14", nombre: "Eléctrico", nivel: "hook" },
 ] as const;
 
+type Etapa = "terreno" | "diseno";
+const CLAVE_ETAPA = "assambl.etapa";
+
+function leerEtapa(): Etapa {
+  try {
+    return localStorage.getItem(CLAVE_ETAPA) === "diseno" ? "diseno" : "terreno";
+  } catch {
+    return "terreno";
+  }
+}
+
 export default function Shell() {
-  const { proyecto, despachar, operar, deshacer, puedeDeshacer, errorOperacion, limpiarError, setEscena, setTrayectoria, setClima } =
-    useProyecto();
+  const {
+    proyecto,
+    despachar,
+    operar,
+    deshacer,
+    puedeDeshacer,
+    errorOperacion,
+    limpiarError,
+    requisitos,
+    setEscena,
+    setTrayectoria,
+    setClima,
+  } = useProyecto();
+  const [etapa, setEtapaInterna] = useState<Etapa>(leerEtapa);
+  const setEtapa = (e: Etapa) => {
+    setEtapaInterna(e);
+    try {
+      localStorage.setItem(CLAVE_ETAPA, e);
+    } catch {
+      /* sin almacenamiento: la etapa no se recuerda */
+    }
+  };
+  const disenoHabilitado = !!requisitos?.listo;
 
   /** Al cambiar de proyecto se descarta todo lo descargado: es caché regenerable. */
   const limpiarCache = () => {
@@ -33,6 +67,7 @@ export default function Shell() {
     setClima(null);
   };
   const [apiOk, setApiOk] = useState<boolean | null>(null);
+  useSitio(apiOk);
   const [editandoNombre, setEditandoNombre] = useState(false);
   const archivoRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +101,7 @@ export default function Shell() {
       const p = await leerArchivoProyecto(archivo);
       limpiarCache();
       despachar({ tipo: "cargar", proyecto: p });
+      setEtapa("terreno");
     } catch (e) {
       alert(`No se pudo abrir el proyecto: ${(e as Error).message}`);
     }
@@ -75,6 +111,7 @@ export default function Shell() {
     if (proyecto.terreno.ubicacion && !confirm("Se descarta el proyecto actual (guardalo antes si lo necesitás). ¿Continuar?")) return;
     limpiarCache();
     despachar({ tipo: "nuevo" });
+    setEtapa("terreno");
   };
 
   return (
@@ -83,7 +120,7 @@ export default function Shell() {
         <div className="flex items-center gap-6">
           <span className="font-display text-lg tracking-tight select-none">
             ASSAMBL<span className="text-signal">(</span>
-            <span className="font-mono text-[0.7em] font-normal">terreno</span>
+            <span className="font-mono text-[0.7em] font-normal">{etapa === "diseno" ? "diseño" : "terreno"}</span>
             <span className="text-signal">)</span>
           </span>
           {editandoNombre ? (
@@ -149,22 +186,18 @@ export default function Shell() {
       <nav className="border-r border-line bg-concrete overflow-y-auto">
         <div className="px-4 pt-4 pb-2 text-[11px] uppercase tracking-widest text-rebar">Secuencia</div>
         <ol>
-          {CAPAS.map((c, i) => {
-            const activa = i === 0;
-            return (
-              <li
-                key={c.n}
-                className={`flex items-baseline gap-3 px-4 py-2 border-l-2 ${
-                  activa ? "border-signal bg-concrete-2" : "border-transparent text-rebar/70"
-                }`}
-                title={activa ? "" : "Se habilita cuando la capa anterior está resuelta"}
-              >
-                <span className={`text-xs ${activa ? "text-signal" : ""}`}>{c.n}</span>
-                <span className="flex-1 text-xs leading-tight">{c.nombre}</span>
-                <span className="text-[9px] uppercase tracking-wide opacity-60">{c.nivel}</span>
-              </li>
-            );
-          })}
+          <ItemSecuencia n="01" nombre="Terreno" nivel="núcleo" activa={etapa === "terreno"} onClick={() => setEtapa("terreno")} />
+          <ItemSecuencia
+            n="·"
+            nombre="Diseño de la casa"
+            nivel="planta"
+            activa={etapa === "diseno"}
+            onClick={disenoHabilitado || etapa === "diseno" ? () => setEtapa("diseno") : undefined}
+            titulo={disenoHabilitado ? "" : "Se habilita cuando el terreno está completo"}
+          />
+          {CAPAS.map((c) => (
+            <ItemSecuencia key={c.n} n={c.n} nombre={c.nombre} nivel={c.nivel} titulo="Se habilita cuando el diseño de la casa está resuelto" />
+          ))}
         </ol>
         <div className="px-4 py-4 text-[10px] text-rebar leading-relaxed border-t border-line mt-2">
           Proyecto <span className="text-ink">{proyecto.id.slice(0, 8)}</span>
@@ -176,8 +209,50 @@ export default function Shell() {
       </nav>
 
       <main className="min-h-0 min-w-0 overflow-hidden">
-        <PasoTerreno apiOk={apiOk} />
+        {etapa === "diseno" ? (
+          <PasoDiseno onVolver={() => setEtapa("terreno")} />
+        ) : (
+          <PasoTerreno apiOk={apiOk} onAvanzar={() => setEtapa("diseno")} />
+        )}
       </main>
     </div>
+  );
+}
+
+function ItemSecuencia({
+  n,
+  nombre,
+  nivel,
+  activa = false,
+  onClick,
+  titulo = "",
+}: {
+  n: string;
+  nombre: string;
+  nivel: string;
+  activa?: boolean;
+  onClick?: () => void;
+  titulo?: string;
+}) {
+  const clase = `w-full flex items-baseline gap-3 px-4 py-2 border-l-2 text-left ${
+    activa ? "border-signal bg-concrete-2" : onClick ? "border-transparent hover:bg-concrete-2" : "border-transparent text-rebar/70"
+  }`;
+  const contenido = (
+    <>
+      <span className={`text-xs ${activa ? "text-signal" : ""}`}>{n}</span>
+      <span className="flex-1 text-xs leading-tight">{nombre}</span>
+      <span className="text-[9px] uppercase tracking-wide opacity-60">{nivel}</span>
+    </>
+  );
+  return (
+    <li title={titulo}>
+      {onClick ? (
+        <button className={clase} onClick={onClick}>
+          {contenido}
+        </button>
+      ) : (
+        <div className={clase}>{contenido}</div>
+      )}
+    </li>
   );
 }

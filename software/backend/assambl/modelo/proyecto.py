@@ -8,14 +8,14 @@ backend valida con este esquema cada proyecto que recibe una operación.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from .estados import Estado
 
 ESQUEMA_ACTUAL = "assambl/proyecto@0.2"
 
 MARGEN_MIN_M = 100.0
-MARGEN_MAX_M = 2000.0
+MARGEN_MAX_M = 1000.0
 MARGEN_POR_DEFECTO_M = 500.0
 
 
@@ -79,6 +79,12 @@ class Terreno(BaseModel):
     fecha_sol: str | None = None
     hora_sol: float = 12.0
     huso_h: float | None = None
+
+    @field_validator("margen_m", mode="before")
+    @classmethod
+    def _margen_en_rango(cls, v: float) -> float:
+        """Proyectos guardados con el límite anterior (2000 m) se abren recortados."""
+        return min(max(float(v), MARGEN_MIN_M), MARGEN_MAX_M)
 
 
 class Proyecto(BaseModel):

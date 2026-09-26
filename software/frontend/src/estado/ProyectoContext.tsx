@@ -4,8 +4,10 @@ import type { Autor, Operacion, RegistroOperacion } from "../modelo/operaciones"
 import {
   ahora,
   ESQUEMA_ACTUAL,
+  normalizar,
   proyectoNuevo,
   type Proyecto,
+  type RequisitosTerreno,
   type RespuestaClima,
   type RespuestaEscena,
   type Trayectoria,
@@ -51,7 +53,7 @@ function leerLocal(): Proyecto {
     const crudo = localStorage.getItem(CLAVE_LOCAL);
     if (crudo) {
       const p = JSON.parse(crudo) as Proyecto;
-      if (p.esquema === ESQUEMA_ACTUAL) return p;
+      if (p.esquema === ESQUEMA_ACTUAL) return normalizar(p);
     }
   } catch {
     /* almacenamiento corrupto: se arranca de cero */
@@ -98,6 +100,8 @@ interface Valor {
   setTrayectoria: (t: Trayectoria | null) => void;
   clima: RespuestaClima | null;
   setClima: (c: RespuestaClima | null) => void;
+  /** Qué falta para cerrar el terreno; null mientras no hay respuesta del backend. */
+  requisitos: RequisitosTerreno | null;
 }
 
 const Ctx = createContext<Valor | null>(null);
@@ -113,6 +117,7 @@ export function ProyectoProvider({ children }: { children: ReactNode }) {
   const pila = useRef<PasoDeshacer[]>([]);
   const [puedeDeshacer, setPuedeDeshacer] = useState(false);
   const [errorOperacion, setErrorOperacion] = useState<string | null>(null);
+  const [requisitos, setRequisitos] = useState<RequisitosTerreno | null>(null);
 
   // Las operaciones se aplican de a una, siempre sobre el último proyecto. Cargar,
   // crear o deshacer cambia la generación: las respuestas que llegan después de
@@ -129,6 +134,21 @@ export function ProyectoProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(CLAVE_HISTORIAL, JSON.stringify({ proyecto_id: proyecto.id, registros: historial }));
   }, [proyecto.id, historial]);
+
+  // Requisitos para cerrar el terreno: los decide el backend (assambl/guia).
+  useEffect(() => {
+    let vigente = true;
+    const h = setTimeout(() => {
+      api
+        .requisitosTerreno(proyectoRef.current)
+        .then((r) => vigente && setRequisitos(r))
+        .catch(() => vigente && setRequisitos(null));
+    }, 300);
+    return () => {
+      vigente = false;
+      clearTimeout(h);
+    };
+  }, [proyecto.id, proyecto.terreno.ubicacion, proyecto.terreno.margen_m, proyecto.terreno.escena_ref, proyecto.terreno.lote, proyecto.terreno.estado, escena?.ref]);
 
   // La escena en memoria debe corresponder a la referencia del proyecto.
   useEffect(() => {
@@ -267,8 +287,9 @@ export function ProyectoProvider({ children }: { children: ReactNode }) {
       setTrayectoria,
       clima,
       setClima,
+      requisitos,
     }),
-    [proyecto, despachar, operar, vincularEscena, deshacer, puedeDeshacer, historial, errorOperacion, limpiarError, escena, trayectoria, clima],
+    [proyecto, despachar, operar, vincularEscena, deshacer, puedeDeshacer, historial, errorOperacion, limpiarError, escena, trayectoria, clima, requisitos],
   );
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }
@@ -292,5 +313,5 @@ export function descargarProyecto(p: Proyecto) {
 export async function leerArchivoProyecto(archivo: File): Promise<Proyecto> {
   const p = JSON.parse(await archivo.text()) as Proyecto;
   if (p.esquema !== ESQUEMA_ACTUAL) throw new Error(`Esquema no compatible: ${p.esquema}`);
-  return p;
+  return normalizar(p);
 }

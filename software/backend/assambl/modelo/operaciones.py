@@ -294,6 +294,13 @@ def aplicar(proyecto: Proyecto, operacion: Operacion, autor: Autor = "usuario",
     return Resultado(proyecto=p, registro=registro, analisis_lote=analisis)
 
 
+def escena_vigente(p: Proyecto, contexto: Contexto) -> EscenaDisponible | None:
+    """La escena vinculada al proyecto, si sigue disponible y corresponde a su
+    origen y su margen actuales."""
+    escena = contexto.escena(p.terreno.escena_ref) if p.terreno.escena_ref else None
+    return escena if escena is not None and _escena_corresponde(p, escena) else None
+
+
 def _escena_corresponde(p: Proyecto, escena: EscenaDisponible) -> bool:
     u = p.terreno.ubicacion
     return (u is not None and math.isclose(u.lat, escena.lat, abs_tol=1e-7)
@@ -315,9 +322,7 @@ def _evaluar_terreno(p: Proyecto, contexto: Contexto, forzar: bool = False) -> d
         t.pendiente = None
         return None
 
-    escena = contexto.escena(t.escena_ref) if t.escena_ref else None
-    if escena is not None and not _escena_corresponde(p, escena):
-        escena = None
+    escena = escena_vigente(p, contexto)
     analisis = r01_terreno.analizar_lote(
         t.lote.vertices,
         escena.malla if escena else None,

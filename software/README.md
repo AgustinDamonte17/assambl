@@ -79,10 +79,13 @@ NASA POWER no necesita credencial, así que el clima funciona siempre.
 
 ## Flujo actual (capa 01 · Terreno)
 
-1. **Ubicación y relieve.** Buscar una dirección, escribir coordenadas o hacer clic en el mapa. Elegir la extensión del entorno (100–2000 m, 500 por defecto) y generar la escena: se descarga el mosaico de NASADEM que cubre el área, se recorta a los posts nativos y se arma la malla. Cada capa informa su fuente, su resolución y su naturaleza (medición satelital, reanálisis regional o cálculo local).
-2. **Lote.** Dibujar los vértices sobre el mapa, crear un rectángulo rápido o cargar el lote lado por lado (longitud y rumbo; el último lado cierra). Área, perímetro, pendiente y verificaciones de la regla R01 en tiempo real.
-3. **Modelo 3D y sol.** Visor que carga el `.glb` del backend: relieve, lote apoyado sobre la malla, norte y origen, recorrido solar del día y sombras. Fecha, hora y huso son editables, con atajos a equinoccios y solsticios. Desde el panel se descargan el `.glb` y el script `.py` de Blender.
-4. **Clima.** Temperaturas por mes con grados-día, perfil horario, radiación mensual y rosa de vientos de 16 sectores, calculados sobre 5 años de series horarias de NASA POWER.
+1. **Ubicación y relieve.** Buscar una dirección, escribir coordenadas o hacer clic en el mapa. Elegir la extensión del entorno (100–1000 m, 500 por defecto) y generar la escena: se descarga el mosaico de NASADEM que cubre el área, se recorta a los posts nativos y se arma la malla. Cada capa informa su fuente, su resolución y su naturaleza (medición satelital, reanálisis regional o cálculo local).
+2. **Lote.** Dibujar los vértices sobre el mapa, crear un rectángulo rápido o cargar el lote lado por lado (longitud y rumbo; el último lado cierra). Sobre el mapa se ven las curvas de nivel del relieve reconstruido, así el lote se dibuja sobre el mismo terreno que después aparece en 3D. Área, perímetro, pendiente y verificaciones de la regla R01 en tiempo real.
+3. **Modelo 3D y sol.** Muestra el resultado de la reconstrucción; no pide decisiones. Visor con relieve, lote apoyado sobre la malla, norte y origen, recorrido solar y sombras. Los atajos a equinoccios y solsticios y la hora del visor son solo para mirar.
+4. **Clima.** Temperaturas por mes con grados-día, perfil horario, radiación mensual y rosa de vientos de 16 sectores, calculados sobre 5 años de series horarias de NASA POWER. Tampoco pide decisiones.
+5. **Avanzar.** El cierre del paso 4 (y el botón **Avanzar** de la barra de pasos) lista lo que falta: ubicación, relieve reconstruido para el origen y el entorno actuales, lote cerrado, dentro del entorno y confirmado. Lo que R01 deja pendiente sin impedir el diseño (pendiente fuera del dominio, relieve más grueso que el lote) viaja como aviso. Los requisitos los decide el backend (`assambl/guia/terreno.py`).
+
+Avanzar lleva a **Diseño de la casa**, que arranca sobre el terreno reconstruido: el visor muestra el relieve y el lote, y el panel reúne los datos de partida y los pendientes. Las herramientas de diseño (huella, ambientes, muros, aberturas) son el próximo desarrollo.
 
 Cada cambio de diseño es una operación que aplica el backend; **Deshacer** (o Ctrl+Z) vuelve atrás la última. El proyecto se guarda automáticamente en el navegador y se exporta/importa como `casa.assambl.json`; el registro de operaciones queda aparte, también en el navegador, hasta que exista la base de datos ([`docs/decisiones/0001_almacenamiento.md`](docs/decisiones/0001_almacenamiento.md)).
 
@@ -94,6 +97,8 @@ La geometría se construye **una sola vez, en Python**, y se publica como GLB po
 POST /api/terreno/escena          arma la escena y devuelve una referencia
 GET  /api/terreno/escena/{ref}.glb   el modelo 3D (visor web y Blender)
 GET  /api/terreno/escena/{ref}.py    script de Blender que reconstruye la escena
+GET  /api/terreno/escena/{ref}/curvas  curvas de nivel de la escena, en coordenadas locales
+POST /api/terreno/requisitos         qué falta para cerrar el terreno y pasar al diseño
 GET  /api/terreno/sol                trayectoria del día, muestreada cada 5 minutos
 GET  /api/clima                      resúmenes de NASA POWER con su procedencia
 GET  /api/operaciones                catálogo de operaciones con el esquema de sus parámetros
@@ -126,7 +131,7 @@ La interfaz lo repite en cada panel, y vale repetirlo acá:
 ## Pruebas
 
 ```powershell
-cd backend; .venv\Scripts\python -m pytest -q         # 83 pruebas, sin red
+cd backend; .venv\Scripts\python -m pytest -q         # 98 pruebas, sin red
 .venv\Scripts\python tests\probar_nasa.py --cotas     # coteja NASADEM contra cotas conocidas
 cd ..; npm install --no-save puppeteer gltf-validator
 node scripts/probar_ui.cjs                            # recorrido en navegador headless con capturas
@@ -138,6 +143,7 @@ Las sondas `backend/tests/probar_*.py` sí salen a internet y sirven para verifi
 
 ## Pendientes inmediatos de la capa 01
 
+- Fuente de relieve: evaluar alternativas a NASADEM (resolución de ~30 m, token de Earthdata, disponibilidad) antes de seguir invirtiendo en el paso Lote.
 - Retiros de frente, fondo y laterales dibujados como zona edificable (ya están en el esquema del proyecto).
 - Visor HTML autocontenido con el GLB embebido en base64 (MVP_01 §4.5).
 - Plano de implantación SVG (entregable 6.1).

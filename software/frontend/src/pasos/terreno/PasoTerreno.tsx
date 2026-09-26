@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
-import { api } from "../../api/cliente";
+import { useState } from "react";
+import { Boton } from "../../componentes/ui";
 import { useProyecto } from "../../estado/ProyectoContext";
+import type { SubPasoTerreno } from "../../modelo/proyecto";
+import CierreTerreno from "./CierreTerreno";
 import Mapa from "./Mapa";
 import PanelClima from "./PanelClima";
 import PanelLote from "./PanelLote";
@@ -8,7 +10,7 @@ import PanelModelo from "./PanelModelo";
 import PanelUbicacion from "./PanelUbicacion";
 import Visor3D from "./Visor3D";
 
-export type SubPaso = "ubicacion" | "lote" | "modelo" | "clima";
+type SubPaso = SubPasoTerreno;
 
 const SUBPASOS: { id: SubPaso; n: string; nombre: string }[] = [
   { id: "ubicacion", n: "1", nombre: "Ubicación y relieve" },
@@ -17,38 +19,10 @@ const SUBPASOS: { id: SubPaso; n: string; nombre: string }[] = [
   { id: "clima", n: "4", nombre: "Clima" },
 ];
 
-export default function PasoTerreno({ apiOk }: { apiOk: boolean | null }) {
-  const { proyecto, vincularEscena, escena, trayectoria, setTrayectoria } = useProyecto();
+export default function PasoTerreno({ apiOk, onAvanzar }: { apiOk: boolean | null; onAvanzar: () => void }) {
+  const { proyecto, requisitos } = useProyecto();
   const [sub, setSub] = useState<SubPaso>("ubicacion");
   const t = proyecto.terreno;
-
-  // Una vez generada la escena, se mantiene en sincronía con el lote, el margen y
-  // el origen. La primera generación es explícita porque puede bajar mosaicos de
-  // varios MB; las siguientes salen de la caché y son inmediatas.
-  useEffect(() => {
-    if (!escena || !t.ubicacion || !apiOk) return;
-    const h = setTimeout(() => {
-      api
-        .generarEscena(t.ubicacion!.lat, t.ubicacion!.lon, t.margen_m, t.lote.vertices)
-        .then((e) => {
-          if (e.ref === escena.ref) return;
-          vincularEscena(e);
-        })
-        .catch(() => undefined);
-    }, 500);
-    return () => clearTimeout(h);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t.ubicacion?.lat, t.ubicacion?.lon, t.margen_m, t.lote.vertices, apiOk, escena?.ref]);
-
-  // Trayectoria solar del día elegido: se pide una vez y el visor interpola.
-  useEffect(() => {
-    if (!t.ubicacion || !apiOk) return;
-    if (trayectoria && trayectoria.fecha === t.fecha_sol && trayectoria.lat === t.ubicacion.lat) return;
-    api
-      .sol(t.ubicacion.lat, t.ubicacion.lon, t.fecha_sol, t.huso_h)
-      .then(setTrayectoria)
-      .catch(() => setTrayectoria(null));
-  }, [t.ubicacion, t.fecha_sol, t.huso_h, apiOk, trayectoria, setTrayectoria]);
 
   const habilitado: Record<SubPaso, boolean> = {
     ubicacion: true,
@@ -82,6 +56,16 @@ export default function PasoTerreno({ apiOk }: { apiOk: boolean | null }) {
             ? `${t.ubicacion.lat.toFixed(5)}, ${t.ubicacion.lon.toFixed(5)} · margen ${t.margen_m} m · +Y norte`
             : "Sin ubicación"}
         </div>
+        <div className="px-3 self-center">
+          <Boton
+            primario
+            disabled={!requisitos?.listo}
+            onClick={onAvanzar}
+            title={requisitos?.listo ? "Pasar al diseño de la casa" : "Completá ubicación, relieve y lote para avanzar"}
+          >
+            Avanzar →
+          </Boton>
+        </div>
       </div>
 
       <div className="grid grid-cols-[1fr_360px] min-h-0">
@@ -91,8 +75,15 @@ export default function PasoTerreno({ apiOk }: { apiOk: boolean | null }) {
         <aside className="border-l border-line bg-concrete overflow-y-auto p-4">
           {sub === "ubicacion" && <PanelUbicacion apiOk={apiOk} irALote={() => setSub("lote")} />}
           {sub === "lote" && <PanelLote irAModelo={() => setSub("modelo")} />}
-          {sub === "modelo" && <PanelModelo />}
-          {sub === "clima" && <PanelClima apiOk={apiOk} />}
+          {sub === "modelo" && <PanelModelo irAClima={() => setSub("clima")} />}
+          {sub === "clima" && (
+            <>
+              <PanelClima apiOk={apiOk} />
+              <div className="mt-4">
+                <CierreTerreno onAvanzar={onAvanzar} irAPaso={setSub} />
+              </div>
+            </>
+          )}
         </aside>
       </div>
     </div>

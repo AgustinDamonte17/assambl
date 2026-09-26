@@ -39,7 +39,7 @@ Esa clasificación no es decorativa: viaja en el campo `naturaleza` de cada `Fue
 - La colección vive hoy en el proveedor **LPCLOUD** (`C2763264762-LPCLOUD`), no en el viejo `LPDAAC_ECS`. Consultar por `provider=LPDAAC_ECS` devuelve vacío, y el espejo histórico `e4ftl01.cr.usgs.gov` responde 404 para este producto.
 - Formato: `.hgt` dentro de un `.zip`. Cada mosaico cubre 1° × 1° con 3601 × 3601 posts `int16` big-endian, sin encabezado. La fila 0 del archivo es el **borde norte**, así que al leerlo se invierte verticalmente. El valor `-32768` marca ausencia de dato.
 - Nombre del mosaico: esquina **suroeste**, p. ej. `s32w065` para el cuadrado entre 32° S y 31° S, 65° O y 64° O.
-- Recorte: se indexa en arcosegundos enteros y se toma el post inmediatamente exterior a cada borde, de modo que el área pedida quede contenida. El límite es 9 mosaicos por escena; con el margen máximo (2000 m) nunca se pasa de 4.
+- Recorte: se indexa en arcosegundos enteros y se toma el post inmediatamente exterior a cada borde, de modo que el área pedida quede contenida. El límite es 9 mosaicos por escena; con el margen máximo (1000 m) nunca se pasa de 4.
 - Huecos: se rellenan con la mediana del recorte y la cantidad se informa en el campo `huecos` de la malla. Si no queda ningún post con dato, la escena pasa a provisional.
 - Caché: `backend/cache/nasadem/<tesela>.hgt` (unos 26 MB por mosaico, sin comprimir). Se descarga una vez por grado, no una vez por escena.
 - Reintentos: tres, solo ante fallos de conexión. Los cortes de DNS momentáneos aparecieron dos veces durante el desarrollo y no vale la pena perder una descarga de minutos por uno.

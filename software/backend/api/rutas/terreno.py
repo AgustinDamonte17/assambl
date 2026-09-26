@@ -16,7 +16,10 @@ from assambl.capas import terreno as capa
 from assambl.clima import sol as csol
 from assambl.fuentes import nasadem
 from assambl.generadores import blender
+from assambl.geometria import curvas as gcurvas
+from assambl.guia import terreno as guia
 from assambl.modelo.operaciones import EscenaDisponible
+from assambl.modelo.proyecto import Proyecto
 from assambl.modelo.sitio import Relieve
 from assambl.reglas import r01_terreno
 
@@ -105,6 +108,29 @@ def descargar_glb(ref: str) -> Response:
         media_type="model/gltf-binary",
         headers={"Cache-Control": "public, max-age=3600", "Content-Disposition": f'inline; filename="{ref}.glb"'},
     )
+
+
+@router.get("/escena/{ref}/curvas")
+def curvas_de_nivel(ref: str) -> dict:
+    """Curvas de nivel de la escena en coordenadas locales, para dibujar el lote
+    sobre el relieve reconstruido. Tienen la resolución del DEM."""
+    e = _escena(ref)
+    if e.relieve.provisional:
+        return {"equidistancia_m": None, "cota_min": None, "cota_max": None, "absolutas": False,
+                "curvas": [], "provisional": True}
+    return {**gcurvas.curvas(e.malla, e.relieve.cota_origen_msnm), "provisional": False,
+            "paso_m": round(e.malla.paso_medio_m, 1)}
+
+
+class ContextoEscenas:
+    def escena(self, ref: str) -> EscenaDisponible | None:
+        return escena_disponible(ref)
+
+
+@router.post("/requisitos")
+def requisitos_para_avanzar(proyecto: Proyecto) -> dict:
+    """Qué falta para cerrar el terreno y empezar a diseñar la casa."""
+    return guia.requisitos(proyecto, ContextoEscenas())
 
 
 @router.get("/escena/{ref}.py")

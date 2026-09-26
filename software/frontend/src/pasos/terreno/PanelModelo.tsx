@@ -1,15 +1,14 @@
 /**
- * Panel del modelo 3D: procedencia de cada capa, control de fecha y hora, y las
- * salidas de la fase de terreno (.glb y script de Blender).
+ * Panel del modelo 3D: muestra el resultado de la reconstrucción del terreno. No
+ * pide decisiones; el sol se puede recorrer para mirar, sin cambiar el proyecto.
  */
 
-import { api } from "../../api/cliente";
-import { Aviso, Boton, Campo, Dato, EtiquetaNaturaleza, FichaFuente, Seccion } from "../../componentes/ui";
+import { Aviso, Boton, Dato, EtiquetaNaturaleza, FichaFuente, Seccion } from "../../componentes/ui";
 import { useProyecto } from "../../estado/ProyectoContext";
 import { cardinal } from "../../modelo/proyecto";
 import { horaTexto, solALaHora } from "./sol";
 
-export default function PanelModelo() {
+export default function PanelModelo({ irAClima }: { irAClima: () => void }) {
   const { proyecto, escena, trayectoria, despachar } = useProyecto();
   const t = proyecto.terreno;
 
@@ -20,7 +19,11 @@ export default function PanelModelo() {
 
   return (
     <div className="text-xs">
-      <Seccion titulo="3 · Modelo del sitio">
+      <Seccion titulo="3 · Terreno reconstruido">
+        <p className="text-rebar leading-snug mb-2">
+          Este es el terreno sobre el que vas a diseñar la casa. No hay nada que decidir acá: revisá que el relieve y el
+          lote se vean como esperás.
+        </p>
         <Dato etiqueta="Relieve" valor={`${escena.posts[0]} × ${escena.posts[1]} posts`} />
         <Dato etiqueta="Separación" valor={`${escena.paso_m[0]} × ${escena.paso_m[1]}`} sufijo="m" />
         <Dato etiqueta="Extensión" valor={`${escena.extension_m[0]} × ${escena.extension_m[1]}`} sufijo="m" />
@@ -30,30 +33,26 @@ export default function PanelModelo() {
           etiqueta="Pendiente estimada"
           valor={provisional ? "—" : `${escena.pendiente_pct} % hacia ${cardinal(escena.pendiente_azimut_deg)}`}
         />
-        <Dato etiqueta="Tamaño del .glb" valor={(escena.bytes_glb / 1024).toFixed(0)} sufijo="kB" />
+        {provisional && (
+          <div className="mt-2">
+            <Aviso fuerte>
+              El relieve es plano porque no hubo datos de elevación para este punto. Podés seguir: el diseño avanza y la
+              pendiente queda marcada como pendiente.
+            </Aviso>
+          </div>
+        )}
       </Seccion>
 
-      <Seccion titulo="Fecha y hora del sol">
-        <div className="grid grid-cols-2 gap-2">
-          <Campo
-            etiqueta="Fecha"
-            type="date"
-            value={t.fecha_sol}
-            onChange={(e) => despachar({ tipo: "sol_fecha", fecha: e.target.value })}
-          />
-          <Campo
-            etiqueta="Huso horario"
-            type="number"
-            step={0.5}
-            value={t.huso_h ?? ""}
-            placeholder="automático"
-            onChange={(e) => despachar({ tipo: "sol_huso", huso_h: e.target.value === "" ? null : Number(e.target.value) })}
-            sufijo="h UTC"
-          />
-        </div>
-
+      <Seccion titulo="Recorrido del sol">
+        <p className="text-rebar leading-snug">
+          Elegí un día clave y mové la hora en el visor para ver luz y sombras. Es solo para mirar: no cambia el
+          proyecto.
+        </p>
         {trayectoria && (
           <>
+            <div className="mt-2">
+              <Dato etiqueta="Día" valor={t.fecha_sol} />
+            </div>
             <div className="flex flex-wrap gap-1 mt-2">
               {Object.entries(trayectoria.fechas_clave).map(([clave, fecha]) => (
                 <Boton key={clave} onClick={() => despachar({ tipo: "sol_fecha", fecha })} className="!px-2 !py-1 !text-[10px]">
@@ -127,28 +126,15 @@ export default function PanelModelo() {
         </div>
       </Seccion>
 
-      <Seccion titulo="Salida de la fase de terreno">
-        <p className="text-rebar leading-snug mb-2">
-          La misma geometría en dos formas: la malla resuelta y el código que la compone. Las dos salen del mismo
-          generador.
-        </p>
-        <div className="flex flex-col gap-2">
-          <a href={api.urlGlb(escena.ref)} download={`assambl_terreno_${escena.ref}.glb`}>
-            <Boton className="w-full">Descargar escena .glb</Boton>
-          </a>
-          <a href={api.urlScriptBlender(escena.ref, t.fecha_sol, t.hora_sol, t.huso_h)}>
-            <Boton className="w-full">Descargar script de Blender .py</Boton>
-          </a>
-        </div>
-        <p className="text-[10px] text-rebar mt-2 leading-snug">
-          El script trae el relieve como rejilla de posts, el contorno del lote apoyado y el sol orientado a la fecha y
-          hora elegidas.
-        </p>
-      </Seccion>
-
       <p className="text-[10px] text-rebar mt-4 leading-snug">
         Arrastrá para orbitar, rueda para acercar, botón derecho para desplazar.
       </p>
+
+      <div className="mt-5 flex justify-end">
+        <Boton primario onClick={irAClima}>
+          Siguiente: clima →
+        </Boton>
+      </div>
     </div>
   );
 }

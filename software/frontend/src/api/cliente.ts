@@ -1,5 +1,14 @@
 import type { Autor, Operacion, ResultadoOperacion } from "../modelo/operaciones";
-import type { AnalisisLote, Proyecto, Punto, RespuestaClima, RespuestaEscena, Trayectoria } from "../modelo/proyecto";
+import type {
+  AnalisisLote,
+  CurvasNivel,
+  Proyecto,
+  Punto,
+  RequisitosTerreno,
+  RespuestaClima,
+  RespuestaEscena,
+  Trayectoria,
+} from "../modelo/proyecto";
 
 async function pedir<T>(url: string, init?: RequestInit): Promise<T> {
   const r = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } });
@@ -54,6 +63,12 @@ export const api = {
     }),
 
   urlGlb: (ref: string) => `/api/terreno/escena/${ref}.glb`,
+
+  curvas: (ref: string) => pedir<CurvasNivel>(`/api/terreno/escena/${ref}/curvas`),
+
+  /** Qué falta para cerrar el terreno y pasar al diseño de la casa. */
+  requisitosTerreno: (proyecto: Proyecto) =>
+    pedir<RequisitosTerreno>("/api/terreno/requisitos", { method: "POST", body: JSON.stringify(proyecto) }),
 
   urlScriptBlender: (ref: string, fecha: string, hora: number, huso_h: number | null) => {
     const p = new URLSearchParams({ fecha, hora: String(hora) });

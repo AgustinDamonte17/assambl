@@ -351,7 +351,8 @@ export default function Visor3D() {
         <div className="absolute inset-0 grid place-items-center text-xs text-rebar pointer-events-none">
           {carga === "cargando" && "Cargando la escena…"}
           {carga === "error" && <span className="text-signal">{error}</span>}
-          {carga === "vacio" && "Generá la escena desde el panel de ubicación."}
+          {carga === "vacio" &&
+            (t.escena_ref ? "Reconstruyendo el terreno…" : "Generá la escena desde el panel de ubicación.")}
         </div>
       )}
 

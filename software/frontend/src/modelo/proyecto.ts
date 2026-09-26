@@ -19,7 +19,7 @@ export type Naturaleza = "medicion_satelital" | "reanalisis_regional" | "calculo
 export type Punto = [number, number];
 
 export const MARGEN_MIN_M = 100;
-export const MARGEN_MAX_M = 2000;
+export const MARGEN_MAX_M = 1000;
 export const MARGEN_POR_DEFECTO_M = 500;
 
 export interface Ubicacion {
@@ -242,6 +242,43 @@ export interface AnalisisLote {
   lados: Lado[];
   pendiente: Pendiente | null;
   verificaciones: Verificacion[];
+}
+
+/* Guía del recorrido (backend/assambl/guia/terreno.py) */
+
+export type SubPasoTerreno = "ubicacion" | "lote" | "modelo" | "clima";
+
+export interface Requisito {
+  id: string;
+  descripcion: string;
+  cumple: boolean;
+  /** Si no se cumple, impide avanzar. Los que no bloquean son avisos que acompañan al diseño. */
+  bloquea: boolean;
+  detalle: string;
+  paso: SubPasoTerreno | "";
+}
+
+export interface RequisitosTerreno {
+  listo: boolean;
+  requisitos: Requisito[];
+}
+
+/* Curvas de nivel de la escena (backend/assambl/geometria/curvas.py) */
+
+export interface CurvasNivel {
+  equidistancia_m: number | null;
+  cota_min: number | null;
+  cota_max: number | null;
+  absolutas: boolean;
+  provisional: boolean;
+  paso_m?: number;
+  curvas: { cota: number; maestra: boolean; segmentos: [Punto, Punto][] }[];
+}
+
+/** Proyectos guardados con límites anteriores se abren dentro de los actuales. */
+export function normalizar(p: Proyecto): Proyecto {
+  const margen = Math.min(MARGEN_MAX_M, Math.max(MARGEN_MIN_M, p.terreno.margen_m));
+  return margen === p.terreno.margen_m ? p : { ...p, terreno: { ...p.terreno, margen_m: margen } };
 }
 
 export function ahora(): string {
