@@ -37,7 +37,9 @@ for (const colorScheme of ["light", "dark"]) {
   });
   for (const [state, progress] of [
     ["assembled", 0],
-    ["exploded", 1],
+    // Estructura elevada, sin techo ni envolvente (STEPS "06_Estructura"): al
+    // final del recorrido solo queda el terreno.
+    ["exploded", 0.6],
   ]) {
     await page.evaluate((p) => {
       const s = document.querySelector(".explode-track");

@@ -16,7 +16,7 @@ Sistema de coordenadas
 
 Jerarquía exportada (el nombre de cada nodo es el identificador estable)
     AngusRanch
-      L01_Terreno ... L10_Electrico       nodos de capa, identidad, no se animan
+      techo ... terreno                   nodos de capa (ver LAYERS), identidad, no se animan
         <capa>__<parte>[__<fachada>]      nodos animables, pivote = centro de su caja
     Solo se animan las hojas. extras (userData en three.js): layer, part, facade,
     dir (dirección de fachada en planta, glTF XZ), size (caja en metros).
@@ -58,56 +58,58 @@ MIN_DIAGONAL_M = 0.06
 # Las capas son las View Layers de V11; las partes, subdivisiones del explode.
 # ---------------------------------------------------------------------------
 LAYERS = [
-    ('L01_Terreno', '01_Terreno'),
-    ('L02_Cimientos', '02_Cimientos'),
-    ('L03_Estructura', '03_Estructura'),
-    ('L04_Aislante', '04_Aislante'),
-    ('L05_Siding', '05_Siding'),
-    ('L06_Techo', '06_Techo'),
-    ('L07_Interior', '07_Interior'),
-    ('L08_Terminaciones', '08_Terminaciones'),
-    ('L09_Plomeria', '09_Plomeria'),
-    ('L10_Electrico', '10_Electrico'),
+    # (id en el GLB, View Layer de V11). Los ids no llevan número: la numeración
+    # visible sale del orden del explode (STEPS en src/components/explode/config.ts).
+    ('techo', '06_Techo'),
+    ('siding', '05_Siding'),
+    ('terminaciones', '08_Terminaciones'),
+    ('aislante', '04_Aislante'),
+    ('estructura', '03_Estructura'),
+    ('electrico', '10_Electrico'),
+    ('interior', '07_Interior'),
+    ('plomeria', '09_Plomeria'),
+    ('cimientos', '02_Cimientos'),
+    ('terreno', '01_Terreno'),
 ]
 
 COLLECTIONS = {
-    '16e_V06_Hormigon': ('L02_Cimientos', 'platea', False),
-    '16a_V06_Soleras_tratadas': ('L02_Cimientos', 'soleras', False),
-    '16b_V06_Barrera_capilar': ('L02_Cimientos', 'soleras', False),
-    '16c_V06_Pernos_arandelas_tuercas': ('L02_Cimientos', 'soleras', False),
-    '16d_V06_Bases_postes': ('L02_Cimientos', 'platea', False),
-    '08a_Entramado_paredes': ('L03_Estructura', 'entramado', False),
-    '08d_Postes_en_muros': ('L03_Estructura', 'entramado', False),
-    '15a_V06_Headers_dos_tablas': ('L03_Estructura', 'entramado', False),
-    '15b_V06_Separadores_headers': ('L03_Estructura', 'entramado', False),
-    '16f_V06_Postes_galeria': ('L03_Estructura', 'galeria', False),
-    '10_05_Insulation': ('L04_Aislante', 'lana', True),
-    '13_08_Camara_listones': ('L05_Siding', 'listones', True),
-    '14_08_Siding': ('L05_Siding', 'siding', True),
-    '08b_Estructura_techo': ('L06_Techo', 'estructura', False),
-    '08c_Tablero_techo': ('L06_Techo', 'tablero', False),
-    '06b_Cubiertas': ('L06_Techo', 'cubierta', False),
-    '06c_Cubierta_galeria': ('L06_Techo', 'cubierta', False),
-    '00_Base': ('L07_Interior', 'pisos', False),
-    '02_Tabiques': ('L07_Interior', 'tabiques', False),
-    '04a_Cocina': ('L07_Interior', 'equipamiento', False),
-    '04b_Social': ('L07_Interior', 'equipamiento', False),
-    '04c_Dormitorios': ('L07_Interior', 'equipamiento', False),
-    '04d_Banos_lavadero': ('L07_Interior', 'equipamiento', False),
-    '04e_Oficina': ('L07_Interior', 'equipamiento', False),
-    '01_Muros_exteriores': ('L08_Terminaciones', 'revestimiento_interior', False),
-    '03_Carpinterias': ('L08_Terminaciones', 'carpinterias', True),
-    '06a_Cielorraso': ('L08_Terminaciones', 'cielorraso', False),
-    '07_Exterior': ('L08_Terminaciones', 'galeria', False),
-    '11_06_OSB': ('L08_Terminaciones', 'osb', True),
-    '12_07_WRB': ('L08_Terminaciones', 'wrb', True),
-    '21_Desagues_sanitarios': ('L09_Plomeria', 'redes', False),
-    '22_Agua_fria_caliente': ('L09_Plomeria', 'redes', False),
+    '16e_V06_Hormigon': ('cimientos', 'platea', False),
+    '16a_V06_Soleras_tratadas': ('cimientos', 'soleras', False),
+    '16b_V06_Barrera_capilar': ('cimientos', 'soleras', False),
+    '16c_V06_Pernos_arandelas_tuercas': ('cimientos', 'soleras', False),
+    '16d_V06_Bases_postes': ('cimientos', 'platea', False),
+    '08a_Entramado_paredes': ('estructura', 'entramado', False),
+    '08d_Postes_en_muros': ('estructura', 'entramado', False),
+    '15a_V06_Headers_dos_tablas': ('estructura', 'entramado', False),
+    '15b_V06_Separadores_headers': ('estructura', 'entramado', False),
+    '16f_V06_Postes_galeria': ('estructura', 'galeria', False),
+    '10_05_Insulation': ('aislante', 'lana', True),
+    '13_08_Camara_listones': ('siding', 'listones', True),
+    '14_08_Siding': ('siding', 'siding', True),
+    '08b_Estructura_techo': ('techo', 'estructura', False),
+    '08c_Tablero_techo': ('techo', 'tablero', False),
+    '06b_Cubiertas': ('techo', 'cubierta', False),
+    '06c_Cubierta_galeria': ('techo', 'cubierta', False),
+    '00_Base': ('interior', 'pisos', False),
+    '02_Tabiques': ('interior', 'tabiques', False),
+    '04a_Cocina': ('interior', 'equipamiento', False),
+    '04b_Social': ('interior', 'equipamiento', False),
+    '04c_Dormitorios': ('interior', 'equipamiento', False),
+    '04d_Banos_lavadero': ('interior', 'equipamiento', False),
+    '04e_Oficina': ('interior', 'equipamiento', False),
+    '01_Muros_exteriores': ('terminaciones', 'revestimiento_interior', False),
+    '03_Carpinterias': ('terminaciones', 'carpinterias', True),
+    '06a_Cielorraso': ('terminaciones', 'cielorraso', False),
+    '07_Exterior': ('terminaciones', 'galeria', False),
+    '11_06_OSB': ('terminaciones', 'osb', True),
+    '12_07_WRB': ('terminaciones', 'wrb', True),
+    '21_Desagues_sanitarios': ('plomeria', 'redes', False),
+    '22_Agua_fria_caliente': ('plomeria', 'redes', False),
     # V11: canaletas, babetas y bajadas. Cuelgan del alero y bajan al terreno:
     # quedan en su lugar (no suben con la cubierta) y se nombran en 09_Plomeria.
-    '23_Pluviales_canaletas': ('L09_Plomeria', 'pluviales', False),
-    '20_Instalacion_electrica': ('L10_Electrico', 'redes', False),
-    '05_Iluminacion': ('L10_Electrico', 'luminarias', False),
+    '23_Pluviales_canaletas': ('plomeria', 'pluviales', False),
+    '20_Instalacion_electrica': ('electrico', 'redes', False),
+    '05_Iluminacion': ('electrico', 'luminarias', False),
 }
 
 # Fachadas: dirección hacia afuera en planta (Blender XY). Las esquinas se mueven
@@ -223,7 +225,7 @@ def terrain_geometry(mod, terreno, informe, add):
     faces += [[n + c, n + b, n + a] for a, b, c in faces]
     faces += [[i, n + i, n + (i + 1) % n, (i + 1) % n] for i in range(n)]
     grass = (0.30, 0.32, 0.16, 1)  # TER_V01_pasto_ralo (lineal)
-    add('L01_Terreno', 'lote', None, top + bot, faces, grass)
+    add('terreno', 'lote', None, top + bot, faces, grass)
 
     rng = random.Random(T['SEMILLA'])
     bark = (0.22, 0.15, 0.08, 1)
@@ -285,7 +287,7 @@ def terrain_geometry(mod, terreno, informe, add):
         x, y = to_local(*T['to_world']((px, py)))
         for parts, color in [(trunks, bark), (crowns, leaves[mat])]:
             for vs, fs in parts:
-                add('L01_Terreno', 'arboles', None, [(vx + x, vy + y, vz) for vx, vy, vz in vs], fs, color)
+                add('terreno', 'arboles', None, [(vx + x, vy + y, vz) for vx, vy, vz in vs], fs, color)
 
     for a, b in zip(T['POLY'], T['POLY'][1:] + T['POLY'][:1]):
         count = max(1, math.ceil(math.dist(a, b) / T['SEPARACION_POSTES_M']))
@@ -295,7 +297,7 @@ def terrain_geometry(mod, terreno, informe, add):
             posts = []
             cylinder(posts, (x, y, -0.15), (x, y, T['ALTURA_POSTE_M']), 0.055, top_ratio=1)
             for vs, fs in posts:
-                add('L01_Terreno', 'alambrado', None, vs, fs, bark)
+                add('terreno', 'alambrado', None, vs, fs, bark)
 
 
 def build(source):
@@ -324,7 +326,7 @@ def build(source):
             continue
         layer, part, split = COLLECTIONS[col]
         if col == '03_Carpinterias' and o['assembly'] in internal_walls:
-            layer, part, split = 'L07_Interior', 'carpinterias', False
+            layer, part, split = 'interior', 'carpinterias', False
         if o['assembly'] == 'INST_Alimentacion_y_tierra':
             # Acometida y jabalina: exteriores y enterradas, no viajan con los muros.
             part = 'acometida'

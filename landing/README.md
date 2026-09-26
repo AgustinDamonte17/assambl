@@ -79,7 +79,7 @@ The exporter imports the V11 script and rebuilds its geometry in memory, the sam
 path as its `--check` mode (read-only; nothing is written next to it). It then
 merges pieces into one mesh per animation node and writes a Y-up glTF (metres,
 house pivot at the origin). Nodes are named `<layer>__<part>[__<facade>]`, e.g.
-`L05_Siding__siding__N`; their `extras` carry `layer`, `part`, `size` and, for
+`siding__siding__N`; their `extras` carry `layer`, `part`, `size` and, for
 envelope parts, the facade direction `dir`. The collection → node mapping lives
 in `COLLECTIONS` at the top of `export_glb.py`; pieces smaller than 6 cm (nuts,
 washers) are skipped and counted in the report.
@@ -98,9 +98,17 @@ Everything is in `src/components/explode/config.ts`:
 - `PART_RULES`: per layer/part, a list of motions with a progress `range`,
   `lift` (in wall heights), `out` (in house widths, along the facade), optional
   `rotate` and an `ease`. Positions are always computed from the rest pose.
-- `STEPS`: when each V11 layer name is shown and highlighted with `--signal`.
-- `LAYER_FADES`: layers already passed that fade out (roof and outer envelope
-  after `04_Aislante`), so the following layers read clearly.
+- `STEPS`: the layers in explode order, when each is named and highlighted
+  with `--signal`. The shown number (`02_Techo`, `03_Siding`…) comes from the
+  position in this list; layer ids (`techo`, `siding`…) carry no number, so
+  reordering never requires re-exporting the GLB. `viewLayer` keeps the
+  original V11 View Layer name.
+- `LAYER_FADES`: per-layer opacity keyframes (0 hides, 1 shows, in between
+  ghosts). After `05_Aislante` the roof and outer envelope fade out. After
+  `06_Estructura` (tramos en `STAGE`) the terrain always stays as background:
+  eléctrico over the grey interior, plomería and cimientos → interior on the
+  cimientos → plomería with ghosted cimientos (`FOUNDATION_GHOST`) →
+  cimientos → terreno alone.
 - `CAMERA_FOCUS`: range where the fixed framing eases in to what stays visible.
 - `CAPTIONS`: the three short texts.
 - Scroll length: `.explode-track` in `globals.css` (280svh mobile, 320svh desktop).

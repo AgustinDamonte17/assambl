@@ -65,12 +65,12 @@ body {
 
 /* explode de Angus Ranch: recorrido de scroll y capa nombrada */
 .explode-track {
-  height: 280svh;
+  height: 340svh;
 }
 
 @media (min-width: 768px) {
   .explode-track {
-    height: 320svh;
+    height: 390svh;
   }
 }
 
