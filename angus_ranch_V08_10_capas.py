@@ -1,5 +1,5 @@
-"""ANGUS RANCH V06 - CASA Y TERRENO + WOODFRAME + INSTALACIONES.
-Script autónomo derivado de V05. Ver Angus_Ranch_V06/LEEME_V06.md.
+"""ANGUS RANCH V08 - DIEZ VISTAS CONCEPTUALES DE CASA Y TERRENO.
+Script autónomo basado en V07; agrupación visual V08. Ver Angus_Ranch_V08/LEEME_V08_10_capas.md.
 Blender Scripting: Run Script crea una escena nueva. No borra anteriores.
 CLI: python archivo.py --check (solo lectura, sin generar archivos).
 Se conservan arquitectura, terreno y detalles V06. Nuevas colecciones:
@@ -30,9 +30,9 @@ Es el padre de todas las piezas, muebles y cámaras de detalle de la casa.
 No usar S: la escala de la casa debe permanecer en (1,1,1).
 Las ediciones manuales del .blend no se incorporan de vuelta al script.
 
-View Layers: se conservan las vistas constructivas, con terreno, y V06 agrega
-las capas 14–16 para electricidad, desagües/cimientos y agua.
-Inicio: 02_Exterior_completo. 01_Interior_sin_techo permite ver el interior.
+View Layers: diez vistas 01 Terreno, 02 Cimientos, 03 Estructura,
+04 Aislante, 05 Siding, 06 Techo, 07 Interior, 08 Terminaciones,
+09 Plomería y 10 Eléctrico. Inicio: 08_Terminaciones.
 Cámaras: lote, planta, campo, detalle de galería y las tres cámaras V04.
 Numpad 0: cámara activa. Numpad 7: planta (norte arriba).
 Para cambiar cámara: seleccionarla y Ctrl+Numpad 0.
@@ -2013,7 +2013,7 @@ def write_outputs(out,c,rows,anchors,unresolved,report):
                   tablas_stock_con_reserva=sum(r['tablas_cotizar'] for r in purchase),
                   piezas_fuera_stock=len(special),volumen_bruto_total_m3=round(sum(r['volumen_bruto_m3'] for r in rows),4),
                   calculo_estructural=False,blender_ejecutado=False,hipotesis=V06)
-    (out/'verificacion_V06.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+    (out/'verificacion_V08.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     (out/'datos_computo.json').write_text(json.dumps({'piezas':rows,'agrupado':grouped,'compra':purchase,'especiales':special,'informe':report},ensure_ascii=False),encoding='utf-8')
     def table(data,cols):
         return '<table><thead><tr>'+''.join('<th>'+html.escape(k.replace('_',' '))+'</th>' for k in cols)+'</tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+html.escape(str(r[k]))+'</td>' for k in cols)+'</tr>' for r in data)+'</tbody></table>'
@@ -2043,8 +2043,8 @@ def setup_blender_v06(c,rows,grouped,report,out):
     import bpy
     from mathutils import Vector, Matrix
     scene=bpy.context.scene
-    scene.name='Angus_Ranch_V06_Casa_y_Terreno'
-    scene['version']='V06';scene['estado']='Estudio constructivo y cómputo preliminar; no calculado'
+    scene.name='Angus_Ranch_V08_10_Capas'
+    scene['version']='V08 (geometría V07)';scene['estado']='Estudio constructivo y cómputo preliminar; no calculado'
     scene['computo_json']=json.dumps(report,ensure_ascii=False)
     root=next(o for o in scene.objects if o.name.startswith('CASA_MOVER_TODO'))
     byid={o.get('id_estable'):o for o in scene.objects if o.get('id_estable')}
@@ -2155,60 +2155,88 @@ def setup_blender_v06(c,rows,grouped,report,out):
     del c['OBJECTS'][start:]
     label(detanchor,'Leyenda_HD','HOLD-DOWN / EJEMPLO\nMontante doble + conector + anclaje dedicado\nNo define ubicacion, cantidad ni capacidad\nTornillos y varilla: representacion ilustrativa',(55.15,-12.8,-.36),.085)
     cameras['13_Detalle_anclajes']=camera('CAM_V06_13_Anclajes',(57.6,-16.2,3.3),(54.9,-12,.05),3.9)
-    # Each view layer has a dedicated camera marker. Blender cameras are scene-wide;
-    # render launcher below switches both together, as documented in LEEME.
-    old_layers=list(scene.view_layers)
-    for layer in old_layers:
-        for lc in layer.layer_collection.children:
-            cat=lc.collection.get('category_id')
-            if lc.collection in {despiece,detheader,detanchor}:lc.exclude=True
-            elif cat in NEW_CATS:
-                lc.exclude=layer.name=='01_Interior_sin_techo' and cat not in {CAT_CONCRETE,CAT_SILL}
-    rules={
-        '09_Headers_dobles':{'08a_Entramado_paredes',CAT_HEADER,CAT_CORE,CAT_SILL},
-        '10_Anclajes_y_cimientos':{'08a_Entramado_paredes','08d_Postes_en_muros',CAT_HEADER,CAT_CORE,CAT_SILL,CAT_GASKET,CAT_ANCHOR,CAT_SHOE,CAT_CONCRETE,CAT_GALLERY_POST},
-        '11_Despiece_madera':set(), '12_Detalle_header_explotado':set(), '13_Detalle_anclajes':set()}
-    for name,visible in rules.items():
+    # V08 reorganizes presentation only. Source categories and object geometry stay intact.
+    # The historical detail collections remain in the scene for inspection, outside these views.
+    # The V06 concrete category already contains the platea and isolated footings.
+    # Keeping 00_Base out of the early views avoids showing finished floor layers.
+    base={CAT_CONCRETE,CAT_SILL,CAT_GASKET,CAT_ANCHOR,CAT_SHOE}
+    timber={'08a_Entramado_paredes','08b_Estructura_techo','08d_Postes_en_muros',
+            CAT_HEADER,CAT_CORE,CAT_GALLERY_POST}
+    skin={'10_05_Insulation','11_06_OSB','12_07_WRB',
+          '13_08_Camara_listones','14_08_Siding'}
+    roofing={'08c_Tablero_techo','06b_Cubiertas','06c_Cubierta_galeria'}
+    interior={'00_Base','01_Muros_exteriores','02_Tabiques','03_Carpinterias',
+              '04_Mobiliario','04a_Cocina','04b_Social','04c_Dormitorios',
+              '04d_Banos_lavadero','04e_Oficina','05_Iluminacion'}
+    exterior={'07_Exterior'}
+    all_house={o['collection'] for o in c['OBJECTS']} - {
+        INSTALACIONES['electrico'],INSTALACIONES['desagues'],INSTALACIONES['agua']}
+    terrain={co for co in scene.collection.children
+             if co.name.startswith(('01_LOTE_','02_ARBOLES_LOTE_',
+                                    '03_ALAMBRADO_','04_CALLE_',
+                                    '05_CAMPO_','06_VECINOS_','07_GUIAS_'))}
+    layers=[
+        ('01_Terreno',set(),terrain,None,'Lote, árboles, alambrado, calle y contexto.'),
+        ('02_Cimientos',base,set(),'10_Anclajes_y_cimientos',
+         'Platea, dados, soleras, barrera capilar, pernos y bases.'),
+        ('03_Estructura',base|timber,set(),'09_Headers_dobles',
+         'Cimientos más entramado de muros y estructura portante del techo.'),
+        ('04_Aislante',base|timber|{'10_05_Insulation'},set(),'09_Headers_dobles',
+         'Estructura y aislación de paredes exteriores.'),
+        ('05_Siding',base|timber|skin|{'03_Carpinterias'},set(),'09_Headers_dobles',
+         'Envolvente de paredes, OSB, WRB, cámara, siding y aberturas.'),
+        ('06_Techo',base|timber|skin|roofing|{'03_Carpinterias'},set(),'09_Headers_dobles',
+         'Envolvente y cubierta completa, incluidos tablero y chapas.'),
+        ('07_Interior',base|timber|interior,set(),
+         '09_Headers_dobles','Planta interior, tabiques, aberturas y mobiliario; sin cubierta ni cielorraso.'),
+        ('08_Terminaciones',all_house,set(),'09_Headers_dobles',
+         'Casa terminada con revestimientos, techos, carpinterías y mobiliario.'),
+        ('09_Plomeria',(base-{CAT_CONCRETE})|timber|{INSTALACIONES['desagues'],
+                                  INSTALACIONES['agua']},set(),
+         '10_Anclajes_y_cimientos','Agua fría/caliente y desagües sobre estructura de referencia.'),
+        ('10_Electrico',base|timber|{'00_Base','05_Iluminacion',
+                                   INSTALACIONES['electrico']},set(),
+         '09_Headers_dobles','Canalizaciones, conductores, tablero y luminarias.'),
+    ]
+    assert len(layers)==10 and len({name for name,*_ in layers})==10
+    # The active original layer cannot be removed until a new one is selected.
+    previous=list(scene.view_layers)
+    for name,visible,extra,camera_key,description in layers:
         layer=scene.view_layers.new(name)
-        for lc in layer.layer_collection.children:
-            co=lc.collection;cat=co.get('category_id')
-            lc.exclude=not(cat in visible or co==env or co.name.startswith('00_CONTROL') or
-                           (name=='11_Despiece_madera' and co==despiece) or
-                           (name=='12_Detalle_header_explotado' and co==detheader) or
-                           (name=='13_Detalle_anclajes' and co==detanchor))
-        layer['camara_recomendada']=cameras[name].name
-    # Tres capas de inspección, sin nuevas cámaras ni renders automáticos.
-    bases={'00_Base',CAT_CONCRETE}
-    estructura={'08a_Entramado_paredes','08d_Postes_en_muros',CAT_HEADER,CAT_CORE,CAT_SILL}
-    for name,visible in [
-            ('14_Instalacion_electrica',bases|estructura|{INSTALACIONES['electrico']}),
-            ('15_Desagues_y_cimientos',bases|{CAT_ANCHOR,CAT_SHOE,INSTALACIONES['desagues']}),
-            ('16_Agua_fria_y_caliente',bases|estructura|{INSTALACIONES['agua']})]:
-        layer=scene.view_layers.new(name)
+        layer['contenido']=description
+        layer['camara_recomendada']=(cameras[camera_key].name if camera_key else scene.camera.name)
         for lc in layer.layer_collection.children:
             co=lc.collection
-            lc.exclude=not(co.get('category_id') in visible or co==env or co.name.startswith('00_CONTROL'))
-        layer['camara_recomendada']=cameras['09_Headers_dobles'].name
-        layer.use=False
-    # Camera switching via timeline markers, without auto-run handlers/add-ons.
-    frame_map=[(1,'09_Headers_dobles'),(10,'10_Anclajes_y_cimientos'),(20,'11_Despiece_madera'),
-               (30,'12_Detalle_header_explotado'),(40,'13_Detalle_anclajes')]
-    for frame,name in frame_map:
-        marker=scene.timeline_markers.new(name,frame=frame);marker.camera=cameras[name]
-    scene.frame_end=40;scene.frame_set(1);scene.camera=cameras['09_Headers_dobles']
-    for layer in scene.view_layers:layer.use=layer.name=='09_Headers_dobles'
-    bpy.context.window.view_layer=scene.view_layers['09_Headers_dobles']
+            cat=co.get('category_id')
+            lc.exclude=not (cat in visible or co in extra or co==env or
+                            co.name.startswith('00_CONTROL'))
+    bpy.context.window.view_layer=scene.view_layers['08_Terminaciones']
+    for layer in previous:
+        scene.view_layers.remove(layer)
+    # Markers switch the scene-wide camera; selecting a View Layer alone cannot do it.
+    camera_for={name:(cameras[key] if key else scene.camera)
+                for name,_,_,key,_ in layers}
+    for frame,(name,_,_,_,_) in enumerate(layers,1):
+        marker=scene.timeline_markers.new(name,frame=frame)
+        marker.camera=camera_for[name]
+    scene.frame_end=10
+    scene.frame_set(8)
+    scene.camera=camera_for['08_Terminaciones']
+    for layer in scene.view_layers:
+        layer.use=layer.name=='08_Terminaciones'
+    assert [v.name for v in scene.view_layers]==[name for name,*_ in layers]
+    scene['camara_por_layer']=json.dumps({name:camera_for[name].name
+                                          for name,_,_,_,_ in layers})
     # Good modelling view independent from render cameras.
     for screen in bpy.data.screens:
         for area in screen.areas:
             if area.type=='VIEW_3D':
                 sp=area.spaces.active;sp.shading.type='SOLID';sp.shading.color_type='MATERIAL'
                 sp.region_3d.view_distance=26;sp.region_3d.view_location=root.matrix_world@Vector((0,0,1))
-                sp.region_3d.view_rotation=cameras['09_Headers_dobles'].matrix_world.to_quaternion()
+                sp.region_3d.view_rotation=camera_for['08_Terminaciones'].matrix_world.to_quaternion()
     for o in scene.objects:
         if o.type=='MESH' and o.get('computo_id'):o['computable']=True
-    readme=bpy.data.texts.new('LEEME_V06');readme.write((out/'LEEME_V06.md').read_text(encoding='utf-8'))
-    scene['camara_por_layer']=json.dumps({n:ca.name for n,ca in cameras.items()})
+    readme=bpy.data.texts.new('LEEME_V08_10_CAPAS');readme.write((out/'LEEME_V08_10_capas.md').read_text(encoding='utf-8'))
     report.pop('_anchors',None)
     report['blender_ejecutado']=True
     report['objetos_escena']=len(scene.objects)
@@ -2216,7 +2244,7 @@ def setup_blender_v06(c,rows,grouped,report,out):
     assert len([o for o in despiece.all_objects if o.get('pieza_origen')])==len(rows)
     assert len([o for o in scene.objects if o.get('computable')])==len(rows)
     report['copias_despiece_verificadas']=len(rows)
-    (out/'verificacion_V06.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+    (out/'verificacion_V08.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     return cameras
 
 
@@ -2784,7 +2812,7 @@ def main_v06():
             assert abs(lo[2]-op['head'])<1e-6
     rows=timber_inventory(c)
     base=Path(__file__).resolve().parent
-    out=base/'Angus_Ranch_V06'
+    out=base/'Angus_Ranch_V08'
     # --check es de solo lectura: no produce cómputos, planos, renders ni .blend.
     if '--check' in sys.argv:
         report.update(version_integrada='V06 + instalaciones',piezas_casa=len(c['OBJECTS']),
@@ -2792,14 +2820,14 @@ def main_v06():
                       soleras_anclaje_especial=unresolved,blender_ejecutado=False)
         print(json.dumps(report,ensure_ascii=False,indent=2));return
     grouped=write_outputs(out,c,rows,anchors,unresolved,report)
-    (out/'LEEME_V06.md').write_text(README_V06,encoding='utf-8')
+    (out/'LEEME_V08_10_capas.md').write_text(README_V08,encoding='utf-8')
     construir_integrado(c,t,report)
     report['_anchors']=anchors
     cameras=setup_blender_v06(c,rows,grouped,report,out)
     import bpy
     scene=bpy.context.scene
     if '--save' in sys.argv or '--render' in sys.argv:
-        bpy.ops.wm.save_as_mainfile(filepath=str(out/'angus_ranch_V06_casa_y_terreno.blend'))
+        bpy.ops.wm.save_as_mainfile(filepath=str(out/'angus_ranch_V08_10_capas.blend'))
     if '--render' in sys.argv:
         scene.render.engine='BLENDER_WORKBENCH'
         scene.display.shading.light='STUDIO';scene.display.shading.color_type='MATERIAL'
@@ -2808,83 +2836,53 @@ def main_v06():
         scene.display.shading.background_type='WORLD';scene.world.color=(.83,.84,.81)
         scene.view_settings.view_transform='Standard'
         scene.render.resolution_x=1600;scene.render.resolution_y=1200;scene.render.resolution_percentage=100
-        for frame,name in [(1,'09_Headers_dobles'),(10,'10_Anclajes_y_cimientos'),(20,'11_Despiece_madera'),(30,'12_Detalle_header_explotado'),(40,'13_Detalle_anclajes')]:
-            for layer in scene.view_layers:layer.use=layer.name==name
-            bpy.context.window.view_layer=scene.view_layers[name];scene.frame_set(frame);scene.camera=cameras[name]
-            scene.render.filepath=str(out/(name+'.png'));bpy.ops.render.render(write_still=True)
-        for layer in scene.view_layers:layer.use=layer.name=='09_Headers_dobles'
-        bpy.context.window.view_layer=scene.view_layers['09_Headers_dobles'];scene.frame_set(1);scene.camera=cameras['09_Headers_dobles']
-        bpy.ops.wm.save_as_mainfile(filepath=str(out/'angus_ranch_V06_casa_y_terreno.blend'))
-    print('V06 LISTA:',out)
+        for frame,name in enumerate([v.name for v in scene.view_layers],1):
+            for layer in scene.view_layers:
+                layer.use=layer.name==name
+            bpy.context.window.view_layer=scene.view_layers[name]
+            scene.frame_set(frame)
+            scene.camera=bpy.data.objects[scene.view_layers[name]['camara_recomendada']]
+            scene.render.filepath=str(out/(name+'.png'))
+            bpy.ops.render.render(write_still=True)
+        for layer in scene.view_layers:
+            layer.use=layer.name=='08_Terminaciones'
+        bpy.context.window.view_layer=scene.view_layers['08_Terminaciones']
+        scene.frame_set(8)
+        scene.camera=bpy.data.objects[scene.view_layers['08_Terminaciones']['camara_recomendada']]
+        bpy.ops.wm.save_as_mainfile(filepath=str(out/'angus_ranch_V08_10_capas.blend'))
+    print('V08 LISTA:',out)
 
 
-README_V06='''# Angus Ranch V06 - Woodframe y anclajes
+README_V08='''# Angus Ranch V08 — 10 capas de presentación
 
-## Instalaciones incorporadas
+Abrir `angus_ranch_V08_10_capas.blend` o ejecutar el script en Blender Scripting.
+Las piezas, sus categorías de origen, los detalles didácticos y la geometría
+son los del modelo adjunto. Solo cambia qué colecciones muestra cada View Layer.
 
-Colecciones 20_Instalacion_electrica, 21_Desagues_sanitarios y 22_Agua_fria_caliente.
-View Layers 14_Instalacion_electrica, 15_Desagues_y_cimientos y 16_Agua_fria_y_caliente.
-Tablero junto al acceso este; tomas, llaves, circuitos y pasacables.
-Las bajadas eléctricas evitan ventanas: descienden por paños ciegos laterales
-y retornan bajo el antepecho hacia las tomas. --check verifica todos los vanos
-vidriados contra canalizaciones, conductores y cajas, incluso sobre la cara interior.
-AF/AC desde lavadero con llaves y termotanque. Desagües sanitarios bajo la platea, con sifones,
-ventilaciones y registros exteriores. Las reservas recortan el hormigón V06;
-se mantienen la junta de 3 mm, los pernos, dados y bases de postes. Los recorridos
-se coordinan con esas piezas sin perforar madera. Dimensiones de anteproyecto:
-verificar cargas, diámetros, soportes, refuerzos y acometidas exteriores.
---check comprueba el modelo en memoria y no escribe archivos de salida.
+| View Layer | Vista |
+| --- | --- |
+| 01_Terreno | Lote, árboles, alambrado, calle, campo y vecinos; sin casa. |
+| 02_Cimientos | Platea y dados, soleras, junta, pernos y bases de postes. |
+| 03_Estructura | Cimientos y entramado de paredes, vigas y cabios. |
+| 04_Aislante | Estructura más aislación de paredes. |
+| 05_Siding | Estructura, aislación, OSB, WRB, cámara, siding y carpinterías. |
+| 06_Techo | Envolvente anterior más tablero y cubierta de los tres techos. |
+| 07_Interior | Solados, tabiques, paredes, carpinterías y mobiliario; sin cubierta ni cielorraso. |
+| 08_Terminaciones | Modelo terminado completo sin instalaciones expuestas. |
+| 09_Plomeria | Agua fría/caliente y desagües sobre estructura de referencia. |
+| 10_Electrico | Tendido, tablero y luminarias sobre estructura de referencia. |
 
-Abrir angus_ranch_V06_casa_y_terreno.blend. La V05 original no se modifica.
-El archivo central es ../angus_ranch_V06_casa_y_terreno.py: autónomo, incluye la V05 y la extensión V06.
-Ejecutarlo en Scripting crea una escena nueva; las ediciones manuales del .blend no vuelven al Python.
+La vista activa inicial es `08_Terminaciones`. Los fotogramas 1–10 tienen un
+marcador y cámara asignados a la vista del mismo número. Para renderizar otra
+vista, elegir View Layer y colocar la línea de tiempo en su número: Blender
+comparte una única cámara activa entre todas las vistas. `--render` hace esa
+selección automáticamente para las diez capas. `--check` verifica geometría en
+memoria, sin ejecutar Blender ni producir archivos.
 
-## Vistas en Blender
-
-Las ocho capas anteriores permanecen. Selector View Layer, arriba a la derecha:
-
-| Capa | Contenido | Fotograma para cámara |
-| --- | --- | --- |
-| 09_Headers_dobles | Entramado + headers, hojas con colores diferentes | 1 |
-| 10_Anclajes_y_cimientos | Estructura de paredes, soleras, junta, pernos, bases y hormigón | 10 |
-| 11_Despiece_madera | Una copia por pieza, agrupada por uso, sector y dimensiones | 20 |
-| 12_Detalle_header_explotado | Ventana Norte O0; separación didáctica de tablas y núcleo | 30 |
-| 13_Detalle_anclajes | Corte del perno de solera y ejemplo de hold-down | 40 |
-
-Elegir la capa y el fotograma indicado, luego Numpad 0. Blender usa cámara por escena, no por View Layer: cambiar capa solo NO cambia la cámara. También se puede seleccionar la cámara CAM_V06 correspondiente y Ctrl+Numpad 0. Para explorar el despiece, desplegar colección 17, elegir un grupo o pieza y Numpad . (Frame Selected). La vista general es un índice; los rótulos se leen acercándose.
-
-Las copias de despiece y los detalles tienen computable=False y pieza_origen cuando corresponde. No se suman al edificio. Sus geometrías están en mesas de presentación separadas y ocultas en las ocho capas originales. Se muestran blancos de corte rectangulares, no siempre el corte oblicuo terminado. El resto de la casa conserva su implantación, orientación y escala.
-
-## Headers
-
-La V05 ya incluía dos hojas. La V06 las identifica como A/B, agrega el núcleo separado y ofrece vista explotada. Referencia real: Thallon 68C, PDF 81. La captura adjunta mezcla el título 68C con la leyenda LVL/LSL de 69B, PDF 82; no son sistemas intercambiables.
-Se conservan las medidas del proyecto: tablas de 45 mm, no equivalencia literal con 2x cepillado estadounidense. Muros de 140 mm: 45 + 4x12.5 contrachapado + 45 mm. Tabiques de 90 mm: 45+45 mm. Alturas 220/300 mm heredadas. El núcleo continuo sustituye el aislamiento de dintel de V05; revisar su efecto térmico y su composición resistente. Uniones entre hojas, especie, grado, apoyos, cantidad de trimmers y secciones requieren cálculo, especialmente en los dos vanos de 4 m. La vista explotada no altera las dimensiones del edificio.
-
-## Cimientos / anclajes
-
-Se conserva la platea volumétrica de V05, con su cara superior 3 mm más baja para representar la junta bajo la solera existente. La solera no cambia de cota ni de sección; queda tratada y en una colección propia. Pernos con pata L, diámetro gráfico 12.7 mm, empotramiento 180 mm, arandelas con agujero y tuercas hexagonales separadas. Paso objetivo <=1.20 m y anclajes próximos a extremos de cada solera, evitando montantes y aberturas. Las excepciones geométricas se enumeran en el informe y necesitan una conexión especial.
-Los postes tienen bases U ilustrativas y madera elevada 50 mm: su extremo superior se conserva. Hay seis dados de galería y ocho refuerzos locales bajo postes, todos de estudio, sin armaduras ni cálculo geotécnico. La capa 13 muestra el interior mediante medias secciones; los cuerpos completos ocultan el empotramiento en la capa 10. Los taladros de soleras y hormigón se indican por el recorrido del perno (sin booleanos); la rosca no está modelada. Las placas U, tornillos y anclajes no son un producto homologado.
-El hold-down de capa 13 explica una conexión distinta al perno de solera, con montante doble, placa y anclaje dedicado. NO es una distribución ejecutiva de hold-downs ni un cómputo de esas fijaciones: faltan cálculo lateral, paños resistentes y selección de producto. Libro: 12A, 83A y 85A/B. Las medidas del libro no se presentan como reglamento argentino.
-
-## Cómputo y cotización
-
-Abrir Computo_madera_V06.html para resumen, filtros y tablas. Los CSV usan UTF-8 y separador punto y coma; al importar elegir punto decimal. Todos se regeneran desde la geometría:
-- 01_piezas_individuales: ID estable y dimensiones del blanco de corte.
-- 02_despiece_por_sector: cantidad por uso, pared/techo y medidas.
-- 03_cotizacion_tablas_stock: tablas de largos hipotéticos con reserva 10% por renglón.
-- 04_plan_cortes: IDs y cortes asignados a cada tabla, 10 mm de sobrelargo y 3 mm de sierra por corte.
-- 05_piezas_especiales_y_tableros: vigas, largos >6 m y contrachapado aparte.
-- 06_anclajes_solera: coordenadas locales y solera asociada, no listado homologado de fijaciones.
-
-Las dimensiones se toman según la dirección de la fibra; un cabio inclinado no se mide con la altura total de su caja global. Se redondea hacia arriba al mm para madera y se mantiene 12.5 mm para contrachapado. El volumen es del blanco de corte, no volumen neto instalado. Largos comerciales supuestos 2.4/3/3.6/4.2/4.8/6 m. Empaquetado heurístico con reutilización dentro de igual sección y uso; verificar contra oferta real del aserradero. No se simulan empalmes para convertir largos continuos en piezas comerciales. Todas las vigas quedan aparte, incluso las cortas.
-Incluye madera estructural modelada, listones de fachada, tablas del deck y separadores. No incluye muebles, placas OSB, tableros de cubierta ni siding en el pedido de tablas. El bastidor del deck sigue siendo un volumen de V05, no viguetas desglosadas. Faltan detalles de empalmes, arriostramiento, bloqueos y conectores de cubierta; enlace superior del rincón del anexo y encuentros heredados requieren desarrollo. Por ello es una estimación del modelo, no el pedido completo definitivo de la casa.
-
-## Regeneración
-
-python angus_ranch_V06_casa_y_terreno.py --check
-blender --background --python angus_ranch_V06_casa_y_terreno.py -- --save --render
-
-La primera opción verifica geometría y genera los cómputos; la segunda además construye Blender, guarda .blend y renderiza cuatro vistas. verificacion_V06.json registra lo realmente ejecutado. No sobrescribe V05 ni borra escenas preexistentes al ejecutarse desde Blender abierto.
+Los detalles originales de headers, anclajes y despiece se conservan como
+colecciones de estudio fuera de las diez vistas; no se suman a la casa.
+Las vistas de instalaciones simplifican el contexto para que se vean los
+recorridos. Su trazado y sus reservas no se alteran.
 '''
 
 
