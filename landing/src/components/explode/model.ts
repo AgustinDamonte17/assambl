@@ -6,6 +6,7 @@ import {
   STEPS,
   HIGHLIGHT_END,
   HIGHLIGHT_FADE,
+  LAYER_FADES,
   type LayerId,
   type Motion,
 } from "./config";
@@ -34,6 +35,7 @@ type Uniforms = {
 
 export type AnimatedPart = {
   object: THREE.Object3D;
+  layer: LayerId;
   rest: THREE.Vector3;
   restQuaternion: THREE.Quaternion;
   /** Normal de fachada en XZ (sin normalizar: las esquinas se mueven en diagonal). */
@@ -50,8 +52,11 @@ export type PreparedModel = {
   layerUniforms: Map<LayerId, Uniforms>;
   setPalette: (palette: Palette) => void;
   apply: (progress: number) => void;
-  /** Cajas de la casa (sin terreno) al inicio y al final del explode, para encuadrar. */
-  envelopePoints: () => THREE.Vector3[];
+  /**
+   * Cajas de la casa (sin terreno) para encuadrar. `focus`: solo las capas que
+   * siguen visibles tras desvanecer las exteriores, desde ese momento al final.
+   */
+  envelopePoints: (focus?: boolean) => THREE.Vector3[];
   dispose: () => void;
 };
 
@@ -91,6 +96,8 @@ const UNIFORM_DECLARATIONS = [
   "varying vec2 vFadeXZ;",
 ].join("\n");
 
+const GLASS_OPACITY = 0.28;
+
 function toneMaterial(uniforms: Uniforms, glass: boolean) {
   const material = new THREE.MeshStandardMaterial({
     vertexColors: true,
@@ -98,7 +105,7 @@ function toneMaterial(uniforms: Uniforms, glass: boolean) {
     roughness: glass ? 0.2 : 0.92,
     metalness: 0,
     transparent: glass,
-    opacity: glass ? 0.28 : 1,
+    opacity: glass ? GLASS_OPACITY : 1,
     depthWrite: !glass,
     side: glass ? THREE.DoubleSide : THREE.FrontSide,
   });
@@ -212,6 +219,7 @@ function prepare(scene: THREE.Object3D): PreparedModel {
     }
     parts.push({
       object,
+      layer: data.layer,
       rest: object.position.clone(),
       restQuaternion: object.quaternion.clone(),
       dir: data.dir
@@ -288,17 +296,39 @@ function prepare(scene: THREE.Object3D): PreparedModel {
       const strength = layer === "L01_Terreno" ? 0.05 : 0.78;
       u.uHighlight.value = (levels.get(layer) ?? 0) * strength;
     });
+    // Capas ya atravesadas: opacidad desde el progreso, nunca acumulada.
+    const opacities = new Map<LayerId, number>();
+    for (const f of LAYER_FADES) {
+      const t = EASE[f.ease ?? "inOutSine"](
+        segment(progress, f.range[0], f.range[1]),
+      );
+      opacities.set(f.layer, 1 - t);
+    }
+    opacities.forEach((opacity, layer) => {
+      const entry = byLayer.get(layer);
+      if (!entry) return;
+      entry.solid.opacity = opacity;
+      entry.solid.transparent = opacity < 1;
+      entry.glass.opacity = GLASS_OPACITY * opacity;
+    });
+    for (const part of parts) {
+      part.object.visible = (opacities.get(part.layer) ?? 1) > 0.001;
+    }
   };
 
-  const envelopePoints = () => {
+  const faded = new Set(LAYER_FADES.map((f) => f.layer));
+  const clearEnd = Math.max(...LAYER_FADES.map((f) => f.range[1]), 0);
+  const envelopePoints = (focus = false) => {
     const points: THREE.Vector3[] = [];
     const half = new THREE.Vector3();
     const center = new THREE.Vector3();
+    // Los desplazamientos son monótonos: alcanzan los extremos del tramo.
+    const samples = focus ? [clearEnd, 1] : [0, 1];
     for (const part of parts) {
-      if ((part.object.userData as { layer: LayerId }).layer === "L01_Terreno")
-        continue;
+      if (part.layer === "L01_Terreno") continue;
+      if (focus && faded.has(part.layer)) continue;
       half.copy(part.size).multiplyScalar(0.5);
-      for (const p of [0, 1]) {
+      for (const p of samples) {
         offsetAt(part, p, offset);
         center.copy(part.rest).add(offset);
         for (let i = 0; i < 8; i++) {

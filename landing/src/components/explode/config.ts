@@ -127,11 +127,38 @@ export const PART_RULES: readonly PartRule[] = [
   // La acometida y la jabalina quedan en el terreno.
 ];
 
+/**
+ * Capas ya atravesadas que se desvanecen para despejar la vista de las siguientes.
+ * Al pasar 04_Aislante se van el techo y toda la envolvente exterior; al subir
+ * vuelven a aparecer en el mismo tramo.
+ */
+export type LayerFade = {
+  layer: LayerId;
+  /** Opacidad 1 → 0 dentro del tramo. */
+  range: readonly [number, number];
+  ease?: EaseName;
+};
+
+const CLEAR: LayerFade["range"] = [0.5, 0.57];
+
+/**
+ * Mientras se despejan las capas exteriores y sube la estructura, la cámara se
+ * acerca a lo que queda visible. Mismo tramo al subir, en sentido inverso.
+ */
+export const CAMERA_FOCUS: readonly [number, number] = [0.5, 0.64];
+
+export const LAYER_FADES: readonly LayerFade[] = [
+  { layer: "L06_Techo", range: CLEAR },
+  { layer: "L05_Siding", range: CLEAR },
+  { layer: "L08_Terminaciones", range: CLEAR },
+  { layer: "L04_Aislante", range: CLEAR },
+];
+
 export type Step = {
   layer: LayerId | "L11_Casa_y_terreno";
-  /** Nombre de la View Layer en angus_ranch_V09_11_capas.blend. */
+  /** Nombre de la View Layer en angus_ranch_V11_11_capas.blend. */
   label: string;
-  /** Descripción tomada de las View Layers de V09. */
+  /** Descripción tomada de las View Layers de V11. */
   note: string;
   /** Desde qué progreso esta capa pasa a ser la nombrada. */
   from: number;
@@ -160,7 +187,7 @@ export const STEPS: readonly Step[] = [
   {
     layer: "L08_Terminaciones",
     label: "08_Terminaciones",
-    note: "Carpinterías, membrana, OSB y cielorraso.",
+    note: "Carpinterías, membrana, OSB, cielorraso y galería.",
     from: 0.3,
   },
   {
@@ -190,7 +217,7 @@ export const STEPS: readonly Step[] = [
   {
     layer: "L09_Plomeria",
     label: "09_Plomeria",
-    note: "Desagües y agua fría/caliente.",
+    note: "Desagües, agua fría/caliente y pluviales con sus bajadas.",
     from: 0.77,
   },
   {
@@ -207,7 +234,7 @@ export const STEPS: readonly Step[] = [
   },
 ];
 
-/** Orden de la lista visible: numeración de V09. */
+/** Orden de la lista visible: numeración de V11. */
 export const LAYER_INDEX: readonly Step[] = [...STEPS].sort((a, b) =>
   a.label.localeCompare(b.label),
 );
@@ -224,7 +251,7 @@ export const CAPTIONS: readonly {
   range: readonly [number, number];
   text: string;
 }[] = [
-  { range: [0, 0.09], text: "Angus Ranch. 5.393 piezas modeladas." },
+  { range: [0, 0.09], text: "Angus Ranch. 5.423 piezas modeladas." },
   { range: [0.5, 0.7], text: "Debajo de la envolvente, la estructura." },
   { range: [0.91, 1.01], text: "Todas las capas, a la vista." },
 ];

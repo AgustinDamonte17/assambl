@@ -3,9 +3,9 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { MODEL_URL } from "./config";
+import { CAMERA_FOCUS, EASE, MODEL_URL } from "./config";
 import { loadModel, type Palette, type PreparedModel } from "./model";
-import type { ProgressStore } from "./progress";
+import { segment, type ProgressStore } from "./progress";
 
 type Props = {
   store: ProgressStore;
@@ -26,6 +26,33 @@ function safeArea(width: number, height: number) {
   return { x0: 0.04, x1: 0.96, y0: 0.24, y1: 0.86 };
 }
 
+/** left, right, top, bottom de la cámara ortográfica. */
+type Frustum = [number, number, number, number];
+
+/** Encuadre fijo de la envolvente completa, que se acerca en CAMERA_FOCUS. */
+function applyFrustum(
+  camera: THREE.OrthographicCamera,
+  { full, focus }: { full: Frustum; focus: Frustum },
+  progress: number,
+) {
+  const t = EASE.inOutCubic(
+    segment(progress, CAMERA_FOCUS[0], CAMERA_FOCUS[1]),
+  );
+  const [left, right, top, bottom] = full.map((v, i) => v + (focus[i] - v) * t);
+  if (
+    camera.left === left &&
+    camera.right === right &&
+    camera.top === top &&
+    camera.bottom === bottom
+  )
+    return;
+  camera.left = left;
+  camera.right = right;
+  camera.top = top;
+  camera.bottom = bottom;
+  camera.updateProjectionMatrix();
+}
+
 function readPalette(): Palette {
   const css = getComputedStyle(document.documentElement);
   const v = (name: string, fallback: string) =>
@@ -36,7 +63,8 @@ function readPalette(): Palette {
     signal: v("--signal", "#ff4f1f"),
     // Maqueta clara sobre concrete / sobre ink, con sombras en rebar.
     model: dark ? ["#3a3a38", "#dddbd6"] : ["#5f5f5c", "#fbfaf7"],
-    terrain: dark ? ["#0c0c0c", "#121211"] : ["#c9c5bc", "#dedbd4"],
+    // Terreno claro: lote y árboles más luminosos que el fondo, sin competir con la casa.
+    terrain: dark ? ["#2a2a28", "#31312f"] : ["#e6e3dc", "#f7f6f2"],
   };
 }
 
@@ -48,6 +76,7 @@ function Explode({ store, onReady, onError }: Props) {
   const [model, setModel] = useState<PreparedModel | null>(null);
   const shown = useRef(store.value);
   const lastTime = useRef<number | null>(null);
+  const frames = useRef<{ full: Frustum; focus: Frustum } | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -91,24 +120,30 @@ function Explode({ store, onReady, onError }: Props) {
     camera.lookAt(0, 0, 0);
     camera.updateMatrixWorld();
     const view = camera.matrixWorldInverse;
-    const box = new THREE.Box2();
-    for (const p of model.envelopePoints()) {
-      const v = p.applyMatrix4(view);
-      box.expandByPoint(new THREE.Vector2(v.x, v.y));
-    }
     const area = safeArea(size.width, size.height);
-    const scale = Math.min(
-      ((area.x1 - area.x0) * size.width) / (box.max.x - box.min.x),
-      ((area.y1 - area.y0) * size.height) / (box.max.y - box.min.y),
-    );
-    const cx = (box.min.x + box.max.x) / 2;
-    const cy = (box.min.y + box.max.y) / 2;
-    const px = ((area.x0 + area.x1) / 2) * size.width;
-    const py = ((area.y0 + area.y1) / 2) * size.height;
-    camera.left = cx - px / scale;
-    camera.right = camera.left + size.width / scale;
-    camera.top = cy + py / scale;
-    camera.bottom = camera.top - size.height / scale;
+    const frustum = (points: THREE.Vector3[]): Frustum => {
+      const box = new THREE.Box2();
+      for (const p of points) {
+        const v = p.applyMatrix4(view);
+        box.expandByPoint(new THREE.Vector2(v.x, v.y));
+      }
+      const scale = Math.min(
+        ((area.x1 - area.x0) * size.width) / (box.max.x - box.min.x),
+        ((area.y1 - area.y0) * size.height) / (box.max.y - box.min.y),
+      );
+      const cx = (box.min.x + box.max.x) / 2;
+      const cy = (box.min.y + box.max.y) / 2;
+      const px = ((area.x0 + area.x1) / 2) * size.width;
+      const py = ((area.y0 + area.y1) / 2) * size.height;
+      const left = cx - px / scale;
+      const top = cy + py / scale;
+      return [left, left + size.width / scale, top, top - size.height / scale];
+    };
+    frames.current = {
+      full: frustum(model.envelopePoints()),
+      focus: frustum(model.envelopePoints(true)),
+    };
+    applyFrustum(camera, frames.current, shown.current);
     camera.zoom = 1;
     camera.near = 1;
     camera.far = distance * 2 + 200;
@@ -131,7 +166,7 @@ function Explode({ store, onReady, onError }: Props) {
     }
   }, [model, invalidate, onReady]);
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     if (!model) return;
     const now = clock.elapsedTime;
     // Primer frame tras una pausa: paso nominal; luego tiempo real, acotado.
@@ -150,6 +185,9 @@ function Explode({ store, onReady, onError }: Props) {
       invalidate();
     }
     model.apply(shown.current);
+    if (frames.current && camera instanceof THREE.OrthographicCamera) {
+      applyFrustum(camera, frames.current, shown.current);
+    }
   });
 
   return model ? <primitive object={model.root} /> : null;

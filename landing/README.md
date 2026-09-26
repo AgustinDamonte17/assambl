@@ -44,7 +44,7 @@ src/
       progress.ts         scroll progress store (refs, no React state)
 public/models/            angus-ranch.glb + posters (light/dark, assembled/exploded)
 scripts/angus/
-  export_glb.py           Angus Ranch V09 → GLB (reproducible, no Blender needed)
+  export_glb.py           Angus Ranch V11 → GLB (reproducible, no Blender needed)
   posters.mjs             renders the posters from the real GLB
   angus-ranch.report.json size, triangles, draw calls per node
 ```
@@ -64,7 +64,8 @@ Animation timings live in `src/components/Logo.tsx` (`T` object).
 
 ## Angus Ranch explode
 
-Source of truth: `../angus_ranch_V09_11_capas.py` (the Blender script). The
+Source of truth: `../angus_ranch_V11_11_capas.py` (the Blender script;
+`../angus_ranch_V09_11_capas.py` is kept for reference). The
 browser never runs it; it loads `public/models/angus-ranch.glb`.
 
 ### Regenerate the GLB
@@ -74,7 +75,7 @@ pip install numpy
 npm run export:angus   # python3 scripts/angus/export_glb.py [--source ...] [--out ...]
 ```
 
-The exporter imports the V09 script and rebuilds its geometry in memory, the same
+The exporter imports the V11 script and rebuilds its geometry in memory, the same
 path as its `--check` mode (read-only; nothing is written next to it). It then
 merges pieces into one mesh per animation node and writes a Y-up glTF (metres,
 house pivot at the origin). Nodes are named `<layer>__<part>[__<facade>]`, e.g.
@@ -97,7 +98,10 @@ Everything is in `src/components/explode/config.ts`:
 - `PART_RULES`: per layer/part, a list of motions with a progress `range`,
   `lift` (in wall heights), `out` (in house widths, along the facade), optional
   `rotate` and an `ease`. Positions are always computed from the rest pose.
-- `STEPS`: when each V09 layer name is shown and highlighted with `--signal`.
+- `STEPS`: when each V11 layer name is shown and highlighted with `--signal`.
+- `LAYER_FADES`: layers already passed that fade out (roof and outer envelope
+  after `04_Aislante`), so the following layers read clearly.
+- `CAMERA_FOCUS`: range where the fixed framing eases in to what stays visible.
 - `CAPTIONS`: the three short texts.
 - Scroll length: `.explode-track` in `globals.css` (280svh mobile, 320svh desktop).
 

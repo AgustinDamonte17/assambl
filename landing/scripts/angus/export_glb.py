@@ -1,11 +1,11 @@
-"""Exporta Angus Ranch V09 a un GLB web con nodos explícitos para el explode.
+"""Exporta Angus Ranch V11 a un GLB web con nodos explícitos para el explode.
 
 Uso (desde landing/):
-    python3 scripts/angus/export_glb.py            # usa ../angus_ranch_V09_11_capas.py
+    python3 scripts/angus/export_glb.py            # usa ../angus_ranch_V11_11_capas.py
     python3 scripts/angus/export_glb.py --source RUTA --out public/models/angus-ranch.glb
 
 Requiere Python 3.10+ y numpy. No requiere Blender: reutiliza la geometría que el
-script V09 construye en memoria (las mismas funciones que usa su modo --check) y
+script V11 construye en memoria (las mismas funciones que usa su modo --check) y
 no modifica el script fuente ni genera archivos a su lado.
 
 Sistema de coordenadas
@@ -44,7 +44,7 @@ sys.dont_write_bytecode = True  # no dejar __pycache__ junto al script fuente
 
 HERE = Path(__file__).resolve().parent
 LANDING = HERE.parent.parent
-DEFAULT_SOURCE = LANDING.parent / 'angus_ranch_V09_11_capas.py'
+DEFAULT_SOURCE = LANDING.parent / 'angus_ranch_V11_11_capas.py'
 DEFAULT_OUT = LANDING / 'public' / 'models' / 'angus-ranch.glb'
 # El reporte no se publica: queda junto al exportador.
 REPORT = HERE / 'angus-ranch.report.json'
@@ -54,8 +54,8 @@ REPORT = HERE / 'angus-ranch.report.json'
 MIN_DIAGONAL_M = 0.06
 
 # ---------------------------------------------------------------------------
-# Unidades de animación. Colección V09 -> (capa, parte, ¿separar por fachada?)
-# Las capas son las View Layers de V09; las partes, subdivisiones del explode.
+# Unidades de animación. Colección V11 -> (capa, parte, ¿separar por fachada?)
+# Las capas son las View Layers de V11; las partes, subdivisiones del explode.
 # ---------------------------------------------------------------------------
 LAYERS = [
     ('L01_Terreno', '01_Terreno'),
@@ -103,6 +103,9 @@ COLLECTIONS = {
     '12_07_WRB': ('L08_Terminaciones', 'wrb', True),
     '21_Desagues_sanitarios': ('L09_Plomeria', 'redes', False),
     '22_Agua_fria_caliente': ('L09_Plomeria', 'redes', False),
+    # V11: canaletas, babetas y bajadas. Cuelgan del alero y bajan al terreno:
+    # quedan en su lugar (no suben con la cubierta) y se nombran en 09_Plomeria.
+    '23_Pluviales_canaletas': ('L09_Plomeria', 'pluviales', False),
     '20_Instalacion_electrica': ('L10_Electrico', 'redes', False),
     '05_Iluminacion': ('L10_Electrico', 'luminarias', False),
 }

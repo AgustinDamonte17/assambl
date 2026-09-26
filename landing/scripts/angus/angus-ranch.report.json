@@ -1,6 +1,6 @@
 {
-  "fuente": "angus_ranch_V09_11_capas.py",
-  "piezas_fuente": 5393,
+  "fuente": "angus_ranch_V11_11_capas.py",
+  "piezas_fuente": 5423,
   "piezas_omitidas_por_tamano": {
     "16c_V06_Pernos_arandelas_tuercas": 100,
     "16d_V06_Bases_postes": 56,
@@ -9,10 +9,10 @@
   },
   "colecciones_sin_grupo": [],
   "glb": "public/models/angus-ranch.glb",
-  "bytes": 3464168,
-  "triangulos": 233208,
-  "nodos_animables": 63,
-  "primitivas_draw_calls": 68,
+  "bytes": 3485980,
+  "triangulos": 234648,
+  "nodos_animables": 64,
+  "primitivas_draw_calls": 69,
   "nodos": [
     {
       "nodo": "L01_Terreno__alambrado",
@@ -369,9 +369,15 @@
       "primitivas": 1
     },
     {
+      "nodo": "L09_Plomeria__pluviales",
+      "piezas": 36,
+      "triangulos": 2016,
+      "primitivas": 1
+    },
+    {
       "nodo": "L09_Plomeria__redes",
-      "piezas": 390,
-      "triangulos": 31728,
+      "piezas": 384,
+      "triangulos": 31152,
       "primitivas": 1
     },
     {
