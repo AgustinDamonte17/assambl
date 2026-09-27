@@ -14,7 +14,12 @@ export type Estado =
 export type EstadoFuente = "ok" | "parcial" | "pendiente_datos";
 
 /** De dónde sale un dato. Determina con qué reservas puede presentarse. */
-export type Naturaleza = "medicion_satelital" | "reanalisis_regional" | "calculo_local" | "provisional";
+export type Naturaleza =
+  | "medicion_satelital"
+  | "reanalisis_regional"
+  | "calculo_local"
+  | "interpretacion_imagen"
+  | "provisional";
 
 export type Punto = [number, number];
 
@@ -103,29 +108,56 @@ export interface Fuente {
   detalle: string;
 }
 
-export interface Relieve {
-  dem: { nx: number; ny: number; paso_deg: number; huecos: number; teselas: string[]; provisional: boolean } | null;
-  cota_origen_msnm: number | null;
-  paso_x_m: number;
-  paso_y_m: number;
-  z_min_m: number;
-  z_max_m: number;
-  provisional: boolean;
+/* Modelo del sitio: lote y entorno reconstruidos desde la imagen satelital,
+   con el terreno supuesto plano (backend/assambl/sitio/modelo.py) */
+
+export interface ArbolSitio {
+  id: string;
+  x: number;
+  y: number;
+  radio_m: number;
+  altura_m: number;
+  fuente: string;
+  altura_supuesta: boolean;
+  dentro_del_lote: boolean;
+}
+
+export interface ResumenSitio {
+  arboles_lote: number;
+  arboles_borde: number;
+  arboles_entorno: number;
+  construcciones: number;
+  vias: number;
+  m_px_entorno: number;
+  m_px_lote: number | null;
+  interpretacion: "ia" | "imagen";
+  imagen_disponible: boolean;
+  sintetica: boolean;
 }
 
 export interface RespuestaEscena {
   ref: string;
-  relieve: Relieve;
+  /** Ubicación, entorno y lote para los que se generó: si el proyecto cambia, deja de valer. */
+  entrada: { lat: number; lon: number; margen_m: number; vertices: Punto[] };
   fuentes: Fuente[];
   advertencias: string[];
+  resumen: ResumenSitio;
+  arboles_lote: ArbolSitio[];
   area_m2: number;
-  pendiente_pct: number;
-  pendiente_azimut_deg: number;
-  posts: [number, number];
-  paso_m: [number, number];
-  extension_m: [number, number];
-  reglas: AnalisisLote;
   bytes_glb: number;
+}
+
+/** ¿El modelo generado corresponde a la ubicación, el entorno y el lote actuales? */
+export function escenaVigente(e: RespuestaEscena | null, t: Terreno): boolean {
+  if (!e || !t.ubicacion) return false;
+  const v = t.lote.vertices;
+  return (
+    Math.abs(e.entrada.lat - t.ubicacion.lat) < 1e-7 &&
+    Math.abs(e.entrada.lon - t.ubicacion.lon) < 1e-7 &&
+    Math.abs(e.entrada.margen_m - t.margen_m) < 0.5 &&
+    e.entrada.vertices.length === v.length &&
+    e.entrada.vertices.every((p, i) => Math.abs(p[0] - v[i][0]) < 1e-3 && Math.abs(p[1] - v[i][1]) < 1e-3)
+  );
 }
 
 /* Sol: cálculo local, distinto de la radiación histórica y de la sombra del modelo */
@@ -246,7 +278,7 @@ export interface AnalisisLote {
 
 /* Guía del recorrido (backend/assambl/guia/terreno.py) */
 
-export type SubPasoTerreno = "ubicacion" | "lote" | "modelo" | "clima";
+export type SubPasoTerreno = "ubicacion" | "lote" | "modelo";
 
 export interface Requisito {
   id: string;
@@ -261,18 +293,6 @@ export interface Requisito {
 export interface RequisitosTerreno {
   listo: boolean;
   requisitos: Requisito[];
-}
-
-/* Curvas de nivel de la escena (backend/assambl/geometria/curvas.py) */
-
-export interface CurvasNivel {
-  equidistancia_m: number | null;
-  cota_min: number | null;
-  cota_max: number | null;
-  absolutas: boolean;
-  provisional: boolean;
-  paso_m?: number;
-  curvas: { cota: number; maestra: boolean; segmentos: [Punto, Punto][] }[];
 }
 
 /** Proyectos guardados con límites anteriores se abren dentro de los actuales. */
@@ -328,6 +348,7 @@ export const ETIQUETA_NATURALEZA: Record<Naturaleza, string> = {
   medicion_satelital: "medición satelital",
   reanalisis_regional: "estimación regional",
   calculo_local: "cálculo local",
+  interpretacion_imagen: "interpretación de imagen",
   provisional: "provisional",
 };
 

@@ -2,6 +2,8 @@
 
 Estado al 23/09/2026.
 
+> **En pausa desde el 27/09/2026.** El relieve de NASADEM dejó de usarse: el terreno se modela plano y el sitio se reconstruye desde la imagen satelital y OpenStreetMap ([decisión 0005](decisiones/0005_modelo_del_sitio.md)). Este documento y el código que describe quedan para cuando se retome el relieve. El clima de NASA POWER sigue en uso.
+
 **Regla de la capa: la NASA es la única fuente externa de datos del modelo.** El relieve viene de NASADEM y el clima de NASA POWER. Todo lo demás —proyección local, malla, apoyo del lote, posición del sol, sombras— se calcula en este repositorio, sin consultar a ningún otro proveedor.
 
 Dos servicios quedan fuera de esa regla porque no aportan ningún dato al modelo:

@@ -105,8 +105,8 @@ def analizar_lote(vertices: list[tuple[float, float]], malla: gmalla.MallaLocal 
             id="R01.05", version=VERSION, origen=ORIGEN,
             descripcion="Pendiente del lote",
             estado=Estado.PENDIENTE_DATOS,
-            detalle=("Escena plana provisional: no hay relieve" if provisional
-                     else "Sin relieve: generar la escena para estimarla"),
+            detalle=("No se relevó la pendiente: el terreno se modela plano. Para fundaciones hace falta un "
+                     "relevamiento topográfico."),
         ))
 
     if not simple:

@@ -6,7 +6,7 @@ import { desdeLados, fmt, lados as calcularLados, rectangulo } from "../../model
 import { cardinal, type AnalisisLote, type Punto } from "../../modelo/proyecto";
 
 export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
-  const { proyecto, operar, escena } = useProyecto();
+  const { proyecto, operar } = useProyecto();
   const t = proyecto.terreno;
   const v = t.lote.vertices;
   const [frente, setFrente] = useState("12");
@@ -23,7 +23,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
       return;
     }
     const h = setTimeout(() => {
-      api.analizarLote(v, escena?.ref ?? null, t.margen_m)
+      api.analizarLote(v, null, t.margen_m)
         .then((a) => {
           setAnalisis(a);
           setErrorAnalisis(null);
@@ -31,7 +31,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
         .catch((e) => setErrorAnalisis((e as Error).message));
     }, 400);
     return () => clearTimeout(h);
-  }, [v, escena?.ref, t.margen_m]);
+  }, [v, t.margen_m]);
 
   const setVertices = (nuevos: Punto[]) => operar({ tipo: "definir_lote", vertices: nuevos.map(([x, y]) => [r2(x), r2(y)]) });
 
@@ -182,7 +182,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
             ) : (
               <Dato
                 etiqueta="Pendiente"
-                valor={<span className="text-rebar">{escena ? "sin relieve disponible" : "generá la escena (paso 1)"}</span>}
+                valor={<span className="text-rebar">no relevada · terreno supuesto plano</span>}
               />
             )}
             {errorAnalisis && <p className="text-signal mt-1">{errorAnalisis}</p>}
@@ -207,7 +207,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
       </Seccion>
 
       <div className="mt-5 flex justify-end">
-        <Boton primario disabled={!escena} onClick={irAModelo} title={escena ? "" : "Generá la escena en el paso 1"}>
+        <Boton primario disabled={v.length < 3} onClick={irAModelo} title={v.length < 3 ? "Dibujá el lote primero" : ""}>
           Siguiente: modelo 3D →
         </Boton>
       </div>

@@ -2,7 +2,8 @@
 //   npm install --no-save puppeteer
 //   node scripts/probar_ui.cjs
 //
-// Verifica el camino completo: ubicación → lote → modelo 3D → clima.
+// Verifica el camino completo: ubicación → lote → modelo 3D (sol y clima) → confirmar → diseño.
+// Sin red, levantar la API con ASSAMBL_IMAGEN_SINTETICA=1.
 
 const fs = require("fs");
 const path = require("path");
@@ -76,25 +77,6 @@ async function principal() {
   await esperar(2500);
   await pagina.screenshot({ path: path.join(SALIDA, "1_ubicacion.png") });
 
-  await clickPorTexto(pagina, "Generar escena 3D");
-  // innerText devuelve el texto ya transformado por CSS: los títulos van en
-  // mayúsculas, así que las búsquedas se hacen sin distinguir may/min.
-  await pagina.waitForFunction(() => /posts del relieve/i.test(document.body.innerText), { timeout: 180000 });
-  await esperar(1500);
-  await pagina.screenshot({ path: path.join(SALIDA, "2_relieve.png") });
-
-  const resumen = await pagina.evaluate(() => {
-    const filas = [...document.querySelectorAll("aside div")]
-      .filter((d) => d.children.length === 2 && d.className.includes("justify-between"))
-      .map((d) => `${d.children[0].innerText.trim()}: ${d.children[1].innerText.trim()}`);
-    // La naturaleza que declara cada fuente, no la palabra suelta en la página: el
-    // texto explicativo también dice «provisional» cuando el relieve es real.
-    return { filas, provisional: filas.some((f) => /:\s*provisional$/i.test(f)) };
-  });
-  console.log("relieve:");
-  for (const f of resumen.filas) console.log("  " + f);
-  console.log("  escena provisional:", resumen.provisional);
-
   // 2 · Lote
   await clickPorTexto(pagina, "Siguiente: lote");
   await esperar(1200);
@@ -107,11 +89,20 @@ async function principal() {
   console.log("\nreglas R01:");
   for (const r of reglas) console.log("  " + r);
 
-  // 3 · Modelo 3D
+  // 3 · Modelo 3D: se genera solo al entrar, a partir de la imagen satelital.
   await clickPorTexto(pagina, "Siguiente: modelo 3D");
-  await pagina.waitForFunction(() => document.querySelector("canvas") !== null, { timeout: 30000 });
+  await pagina.waitForFunction(() => /árboles en el lote/i.test(document.body.innerText), { timeout: 180000 });
   await esperar(6000);
   await pagina.screenshot({ path: path.join(SALIDA, "4_modelo_mediodia.png") });
+
+  const sitio = await pagina.evaluate(() => {
+    const filas = [...document.querySelectorAll("aside div")]
+      .filter((d) => d.children.length === 2 && d.className.includes("justify-between"))
+      .map((d) => `${d.children[0].innerText.trim()}: ${d.children[1].innerText.trim()}`);
+    return filas.filter((f) => /árboles|construcciones|calles|imagen/i.test(f));
+  });
+  console.log("\nmodelo del sitio:");
+  for (const f of sitio) console.log("  " + f);
 
   // Mover el sol a la tarde con el control horario.
   await mover(pagina, "input[type='range'][max='24']", "17.5");
@@ -130,8 +121,7 @@ async function principal() {
   });
   console.log("\nsol:", sol.join(" · "));
 
-  // 4 · Clima
-  await clickPorTexto(pagina, "Clima");
+  // Clima: está en el mismo panel del paso 3.
   try {
     await pagina.waitForFunction(() => /rosa de vientos/i.test(document.body.innerText), { timeout: 300000 });
   } catch (e) {
@@ -142,7 +132,7 @@ async function principal() {
   }
   await esperar(2000);
   await pagina.screenshot({ path: path.join(SALIDA, "6_clima.png"), fullPage: false });
-  await pagina.evaluate(() => document.querySelector("aside").scrollTo(0, 1400));
+  await pagina.evaluate(() => document.querySelector("aside").scrollTo(0, 2400));
   await esperar(800);
   await pagina.screenshot({ path: path.join(SALIDA, "7_viento.png") });
 
@@ -153,6 +143,12 @@ async function principal() {
       .map((l) => l.trim()),
   );
   console.log("\nclima:", clima.join(" · "));
+
+  // Confirmar lleva al diseño de la casa sobre el sitio.
+  await clickPorTexto(pagina, "Confirmar");
+  await pagina.waitForFunction(() => /datos de partida/i.test(document.body.innerText), { timeout: 30000 });
+  await esperar(4000);
+  await pagina.screenshot({ path: path.join(SALIDA, "8_diseno.png") });
 
   console.log("\nerrores de consola:", errores.length ? errores : "ninguno");
   console.log("capturas en", SALIDA);

@@ -210,9 +210,9 @@ export default function Shell() {
 
       <main className="min-h-0 min-w-0 overflow-hidden">
         {etapa === "diseno" ? (
-          <PasoDiseno onVolver={() => setEtapa("terreno")} />
+          <PasoDiseno apiOk={apiOk} onVolver={() => setEtapa("terreno")} />
         ) : (
-          <PasoTerreno apiOk={apiOk} onAvanzar={() => setEtapa("diseno")} />
+          <PasoTerreno apiOk={apiOk} onConfirmar={() => setEtapa("diseno")} />
         )}
       </main>
     </div>

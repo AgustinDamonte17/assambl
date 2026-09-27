@@ -157,15 +157,21 @@ def catalogo() -> list[dict]:
 
 @dataclass(frozen=True)
 class EscenaDisponible:
-    """Lo que una operación necesita de una escena generada."""
+    """Lo que una operación necesita de una escena generada.
+
+    El modelo del sitio actual es plano (docs/decisiones/0005): no trae malla de
+    relieve y depende también del lote, porque el lote se reconstruye con más
+    definición que el entorno. Una escena con relieve (en pausa) trae la malla.
+    """
 
     ref: str
     lat: float
     lon: float
     margen_m: float
-    malla: gmalla.MallaLocal
-    provisional: bool
-    cota_origen_msnm: float | None
+    vertices: tuple[tuple[float, float], ...] | None = None
+    malla: gmalla.MallaLocal | None = None
+    provisional: bool = False
+    cota_origen_msnm: float | None = None
 
 
 class Contexto(Protocol):
@@ -305,7 +311,13 @@ def _escena_corresponde(p: Proyecto, escena: EscenaDisponible) -> bool:
     u = p.terreno.ubicacion
     return (u is not None and math.isclose(u.lat, escena.lat, abs_tol=1e-7)
             and math.isclose(u.lon, escena.lon, abs_tol=1e-7)
-            and math.isclose(p.terreno.margen_m, escena.margen_m, abs_tol=0.5))
+            and math.isclose(p.terreno.margen_m, escena.margen_m, abs_tol=0.5)
+            and (escena.vertices is None or _mismos_vertices(p.terreno.lote.vertices, escena.vertices)))
+
+
+def _mismos_vertices(a, b) -> bool:
+    return len(a) == len(b) and all(math.isclose(p[0], q[0], abs_tol=1e-3) and math.isclose(p[1], q[1], abs_tol=1e-3)
+                                    for p, q in zip(a, b))
 
 
 def _evaluar_terreno(p: Proyecto, contexto: Contexto, forzar: bool = False) -> dict | None:

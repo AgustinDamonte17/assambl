@@ -46,6 +46,10 @@ class Material:
     doble_cara: bool = True
     sin_iluminacion: bool = False
     emision: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    # Imagen de color (JPEG o PNG) que se multiplica por `color`. Requiere que la
+    # primitiva traiga coordenadas de textura.
+    textura: bytes | None = None
+    textura_mime: str = "image/jpeg"
 
 
 @dataclass
@@ -55,6 +59,7 @@ class Primitiva:
     normales: np.ndarray | None = None
     modo: int = TRIANGULOS
     material: Material | None = None
+    uv: np.ndarray | None = None  # (n, 2); (0, 0) es la esquina superior izquierda de la imagen
 
 
 @dataclass
@@ -114,6 +119,15 @@ class _Buffer:
         )
         return len(self.accesores) - 1
 
+    def vec2(self, valores: np.ndarray) -> int:
+        a = np.ascontiguousarray(valores, dtype="<f4")
+        vista = self._vista(a.tobytes(), ARRAY_BUFFER)
+        self.accesores.append({"bufferView": vista, "componentType": FLOTANTE, "count": int(a.shape[0]), "type": "VEC2"})
+        return len(self.accesores) - 1
+
+    def imagen(self, crudo: bytes) -> int:
+        return self._vista(crudo, None)
+
     def escalar_entero(self, valores: np.ndarray) -> int:
         a = np.ascontiguousarray(valores.ravel(), dtype="<u4")
         vista = self._vista(a.tobytes(), ELEMENT_ARRAY_BUFFER)
@@ -130,7 +144,7 @@ class _Buffer:
         return len(self.accesores) - 1
 
 
-def _material_json(m: Material) -> dict:
+def _material_json(m: Material, textura: int | None = None) -> dict:
     salida: dict = {
         "name": m.nombre,
         "pbrMetallicRoughness": {
@@ -140,6 +154,8 @@ def _material_json(m: Material) -> dict:
         },
         "doubleSided": m.doble_cara,
     }
+    if textura is not None:
+        salida["pbrMetallicRoughness"]["baseColorTexture"] = {"index": textura}
     if m.color[3] < 1.0:
         salida["alphaMode"] = "BLEND"
     if any(m.emision):
@@ -156,6 +172,8 @@ def construir(nodos: list[Nodo], extras_escena: dict | None = None, generador: s
     indice_material: dict[int, int] = {}
     mallas: list[dict] = []
     nodos_json: list[dict] = []
+    imagenes: list[dict] = []
+    texturas: list[dict] = []
     usa_unlit = False
 
     for nodo in nodos:
@@ -164,6 +182,8 @@ def construir(nodos: list[Nodo], extras_escena: dict | None = None, generador: s
             atributos = {"POSITION": buf.vec3(p.posiciones)}
             if p.normales is not None:
                 atributos["NORMAL"] = buf.vec3(p.normales)
+            if p.uv is not None:
+                atributos["TEXCOORD_0"] = buf.vec2(p.uv)
             prim: dict = {"attributes": atributos, "mode": p.modo}
             if p.indices is not None:
                 prim["indices"] = buf.escalar_entero(p.indices)
@@ -171,7 +191,12 @@ def construir(nodos: list[Nodo], extras_escena: dict | None = None, generador: s
                 clave = id(p.material)
                 if clave not in indice_material:
                     indice_material[clave] = len(materiales)
-                    materiales.append(_material_json(p.material))
+                    textura = None
+                    if p.material.textura is not None:
+                        imagenes.append({"bufferView": buf.imagen(p.material.textura), "mimeType": p.material.textura_mime})
+                        texturas.append({"sampler": 0, "source": len(imagenes) - 1})
+                        textura = len(texturas) - 1
+                    materiales.append(_material_json(p.material, textura))
                     usa_unlit = usa_unlit or p.material.sin_iluminacion
                 prim["material"] = indice_material[clave]
             primitivas.append(prim)
@@ -205,6 +230,11 @@ def construir(nodos: list[Nodo], extras_escena: dict | None = None, generador: s
     }
     if materiales:
         gltf["materials"] = materiales
+    if texturas:
+        gltf["images"] = imagenes
+        gltf["textures"] = texturas
+        # Lineal con mipmaps y sin repetir: la imagen cubre el suelo una sola vez.
+        gltf["samplers"] = [{"magFilter": 9729, "minFilter": 9987, "wrapS": 33071, "wrapT": 33071}]
     if usa_unlit:
         gltf["extensionsUsed"] = ["KHR_materials_unlit"]
 

@@ -32,17 +32,22 @@ export default function PanelClima({ apiOk }: { apiOk: boolean | null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ubicacion?.lat, ubicacion?.lon, apiOk]);
 
-  if (!ubicacion) return <p className="text-rebar text-xs">Definí primero la ubicación.</p>;
-  if (cargando) return <p className="text-rebar text-xs">Descargando series de NASA POWER… la primera vez tarda.</p>;
-  if (error) return <p className="text-signal text-xs">{error}</p>;
-  if (!clima) return <p className="text-rebar text-xs">Sin datos de clima.</p>;
+  const aviso = (texto: string, clase = "text-rebar") => (
+    <Seccion titulo="Clima del sitio">
+      <p className={`${clase} text-xs leading-snug`}>{texto}</p>
+    </Seccion>
+  );
+  if (!ubicacion) return aviso("Definí primero la ubicación.");
+  if (cargando) return aviso("Descargando series de NASA POWER… la primera vez tarda.");
+  if (error) return aviso(`No se pudo obtener el clima: ${error}`, "text-signal");
+  if (!clima) return aviso("Sin datos de clima.");
 
   const c = clima.clima;
   const mes = c.meses[mesElegido];
 
   return (
     <div className="text-xs">
-      <Seccion titulo="4 · Clima del sitio">
+      <Seccion titulo="Clima del sitio">
         <Dato etiqueta="Período de climatología" valor={<span className="text-[10px]">{c.periodo_climatologia}</span>} />
         <Dato etiqueta="Series horarias" valor={`${c.periodo_horario} · ${c.horas.toLocaleString("es-AR")} horas`} />
         <Dato etiqueta="Elevación de la celda" valor={c.elevacion_power_m ?? "—"} sufijo="m s.n.m." />

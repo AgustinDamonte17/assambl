@@ -20,17 +20,37 @@ import { centroide } from "../../modelo/geometria";
 import { arcoDiurno, horaTexto, solALaHora } from "./sol";
 
 interface Capas {
-  terreno: boolean;
+  suelo: boolean;
   lote: boolean;
+  arboles: boolean;
+  construido: boolean;
   referencias: boolean;
   arcoSolar: boolean;
-  malla: boolean;
   sombras: boolean;
 }
 
 const MAPA_SOMBRA = 4096;
-const CAPA_RELIEVE = "01_terreno";
-const CAPAS_GLB = [CAPA_RELIEVE, "01_lote", "01_referencias"];
+// Los nombres más largos primero: «01_suelo_lote» también empieza con «01_suelo_».
+const CAPAS_GLB = [
+  "01_suelo_lote",
+  "01_suelo",
+  "01_lote",
+  "01_calles",
+  "01_construcciones",
+  "01_arboles_lote",
+  "01_arboles_entorno",
+  "01_referencias",
+];
+/** Qué nodos del .glb controla cada casilla del visor. */
+const NODOS_DE: Record<Exclude<keyof Capas, "arcoSolar" | "sombras">, string[]> = {
+  suelo: ["01_suelo", "01_suelo_lote"],
+  lote: ["01_lote"],
+  arboles: ["01_arboles_lote", "01_arboles_entorno"],
+  construido: ["01_calles", "01_construcciones"],
+  referencias: ["01_referencias"],
+};
+const PROYECTAN_SOMBRA = new Set(["01_arboles_lote", "01_arboles_entorno", "01_construcciones"]);
+const RECIBEN_SOMBRA = new Set(["01_suelo", "01_suelo_lote", "01_calles"]);
 
 /** Capa del .glb a la que pertenece un objeto. GLTFLoader agrupa las mallas de
  *  varias primitivas y les agrega un sufijo, así que se busca hacia arriba. */
@@ -44,11 +64,12 @@ function capaDe(objeto: THREE.Object3D): string | null {
 }
 
 const CAPAS_INICIALES: Capas = {
-  terreno: true,
+  suelo: true,
   lote: true,
+  arboles: true,
+  construido: true,
   referencias: true,
   arcoSolar: true,
-  malla: false,
   sombras: true,
 };
 
@@ -64,7 +85,7 @@ interface Motor {
   disco: THREE.Mesh;
 }
 
-export default function Visor3D() {
+export default function Visor3D({ generando = false }: { generando?: boolean }) {
   const { proyecto, escena: datos, trayectoria, despachar } = useProyecto();
   const contenedor = useRef<HTMLDivElement>(null);
   const motor = useRef<Motor | null>(null);
@@ -167,14 +188,13 @@ export default function Visor3D() {
       (gltf) => {
         if (cancelado || !motor.current) return;
         limpiar(m.contenido);
-        // Solo el relieve interviene en las sombras. El lote y las referencias son
-        // anotaciones apoyadas sobre el suelo: si proyectaran sombra se sombrearían
-        // a sí mismas y aparecerían bandas que no significan nada.
+        // Árboles y construcciones proyectan sombra sobre el suelo. El lote y las
+        // referencias son anotaciones: si participaran se sombrearían a sí mismas.
         gltf.scene.traverse((o) => {
           if (!(o instanceof THREE.Mesh)) return;
-          const esRelieve = capaDe(o) === "01_terreno";
-          o.castShadow = esRelieve;
-          o.receiveShadow = esRelieve;
+          const capa = capaDe(o) ?? "";
+          o.castShadow = PROYECTAN_SOMBRA.has(capa);
+          o.receiveShadow = RECIBEN_SOMBRA.has(capa);
         });
         m.contenido.add(gltf.scene);
         setCarga("ok");
@@ -262,19 +282,12 @@ export default function Visor3D() {
   useEffect(() => {
     const m = motor.current;
     if (!m) return;
-    const visible: Record<string, boolean> = {
-      [CAPA_RELIEVE]: capas.terreno,
-      "01_lote": capas.lote,
-      "01_referencias": capas.referencias,
-    };
+    const visible: Record<string, boolean> = {};
+    for (const [casilla, nodos] of Object.entries(NODOS_DE)) {
+      for (const n of nodos) visible[n] = capas[casilla as keyof Capas];
+    }
     m.contenido.traverse((o) => {
       if (o.name in visible) o.visible = visible[o.name];
-      const capa = capaDe(o);
-      if (o instanceof THREE.Mesh) {
-        const mat = o.material as THREE.MeshStandardMaterial;
-        if (capa === CAPA_RELIEVE) mat.wireframe = capas.malla;
-        mat.needsUpdate = true;
-      }
     });
     if (m.arco) m.arco.visible = capas.arcoSolar;
     m.renderer.shadowMap.enabled = capas.sombras;
@@ -319,12 +332,13 @@ export default function Visor3D() {
       <div className="absolute left-3 top-3 z-10 bg-concrete/90 border border-line p-2 text-[11px] flex flex-col gap-1">
         {(
           [
-            ["terreno", "Relieve"],
+            ["suelo", "Imagen satelital"],
             ["lote", "Lote"],
-            ["referencias", "Norte y origen"],
+            ["arboles", "Árboles"],
+            ["construido", "Calles y construcciones"],
+            ["referencias", "Norte"],
             ["arcoSolar", "Recorrido del sol"],
             ["sombras", "Sombras"],
-            ["malla", "Ver la malla"],
           ] as [keyof Capas, string][]
         ).map(([k, etiqueta]) => (
           <label key={k} className="flex items-center gap-2 cursor-pointer">
@@ -341,18 +355,23 @@ export default function Visor3D() {
         </div>
       </div>
 
-      {datos?.relieve.provisional && (
+      {datos?.resumen.sintetica && (
         <div className="absolute left-1/2 -translate-x-1/2 top-3 z-10 bg-signal text-concrete text-[11px] px-3 py-1 uppercase tracking-widest">
-          Escena provisional · sin datos de relieve
+          Imagen sintética de prueba · no es el lugar
         </div>
       )}
 
-      {carga !== "ok" && (
+      {(generando || carga !== "ok") && (
         <div className="absolute inset-0 grid place-items-center text-xs text-rebar pointer-events-none">
-          {carga === "cargando" && "Cargando la escena…"}
-          {carga === "error" && <span className="text-signal">{error}</span>}
-          {carga === "vacio" &&
-            (t.escena_ref ? "Reconstruyendo el terreno…" : "Generá la escena desde el panel de ubicación.")}
+          <span className="bg-concrete/90 px-3 py-2">
+            {generando
+              ? "Reconstruyendo el sitio a partir de la imagen satelital…"
+              : carga === "cargando"
+                ? "Cargando el modelo…"
+                : carga === "error"
+                  ? <span className="text-signal">{error}</span>
+                  : "El modelo del sitio se arma en el paso 3 · Modelo 3D."}
+          </span>
         </div>
       )}
 
@@ -416,7 +435,7 @@ function ControlHorario(props: {
         <span>amanece {props.amanecer ?? "—"}</span>
         <span>atardece {props.atardecer ?? "—"}</span>
         <span className="ml-auto">
-          Posición astronómica calculada localmente. La sombra sale del modelo 3D, con la resolución del relieve.
+          Posición astronómica calculada localmente. Las sombras son las de los árboles y construcciones del modelo.
         </span>
       </div>
     </div>

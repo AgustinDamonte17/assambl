@@ -1,9 +1,8 @@
 import L from "leaflet";
-import { useEffect, useRef, useState } from "react";
-import { api } from "../../api/cliente";
+import { useEffect, useRef } from "react";
 import { useProyecto } from "../../estado/ProyectoContext";
 import { SistemaLocal } from "../../modelo/geometria";
-import type { CurvasNivel, Punto } from "../../modelo/proyecto";
+import type { Punto } from "../../modelo/proyecto";
 
 type Modo = "ubicacion" | "lote";
 
@@ -20,9 +19,7 @@ const iconoVertice = (i: number) =>
   L.divIcon({ className: "vertice-lote", iconSize: [14, 14], iconAnchor: [7, 7], html: `<span title="Vértice ${i + 1}"></span>` });
 
 export default function Mapa({ modo }: { modo: Modo }) {
-  const { proyecto, operar, escena } = useProyecto();
-  const [curvas, setCurvas] = useState<CurvasNivel | null>(null);
-  const capaCurvas = useRef<L.LayerGroup>(L.layerGroup());
+  const { proyecto, operar } = useProyecto();
   const t = proyecto.terreno;
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<L.Map | null>(null);
@@ -69,12 +66,11 @@ export default function Mapa({ modo }: { modo: Modo }) {
     L.control
       .layers(
         { Satélite: satelite, Calles: calles },
-        { Nombres: etiquetas, "Curvas de nivel": capaCurvas.current, Lote: capaLote.current },
+        { Nombres: etiquetas, Lote: capaLote.current },
         { collapsed: true },
       )
       .addTo(m);
     L.control.scale({ metric: true, imperial: false }).addTo(m);
-    capaCurvas.current.addTo(m);
     capaLote.current.addTo(m);
 
     m.on("click", (e: L.LeafletMouseEvent) => {
@@ -185,50 +181,6 @@ export default function Mapa({ modo }: { modo: Modo }) {
     });
   }, [t.lote.vertices, t.ubicacion, modo, operar]);
 
-  // Curvas de nivel del relieve reconstruido: se dibuja el lote sobre el mismo
-  // terreno que después se ve en 3D, no sobre la foto.
-  const refEscena = escena?.ref ?? null;
-  useEffect(() => {
-    if (!refEscena) {
-      setCurvas(null);
-      return;
-    }
-    let vigente = true;
-    api
-      .curvas(refEscena)
-      .then((c) => vigente && setCurvas(c))
-      .catch(() => vigente && setCurvas(null));
-    return () => {
-      vigente = false;
-    };
-  }, [refEscena]);
-
-  useEffect(() => {
-    const g = capaCurvas.current;
-    g.clearLayers();
-    if (!curvas || !t.ubicacion) return;
-    const s = new SistemaLocal(t.ubicacion.lat, t.ubicacion.lon);
-    const aLL = ([x, y]: Punto): L.LatLngTuple => {
-      const q = s.aGeografica(x, y);
-      return [q.lat, q.lon];
-    };
-    for (const c of curvas.curvas) {
-      L.polyline(
-        c.segmentos.map(([a, b]) => [aLL(a), aLL(b)]),
-        {
-          color: "#fff3c4",
-          weight: c.maestra ? 1.8 : 0.9,
-          opacity: c.maestra ? 0.95 : 0.7,
-          interactive: true,
-        },
-      )
-        .bindTooltip(`${c.cota.toLocaleString("es-AR")} m${curvas.absolutas ? " s.n.m." : ""}`, { sticky: true })
-        .addTo(g);
-    }
-    // Las curvas quedan debajo del lote para que los vértices sigan tomándose con clic.
-    capaLote.current.eachLayer((l) => (l as L.Path).bringToFront?.());
-  }, [curvas, t.ubicacion]);
-
   return (
     <div className="absolute inset-0">
       <div ref={contenedor} className="absolute inset-0" />
@@ -239,17 +191,8 @@ export default function Mapa({ modo }: { modo: Modo }) {
             : "Clic para agregar vértices del lote · arrastrá para mover · clic derecho sobre un vértice para quitarlo."}
         </div>
         <div className="text-[10px] mt-0.5">
-          La imagen es solo un fondo para dibujar. No entra al modelo 3D: el relieve viene de NASADEM.
+          Dibujá sobre la imagen satelital: es la misma que después se usa para reconstruir el sitio en 3D.
         </div>
-        {curvas && (
-          <div className="text-[10px] mt-0.5 text-ink">
-            {curvas.provisional
-              ? "Sin curvas de nivel: la escena es provisional (plana)."
-              : curvas.equidistancia_m
-                ? `Curvas de nivel cada ${curvas.equidistancia_m.toLocaleString("es-AR")} m (maestras cada ${(curvas.equidistancia_m * 5).toLocaleString("es-AR")} m), de ${curvas.cota_min} a ${curvas.cota_max} m${curvas.absolutas ? " s.n.m." : ""} · relieve con posts cada ${curvas.paso_m ?? "—"} m.`
-                : "Terreno prácticamente plano: no hay curvas que dibujar."}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -51,7 +51,7 @@ def test_escena_provisional_no_informa_pendiente():
     assert r["pendiente"] is None
     r05 = next(v for v in r["verificaciones"] if v["id"] == "R01.05")
     assert r05["estado"] == "pendiente_datos"
-    assert "provisional" in r05["detalle"]
+    assert "plano" in r05["detalle"]
 
 
 def test_lote_fuera_del_margen():

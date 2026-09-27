@@ -1,10 +1,11 @@
 /**
- * Cierre de la capa 01: lo que falta para empezar a diseñar la casa y el botón
- * para avanzar. Los requisitos los decide el backend (assambl/guia/terreno.py);
- * acá solo se muestran.
+ * Cierre de la capa 01: lo que falta para confirmar el terreno y lo que queda
+ * pendiente sin impedir el diseño. Los requisitos los decide el backend
+ * (assambl/guia/terreno.py); acá solo se muestran. El botón Confirmar está en la
+ * barra fija del paso 3.
  */
 
-import { Aviso, Boton, Seccion } from "../../componentes/ui";
+import { Aviso, Seccion } from "../../componentes/ui";
 import { useProyecto } from "../../estado/ProyectoContext";
 import type { SubPasoTerreno } from "../../modelo/proyecto";
 
@@ -12,34 +13,30 @@ const NOMBRE_PASO: Record<SubPasoTerreno, string> = {
   ubicacion: "Ubicación",
   lote: "Lote",
   modelo: "Modelo 3D",
-  clima: "Clima",
 };
 
-export default function CierreTerreno({
-  onAvanzar,
-  irAPaso,
-}: {
-  onAvanzar: () => void;
-  irAPaso: (p: SubPasoTerreno) => void;
-}) {
+export default function CierreTerreno({ irAPaso }: { irAPaso: (p: SubPasoTerreno) => void }) {
   const { requisitos } = useProyecto();
   const faltan = requisitos?.requisitos.filter((r) => r.bloquea && !r.cumple) ?? [];
   const avisos = requisitos?.requisitos.filter((r) => !r.bloquea && !r.cumple) ?? [];
 
   return (
-    <Seccion titulo="Terreno listo para diseñar">
+    <Seccion titulo="Confirmar el terreno">
       {!requisitos && <p className="text-rebar">Verificando el terreno…</p>}
 
       {requisitos && faltan.length > 0 && (
         <>
-          <p className="text-rebar leading-snug mb-2">Para avanzar falta resolver:</p>
+          <p className="text-rebar leading-snug mb-2">Para confirmar falta:</p>
           <ul className="space-y-2">
             {faltan.map((r) => (
               <li key={r.id} className="leading-snug border-l-2 border-signal pl-2">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-ink">{r.descripcion}</span>
-                  {r.paso && (
-                    <button className="text-signal text-[10px] uppercase tracking-wide shrink-0" onClick={() => irAPaso(r.paso as SubPasoTerreno)}>
+                  {r.paso && r.paso !== "modelo" && (
+                    <button
+                      className="text-signal text-[10px] uppercase tracking-wide shrink-0"
+                      onClick={() => irAPaso(r.paso as SubPasoTerreno)}
+                    >
                       Ir a {NOMBRE_PASO[r.paso as SubPasoTerreno]}
                     </button>
                   )}
@@ -53,13 +50,13 @@ export default function CierreTerreno({
 
       {requisitos?.listo && (
         <p className="text-resolved leading-snug">
-          Ubicación, relieve y lote resueltos. El diseño de la casa arranca sobre este terreno.
+          Ubicación, lote y modelo del sitio listos. Al confirmar empieza el diseño de la casa sobre este terreno.
         </p>
       )}
 
       {avisos.length > 0 && (
         <div className="mt-3 space-y-1">
-          <p className="text-[10px] uppercase tracking-wide text-rebar">Queda pendiente, no impide avanzar</p>
+          <p className="text-[10px] uppercase tracking-wide text-rebar">Queda pendiente, no impide confirmar</p>
           {avisos.map((r) => (
             <Aviso key={r.id}>
               <span className="text-ink">{r.descripcion}.</span> {r.detalle}
@@ -67,10 +64,6 @@ export default function CierreTerreno({
           ))}
         </div>
       )}
-
-      <Boton primario disabled={!requisitos?.listo} onClick={onAvanzar} className="w-full mt-4 !py-3 !text-sm">
-        Avanzar al diseño de la casa →
-      </Boton>
     </Seccion>
   );
 }

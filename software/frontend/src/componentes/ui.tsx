@@ -102,6 +102,7 @@ const COLOR_NATURALEZA: Record<Naturaleza, string> = {
   medicion_satelital: "border-resolved text-resolved",
   reanalisis_regional: "border-warn text-warn",
   calculo_local: "border-rebar text-rebar",
+  interpretacion_imagen: "border-warn text-warn",
   provisional: "border-signal text-signal bg-signal/10",
 };
 

@@ -1,7 +1,6 @@
 import type { Autor, Operacion, ResultadoOperacion } from "../modelo/operaciones";
 import type {
   AnalisisLote,
-  CurvasNivel,
   Proyecto,
   Punto,
   RequisitosTerreno,
@@ -40,12 +39,6 @@ export interface ResultadoGeo {
   tipo?: string;
 }
 
-export interface EstadoCredencial {
-  earthdata: boolean;
-  mensaje: string;
-  mosaicos_en_cache: string[];
-}
-
 export const api = {
   salud: () => pedir<{ estado: string; version: string }>("/api/salud"),
 
@@ -54,8 +47,8 @@ export const api = {
   inverso: (lat: number, lon: number) =>
     pedir<{ direccion: string | null }>(`/api/geocodificar/inverso?lat=${lat}&lon=${lon}`),
 
-  credencial: () => pedir<EstadoCredencial>("/api/terreno/credencial"),
 
+  /** Reconstruye el lote y su entorno desde la imagen satelital. Puede tardar la primera vez. */
   generarEscena: (lat: number, lon: number, margen_m: number, vertices: Punto[]) =>
     pedir<RespuestaEscena>("/api/terreno/escena", {
       method: "POST",
@@ -64,17 +57,10 @@ export const api = {
 
   urlGlb: (ref: string) => `/api/terreno/escena/${ref}.glb`,
 
-  curvas: (ref: string) => pedir<CurvasNivel>(`/api/terreno/escena/${ref}/curvas`),
-
   /** Qué falta para cerrar el terreno y pasar al diseño de la casa. */
   requisitosTerreno: (proyecto: Proyecto) =>
     pedir<RequisitosTerreno>("/api/terreno/requisitos", { method: "POST", body: JSON.stringify(proyecto) }),
 
-  urlScriptBlender: (ref: string, fecha: string, hora: number, huso_h: number | null) => {
-    const p = new URLSearchParams({ fecha, hora: String(hora) });
-    if (huso_h !== null) p.set("huso_h", String(huso_h));
-    return `/api/terreno/escena/${ref}.py?${p}`;
-  },
 
   sol: (lat: number, lon: number, fecha: string, huso_h: number | null) => {
     const p = new URLSearchParams({ lat: String(lat), lon: String(lon), fecha });

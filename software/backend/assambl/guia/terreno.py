@@ -1,10 +1,10 @@
 """Requisitos para cerrar la capa 01 y empezar a diseñar la casa sobre el terreno.
 
 Los requisitos bloqueantes son los que el diseño necesita para existir: un origen,
-un relieve reconstruido para ese origen y un lote cerrado dentro del entorno. Lo
-que R01 marca como pendiente sin que impida dibujar (pendiente sin relieve real,
-lote más chico que el paso del DEM, superficie chica) viaja como aviso: el diseño
-avanza y esos estados siguen visibles.
+un lote cerrado dentro del entorno y el modelo 3D del sitio generado para ese lote.
+Lo que R01 marca como pendiente sin que impida dibujar (pendiente no relevada,
+superficie chica) viaja como aviso: el diseño avanza y esos estados siguen
+visibles.
 """
 
 from __future__ import annotations
@@ -31,12 +31,6 @@ def requisitos(proyecto: Proyecto, contexto: Contexto | None = None) -> dict:
         "Buscá la dirección, escribí las coordenadas o hacé clic en el mapa.", paso="ubicacion"))
 
     escena = escena_vigente(proyecto, contexto)
-    salida.append(_requisito(
-        "relieve", "Relieve reconstruido para esta ubicación y este entorno", escena is not None,
-        "Generá la escena 3D en el paso Ubicación." if t.escena_ref is None
-        else "La escena no corresponde a la ubicación o al entorno actuales; se está regenerando.",
-        paso="ubicacion"))
-
     v = t.lote.vertices
     analisis = r01_terreno.analizar_lote(
         v, escena.malla if escena else None, t.margen_m, escena.provisional if escena else False)
@@ -56,6 +50,12 @@ def requisitos(proyecto: Proyecto, contexto: Contexto | None = None) -> dict:
     salida.append(_requisito(
         "lote_confirmado", "Lote confirmado en la ubicación actual", t.estado != Estado.DESACTUALIZADO,
         "El origen se movió después de dibujar el lote: confirmalo en el paso Lote.", paso="lote"))
+
+    salida.append(_requisito(
+        "sitio", "Modelo 3D del sitio generado para este lote", escena is not None,
+        "Se genera al entrar al paso Modelo 3D." if t.escena_ref is None
+        else "El modelo corresponde a otra ubicación, otro entorno u otro lote; se regenera en el paso Modelo 3D.",
+        paso="modelo"))
 
     # Lo que R01 deja pendiente sin impedir el diseño.
     for vid in ("R01.02", "R01.03", "R01.05", "R01.06"):

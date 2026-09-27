@@ -60,7 +60,7 @@ def _ids(r, solo_bloqueantes=True):
 def test_proyecto_nuevo_no_esta_listo():
     r = guia.requisitos(proyecto_nuevo())
     assert not r["listo"]
-    assert {"ubicacion", "relieve", "lote"} <= _ids(r)
+    assert {"ubicacion", "sitio", "lote"} <= _ids(r)
 
 
 def test_listo_con_escena_y_lote_valido():
@@ -85,9 +85,9 @@ def test_escena_perdida_o_lote_desactualizado_bloquean():
     ctx = ContextoFijo(escena())
     p = aplicar(ubicado(), {"tipo": "vincular_escena", "ref": "abcdef012345"}, ctx).proyecto
     p = aplicar(p, {"tipo": "definir_lote", "vertices": LOTE_GRANDE}, ctx).proyecto
-    assert "relieve" in _ids(guia.requisitos(p, ContextoFijo()))  # el servidor perdió la caché
+    assert "sitio" in _ids(guia.requisitos(p, ContextoFijo()))  # el servidor perdió la caché
     movido = aplicar(p, {"tipo": "definir_ubicacion", "lat": -34.7, "lon": -58.4}, ctx).proyecto
-    assert {"relieve", "lote_confirmado"} <= _ids(guia.requisitos(movido, ctx))
+    assert {"sitio", "lote_confirmado"} <= _ids(guia.requisitos(movido, ctx))
 
 
 def test_lote_fuera_del_entorno_bloquea():

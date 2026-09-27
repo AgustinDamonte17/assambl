@@ -6,12 +6,16 @@
 
 import { Aviso, Boton, Dato, Etiqueta, Seccion } from "../../componentes/ui";
 import { useProyecto } from "../../estado/ProyectoContext";
+import { useModeloSitio } from "../../estado/useModeloSitio";
 import { fmt } from "../../modelo/geometria";
-import { cardinal } from "../../modelo/proyecto";
+import { cardinal, escenaVigente } from "../../modelo/proyecto";
 import Visor3D from "../terreno/Visor3D";
 
-export default function PasoDiseno({ onVolver }: { onVolver: () => void }) {
-  const { proyecto, requisitos, clima } = useProyecto();
+export default function PasoDiseno({ apiOk, onVolver }: { apiOk: boolean | null; onVolver: () => void }) {
+  const { proyecto, requisitos, clima, escena } = useProyecto();
+  // Al volver a abrir el proyecto el modelo se rearma desde la caché del backend.
+  const generacion = useModeloSitio(!!apiOk);
+  const sitio = escenaVigente(escena, proyecto.terreno) ? escena!.resumen : null;
   const t = proyecto.terreno;
   const avisos = requisitos?.requisitos.filter((r) => !r.bloquea && !r.cumple) ?? [];
   const bloqueado = requisitos !== null && !requisitos.listo;
@@ -37,7 +41,7 @@ export default function PasoDiseno({ onVolver }: { onVolver: () => void }) {
 
       <div className="grid grid-cols-[1fr_360px] min-h-0">
         <div className="relative min-h-0">
-          <Visor3D />
+          <Visor3D generando={generacion.generando} />
         </div>
         <aside className="border-l border-line bg-concrete overflow-y-auto p-4 text-xs">
           {bloqueado ? (
@@ -62,8 +66,8 @@ export default function PasoDiseno({ onVolver }: { onVolver: () => void }) {
             <>
               <Seccion titulo="Diseño de la casa">
                 <p className="text-rebar leading-snug">
-                  La casa se diseña sobre el terreno que reconstruiste: el relieve, el lote y el norte del visor son los del
-                  proyecto. El primer paso es ubicar la huella de la casa dentro del lote.
+                  La casa se diseña sobre el sitio que reconstruiste: el lote, sus árboles, el entorno y el norte del
+                  visor son los del proyecto. El primer paso es ubicar la huella de la casa dentro del lote.
                 </p>
                 <div className="mt-3">
                   <Aviso>
@@ -77,17 +81,13 @@ export default function PasoDiseno({ onVolver }: { onVolver: () => void }) {
                 <Dato etiqueta="Superficie del lote" valor={fmt(t.lote.area_m2 ?? 0)} sufijo="m²" />
                 <Dato etiqueta="Perímetro" valor={fmt(t.lote.perimetro_m ?? 0)} sufijo="m" />
                 <Dato etiqueta="Lados" valor={t.lote.lados.length} />
-                <Dato
-                  etiqueta="Pendiente"
-                  valor={
-                    t.pendiente ? (
-                      `${fmt(t.pendiente.porcentaje, 1)} % hacia ${cardinal(t.pendiente.direccion_deg)}`
-                    ) : (
-                      <span className="text-rebar">sin relieve medido</span>
-                    )
-                  }
-                />
-                <Dato etiqueta="Cota del origen" valor={t.sistema_local?.cota_origen_msnm ?? "—"} sufijo="m s.n.m." />
+                <Dato etiqueta="Terreno" valor={<span className="text-rebar">supuesto plano</span>} />
+                {sitio && (
+                  <>
+                    <Dato etiqueta="Árboles en el lote" valor={sitio.arboles_lote} />
+                    <Dato etiqueta="Construcciones en el entorno" valor={sitio.construcciones} />
+                  </>
+                )}
                 {clima && (
                   <>
                     <Dato

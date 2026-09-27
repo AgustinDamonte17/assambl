@@ -1,6 +1,6 @@
 # Decisiones de arquitectura
 
-Estado al 26/09/2026.
+Estado al 27/09/2026.
 
 Cada documento fija una decisión: el problema, lo que se eligió, lo que se descartó y por qué. Una decisión se reemplaza con un documento nuevo que la cita; no se reescribe la historia.
 
@@ -10,6 +10,7 @@ Cada documento fija una decisión: el problema, lo que se eligió, lo que se des
 | [0002](0002_operaciones_e_historial.md) | Toda modificación pasa por operaciones validadas en el backend | Aceptada · implementada en la capa 01 |
 | [0003](0003_escala_y_visor_3d.md) | Escala: guardar la intención, derivar las piezas; visor sobre three.js | Aceptada · parcialmente implementada |
 | [0004](0004_asistente_ia.md) | Asistente de IA: cliente de las operaciones, con consumo de tokens acotado | Aceptada · por implementar |
+| [0005](0005_modelo_del_sitio.md) | Modelo del sitio desde la imagen satelital, con terreno plano; relieve NASADEM en pausa | Aceptada · implementada |
 
 ## Orden de trabajo
 

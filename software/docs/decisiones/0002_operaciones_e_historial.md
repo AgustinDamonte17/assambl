@@ -26,7 +26,7 @@ Toda modificación del diseño es una **operación**: un objeto con `tipo` y par
 | `definir_margen` | Metros de relieve alrededor del origen (100–1000) | Recalcula R01 |
 | `definir_lote` | Reemplaza la poligonal | Lados, área, perímetro; recalcula R01; saca al terreno de `desactualizado` |
 | `definir_retiros` | Frente, fondo y laterales | — |
-| `vincular_escena` | Asocia una escena ya generada | Cota del origen y pendiente salen de la escena; recalcula R01. No la ofrece el asistente |
+| `vincular_escena` | Asocia el modelo del sitio ya generado | Debe corresponder al origen, al entorno y al lote actuales (0005); recalcula R01. No la ofrece el asistente |
 
 Lo que la operación necesita leer y no está en el proyecto (hoy, la malla de la escena generada) llega por un `Contexto`. Una escena solo se usa si coincide con el origen y el margen del proyecto.
 
