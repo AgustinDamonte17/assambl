@@ -11,6 +11,7 @@ Cada documento fija una decisión: el problema, lo que se eligió, lo que se des
 | [0003](0003_escala_y_visor_3d.md) | Escala: guardar la intención, derivar las piezas; visor sobre three.js | Aceptada · parcialmente implementada |
 | [0004](0004_asistente_ia.md) | Asistente de IA: cliente de las operaciones, con consumo de tokens acotado | Aceptada · por implementar |
 | [0005](0005_modelo_del_sitio.md) | Modelo del sitio desde la imagen satelital, con terreno plano; relieve NASADEM en pausa | Aceptada · implementada |
+| [0006](0006_casa_independiente_del_terreno.md) | La casa tiene su propio sistema de coordenadas; el sitio solo aporta la implantación | Aceptada · por implementar (próximo paso) |
 
 ## Orden de trabajo
 
