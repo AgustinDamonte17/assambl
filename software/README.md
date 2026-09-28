@@ -17,7 +17,7 @@ software/
   backend/
     api/             FastAPI: rutas HTTP finas que llaman al paquete assambl
     assambl/         Paquete Python del producto (estructura de MVP_01 §4.6)
-      modelo/        Esquema del proyecto y del sitio (pydantic), estados
+      modelo/        Esquema del proyecto, de la casa y del sitio (pydantic), estados
       geometria/     Polígonos, coordenadas locales, malla del terreno
       fuentes/       Datos externos: nasadem.py, power.py (y nominatim.py solo para buscar)
       clima/         sol.py (posición solar) y resumen.py (temperaturas, vientos, radiación)
@@ -27,13 +27,15 @@ software/
       catalogo/      ar.json (perfil Argentina) — se completa a partir de la capa 03
     tests/           pytest (test_*.py) y sondas manuales (probar_*.py)
     cache/           Mosaicos, clima y salidas; regenerable, ignorada por git
-  docs/              Decisiones técnicas y fuentes de datos
+  casos/             Casas de referencia como casa.assambl.json (hoy: Angus Ranch V11)
+  docs/              Decisiones técnicas, fuentes de datos y modelo de la casa
   scripts/           Utilidades de desarrollo
 ```
 
-Dos reglas de oro:
+Tres reglas de oro:
 
 - **El proyecto (`casa.assambl.json`) es la única fuente de verdad** (MVP_01 §4.2). Todo lo descargado o calculado es caché regenerable y se identifica por los parámetros que lo produjeron.
+- **La casa se guarda como decisiones, no como piezas.** Muros, aberturas, ambientes, cubiertas e instalaciones; montantes, placas y cómputos se derivan con reglas. El formato está en [`docs/modelo_de_la_casa.md`](docs/modelo_de_la_casa.md) y el caso de referencia es [`casos/angus_ranch.assambl.json`](casos/angus_ranch.assambl.json).
 - **La NASA es la única fuente externa de datos del modelo.** Relieve de NASADEM, clima de NASA POWER; proyección, malla, sol y sombras se calculan acá. El buscador de direcciones y el mapa base son ayudas de navegación y no aportan geometría. El detalle está en [`docs/fuentes_de_datos_terreno.md`](docs/fuentes_de_datos_terreno.md).
 
 ## Requisitos
@@ -123,7 +125,7 @@ La interfaz lo repite en cada panel, y vale repetirlo acá:
 ## Pruebas
 
 ```powershell
-cd backend; .venv\Scripts\python -m pytest -q         # 60 pruebas, sin red
+cd backend; .venv\Scripts\python -m pytest -q         # 78 pruebas, sin red (el caso Angus usa el script V11 de la raíz)
 .venv\Scripts\python tests\probar_nasa.py --cotas     # coteja NASADEM contra cotas conocidas
 cd ..; npm install --no-save puppeteer gltf-validator
 node scripts/probar_ui.cjs                            # recorrido en navegador headless con capturas

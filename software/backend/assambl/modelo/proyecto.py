@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from .casa import Casa
 from .estados import Estado
 
 ESQUEMA_ACTUAL = "assambl/proyecto@0.1"
@@ -78,3 +79,4 @@ class Proyecto(BaseModel):
     creado: str
     modificado: str
     terreno: Terreno = Terreno()
+    casa: Casa | None = Field(default=None, description="Sección de la casa (casa.py); opcional")

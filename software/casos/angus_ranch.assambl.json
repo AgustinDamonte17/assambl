@@ -747,7 +747,7 @@
         "nombre": "Dormitorio principal",
         "uso": "dormitorio",
         "contorno_m": [[0.2, 3.45], [3.6, 3.45], [3.6, 7.8], [0.2, 7.8]],
-        "solado": "piso_madera",
+        "solado": "roble_natural",
         "estado": "propuesto"
       },
       {
@@ -755,7 +755,7 @@
         "nombre": "Dormitorio 2",
         "uso": "dormitorio",
         "contorno_m": [[0.2, 0.2], [2.75, 0.2], [2.75, 2.1], [0.2, 2.1]],
-        "solado": "piso_madera",
+        "solado": "roble_natural",
         "estado": "propuesto"
       },
       {
@@ -763,7 +763,7 @@
         "nombre": "Vestidor",
         "uso": "vestidor",
         "contorno_m": [[3.75, 3.45], [5.6, 3.45], [5.6, 4.4], [3.75, 4.4]],
-        "solado": "piso_madera",
+        "solado": "roble_natural",
         "estado": "propuesto"
       },
       {
@@ -795,7 +795,7 @@
         "nombre": "Dormitorio 3",
         "uso": "dormitorio",
         "contorno_m": [[15.0, -2.2], [17.8, -2.2], [17.8, 1.2], [15.0, 1.2]],
-        "solado": "piso_madera",
+        "solado": "roble_natural",
         "estado": "propuesto"
       },
       {
@@ -1641,163 +1641,163 @@
         ],
         "tomas": [
           {
-            "id": "Dorm_principal_1",
+            "id": "Toma_Dorm_principal_1",
             "ambiente": "dorm_principal",
             "posicion_m": [0.25, 3.95, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "y"
           },
           {
-            "id": "Dorm_principal_2",
+            "id": "Toma_Dorm_principal_2",
             "ambiente": "dorm_principal",
             "posicion_m": [3.5, 7.2, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "y"
           },
           {
-            "id": "Dorm_principal_3",
+            "id": "Toma_Dorm_principal_3",
             "ambiente": "dorm_principal",
             "posicion_m": [2.4, 3.51, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "x"
           },
           {
-            "id": "Dorm2_1",
+            "id": "Toma_Dorm2_1",
             "ambiente": "dorm_2",
             "posicion_m": [0.25, 0.35, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "y"
           },
           {
-            "id": "Dorm2_2",
+            "id": "Toma_Dorm2_2",
             "ambiente": "dorm_2",
             "posicion_m": [2.64, 1.65, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "y"
           },
           {
-            "id": "Dorm3_1",
+            "id": "Toma_Dorm3_1",
             "ambiente": "dorm_3",
             "posicion_m": [15.05, -1.3, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "y"
           },
           {
-            "id": "Dorm3_2",
+            "id": "Toma_Dorm3_2",
             "ambiente": "dorm_3",
             "posicion_m": [17.72, 0.65, 0.3],
             "circuito": "TUG_D",
             "paralela_a": "y"
           },
           {
-            "id": "Estar_TV",
+            "id": "Toma_Estar_TV",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [14.72, 5.55, 0.3],
             "circuito": "TUG_E",
             "paralela_a": "y"
           },
           {
-            "id": "Estar_aux",
+            "id": "Toma_Estar_aux",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [14.72, 7.1, 0.3],
             "circuito": "TUG_E",
             "paralela_a": "y"
           },
           {
-            "id": "Comedor",
+            "id": "Toma_Comedor",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [5.88, 5.9, 0.3],
             "circuito": "TUG_E",
             "paralela_a": "y"
           },
           {
-            "id": "Oficina_1",
+            "id": "Toma_Oficina_1",
             "ambiente": "oficina",
             "posicion_m": [16.1, 7.7, 0.3],
             "circuito": "TUG_E",
             "paralela_a": "x"
           },
           {
-            "id": "Oficina_2",
+            "id": "Toma_Oficina_2",
             "ambiente": "oficina",
             "posicion_m": [17.72, 6.9, 0.3],
             "circuito": "TUG_E",
             "paralela_a": "y"
           },
           {
-            "id": "Oficina_3",
+            "id": "Toma_Oficina_3",
             "ambiente": "oficina",
             "posicion_m": [15.07, 4.8, 0.3],
             "circuito": "TUG_E",
             "paralela_a": "y"
           },
           {
-            "id": "Mesada_1",
+            "id": "Toma_Mesada_1",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [7.3, 0.28, 1.1],
             "circuito": "TUG_C",
             "paralela_a": "x"
           },
           {
-            "id": "Mesada_2",
+            "id": "Toma_Mesada_2",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [9.45, 0.28, 1.1],
             "circuito": "TUG_C",
             "paralela_a": "x"
           },
           {
-            "id": "Heladera",
+            "id": "Toma_Heladera",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [10.85, 0.28, 0.4],
             "circuito": "HEL",
             "paralela_a": "x"
           },
           {
-            "id": "Horno",
+            "id": "Toma_Horno",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [6.0, 0.28, 0.45],
             "circuito": "HOR",
             "paralela_a": "x"
           },
           {
-            "id": "Anafe",
+            "id": "Toma_Anafe",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [6.8, 0.28, 0.65],
             "circuito": "ANA",
             "paralela_a": "x"
           },
           {
-            "id": "Lavarropas",
+            "id": "Toma_Lavarropas",
             "ambiente": "lavadero",
             "posicion_m": [14.67, -2.09, 1.1],
             "circuito": "LAV",
             "paralela_a": "x"
           },
           {
-            "id": "Termotanque",
+            "id": "Toma_Termotanque",
             "ambiente": "lavadero",
             "posicion_m": [14.67, -2.09, 1.9],
             "circuito": "TER",
             "paralela_a": "x"
           },
           {
-            "id": "Bano",
+            "id": "Toma_Bano",
             "ambiente": "bano",
-            "posicion_m": [11.6, -0.8, 2.735],
-            "circuito": "IUG",
+            "posicion_m": [12.83, -0.48, 1.2],
+            "circuito": "TUG_B",
             "paralela_a": "y"
           },
           {
-            "id": "Suite",
+            "id": "Toma_Suite",
             "ambiente": "bano_suite",
-            "posicion_m": [4.65, 6.3, 2.735],
-            "circuito": "IUG",
+            "posicion_m": [5.5, 5.7, 1.2],
+            "circuito": "TUG_B",
             "paralela_a": "y"
           }
         ],
         "bocas_luz": [
           {
-            "id": "Dorm_principal",
+            "id": "Luz_Dorm_principal",
             "ambiente": "dorm_principal",
             "posicion_m": [1.8, 5.5, 2.735],
             "circuito": "IUG",
@@ -1805,7 +1805,7 @@
             "llave": "Llave_Dorm_principal"
           },
           {
-            "id": "Dorm2",
+            "id": "Luz_Dorm2",
             "ambiente": "dorm_2",
             "posicion_m": [1.4, 1.1, 2.735],
             "circuito": "IUG",
@@ -1813,7 +1813,7 @@
             "llave": "Llave_Dorm2"
           },
           {
-            "id": "Suite",
+            "id": "Luz_Suite",
             "ambiente": "bano_suite",
             "posicion_m": [4.65, 6.3, 2.735],
             "circuito": "IUG",
@@ -1821,7 +1821,7 @@
             "llave": "Llave_Suite"
           },
           {
-            "id": "Bano",
+            "id": "Luz_Bano",
             "ambiente": "bano",
             "posicion_m": [11.6, -0.8, 2.735],
             "circuito": "IUG",
@@ -1829,7 +1829,7 @@
             "llave": "Llave_Bano"
           },
           {
-            "id": "Lavadero",
+            "id": "Luz_Lavadero",
             "ambiente": "lavadero",
             "posicion_m": [14.0, -1.0, 2.735],
             "circuito": "IUG",
@@ -1837,7 +1837,7 @@
             "llave": "Llave_Lavadero"
           },
           {
-            "id": "Dorm3",
+            "id": "Luz_Dorm3",
             "ambiente": "dorm_3",
             "posicion_m": [16.5, -0.4, 2.735],
             "circuito": "IUG",
@@ -1845,7 +1845,7 @@
             "llave": "Llave_Dorm3"
           },
           {
-            "id": "Oficina",
+            "id": "Luz_Oficina",
             "ambiente": "oficina",
             "posicion_m": [16.4, 5.5, 2.735],
             "circuito": "IUG",
@@ -1853,7 +1853,7 @@
             "llave": "Llave_Oficina"
           },
           {
-            "id": "Estar",
+            "id": "Luz_Estar",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [12.4, 5.8, 2.735],
             "circuito": "IUG",
@@ -1861,7 +1861,7 @@
             "llave": "Llave_Estar"
           },
           {
-            "id": "Cocina",
+            "id": "Luz_Cocina",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [8.2, 2.7, 2.735],
             "circuito": "IUG",
@@ -1869,7 +1869,7 @@
             "llave": "Llave_Cocina"
           },
           {
-            "id": "Vestidor",
+            "id": "Luz_Vestidor",
             "ambiente": "vestidor",
             "posicion_m": [4.65, 3.95, 2.735],
             "circuito": "IUG",
@@ -1877,7 +1877,7 @@
             "llave": "Llave_Vestidor"
           },
           {
-            "id": "Colgante_0",
+            "id": "Luz_Colgante_0",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [8.2, 4.9, 2.75],
             "circuito": "IUG",
@@ -1885,7 +1885,7 @@
             "llave": "Llave_Estar"
           },
           {
-            "id": "Colgante_1",
+            "id": "Luz_Colgante_1",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [8.2, 5.65, 2.75],
             "circuito": "IUG",
@@ -1893,7 +1893,7 @@
             "llave": "Llave_Estar"
           },
           {
-            "id": "Colgante_2",
+            "id": "Luz_Colgante_2",
             "ambiente": "estar_comedor_cocina",
             "posicion_m": [8.2, 6.4, 2.75],
             "circuito": "IUG",

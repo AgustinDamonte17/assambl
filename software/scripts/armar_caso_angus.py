@@ -80,7 +80,7 @@ USO = {"Principal": ("dorm_principal", "Dormitorio principal", "dormitorio"),
        "Lavadero": ("lavadero", "Lavadero", "lavadero"),
        "Dormitorio 3": ("dorm_3", "Dormitorio 3", "dormitorio"),
        "Oficina": ("oficina", "Oficina", "oficina")}
-SOLADO = {"Roble natural": "piso_madera", "Porcelanato": "porcelanato", "Piso piedra": "piso_piedra"}
+SOLADO = {"Roble natural": "roble_natural", "Porcelanato": "porcelanato", "Piso piedra": "piso_piedra"}
 solados_v11 = {"Principal": "Roble natural", "Dormitorio 2": "Roble natural", "Vestidor": "Roble natural",
                "Baño suite": "Porcelanato", "Baño": "Porcelanato", "Lavadero": "Porcelanato",
                "Dormitorio 3": "Roble natural", "Oficina": "Piso piedra"}
@@ -167,7 +167,9 @@ mobiliario = [{"id": i, "tipo": tp, "ambiente": a, "centro_m": r(ce), "medidas_m
               for i, tp, a, ce, me, g in MOB]
 
 # ---------------------------------------------------------------- eléctrico
-terms = {x["nombre"]: x for x in inst["terminales"]}
+# V11 repite nombres entre tomas y bocas de luz ("Bano", "Suite"): separar por tipo.
+por_tipo = {tipo: {x["nombre"]: x for x in inst["terminales"] if x["tipo"] == tipo}
+            for tipo in ("toma", "boca_luz")}
 CIRC = [("IUG", "Iluminación", 1.5), ("TUG_D", "Tomas dormitorios", 2.5), ("TUG_E", "Tomas estar y oficina", 2.5),
         ("TUG_C", "Tomas de mesada", 2.5), ("TUG_B", "Tomas baños", 2.5), ("HEL", "Heladera", 2.5),
         ("LAV", "Lavarropas", 2.5), ("HOR", "Horno", 4.0), ("ANA", "Anafe", 6.0), ("TER", "Termotanque", 2.5)]
@@ -181,7 +183,7 @@ TOMAS = [
     ('Heladera', 'estar_comedor_cocina', 'x'), ('Horno', 'estar_comedor_cocina', 'x'),
     ('Anafe', 'estar_comedor_cocina', 'x'), ('Lavarropas', 'lavadero', 'x'), ('Termotanque', 'lavadero', 'x'),
     ('Bano', 'bano', 'y'), ('Suite', 'bano_suite', 'y')]
-tomas = [{"id": n, "ambiente": a, "posicion_m": r(terms[n]["posicion"]), "circuito": terms[n]["circuito"],
+tomas = [{"id": "Toma_" + n, "ambiente": a, "posicion_m": r(por_tipo["toma"][n]["posicion"]), "circuito": por_tipo["toma"][n]["circuito"],
           "paralela_a": o} for n, a, o in TOMAS]
 LUCES = [  # id, ambiente, luminaria V04, llave (posición), orientación de la llave
     ('Dorm_principal', 'dorm_principal', 'plafon', (2.42, 3.51, 1.10), 'x'),
@@ -196,9 +198,9 @@ LUCES = [  # id, ambiente, luminaria V04, llave (posición), orientación de la 
     ('Vestidor', 'vestidor', None, (5.48, 4.30, 1.10), 'x'),
 ]
 llaves = [{"id": "Llave_" + n, "ambiente": a, "posicion_m": r(p), "paralela_a": o} for n, a, _, p, o in LUCES]
-bocas = [{"id": n, "ambiente": a, "posicion_m": r(terms[n]["posicion"]), "circuito": "IUG",
+bocas = [{"id": "Luz_" + n, "ambiente": a, "posicion_m": r(por_tipo["boca_luz"][n]["posicion"]), "circuito": "IUG",
           "luminaria": lum, "llave": "Llave_" + n} for n, a, lum, _, _ in LUCES]
-bocas += [{"id": f"Colgante_{i}", "ambiente": "estar_comedor_cocina", "posicion_m": r(terms[f"Colgante_{i}"]["posicion"]),
+bocas += [{"id": f"Luz_Colgante_{i}", "ambiente": "estar_comedor_cocina", "posicion_m": r(por_tipo["boca_luz"][f"Colgante_{i}"]["posicion"]),
            "circuito": "IUG", "luminaria": "colgante", "llave": "Llave_Estar"} for i in range(3)]
 assert len(tomas) + len(bocas) + len(ART) == len(inst["terminales"])
 
