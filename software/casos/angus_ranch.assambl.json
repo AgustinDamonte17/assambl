@@ -1,0 +1,2309 @@
+{
+  "esquema": "assambl/proyecto@0.2",
+  "id": "caso-angus-ranch",
+  "nombre": "Angus Ranch",
+  "mercado": "AR",
+  "creado": "2026-09-28T00:00:00Z",
+  "modificado": "2026-09-28T00:00:00Z",
+  "terreno": {
+    "estado": "propuesto",
+    "ubicacion": null,
+    "margen_m": 500,
+    "sistema_local": null,
+    "escena_ref": null,
+    "lote": {
+      "origen": [-24.16, 27.55],
+      "lados": [
+        {
+          "longitud_m": 9.706,
+          "rumbo_deg": 74.65
+        },
+        {
+          "longitud_m": 17.031,
+          "rumbo_deg": 82.88
+        },
+        {
+          "longitud_m": 12.66,
+          "rumbo_deg": 81.78
+        },
+        {
+          "longitud_m": 3.154,
+          "rumbo_deg": 163.23
+        },
+        {
+          "longitud_m": 11.329,
+          "rumbo_deg": 177.72
+        },
+        {
+          "longitud_m": 10.074,
+          "rumbo_deg": 171.38
+        },
+        {
+          "longitud_m": 10.914,
+          "rumbo_deg": 165.57
+        },
+        {
+          "longitud_m": 8.686,
+          "rumbo_deg": 162.86
+        },
+        {
+          "longitud_m": 6.946,
+          "rumbo_deg": 177.52
+        },
+        {
+          "longitud_m": 5.585,
+          "rumbo_deg": 160.98
+        },
+        {
+          "longitud_m": 4.233,
+          "rumbo_deg": 182.17
+        },
+        {
+          "longitud_m": 8.514,
+          "rumbo_deg": 247.05
+        },
+        {
+          "longitud_m": 9.233,
+          "rumbo_deg": 254.8
+        },
+        {
+          "longitud_m": 9.416,
+          "rumbo_deg": 257.99
+        },
+        {
+          "longitud_m": 11.47,
+          "rumbo_deg": 270.0
+        },
+        {
+          "longitud_m": 11.797,
+          "rumbo_deg": 343.65
+        },
+        {
+          "longitud_m": 10.99,
+          "rumbo_deg": 347.28
+        },
+        {
+          "longitud_m": 15.184,
+          "rumbo_deg": 349.72
+        },
+        {
+          "longitud_m": 10.848,
+          "rumbo_deg": 351.2
+        },
+        {
+          "longitud_m": 13.2,
+          "rumbo_deg": 354.09
+        }
+      ],
+      "vertices": [[-24.16, 27.55], [-14.8, 30.12], [2.1, 32.23], [14.63, 34.04], [15.54, 31.02], [15.99, 19.7], [17.5, 9.74], [20.22, -0.83], [22.78, -9.13], [23.08, -16.07], [24.9, -21.35], [24.74, -25.58], [16.9, -28.9], [7.99, -31.32], [-1.22, -33.28], [-12.69, -33.28], [-16.01, -21.96], [-18.43, -11.24], [-21.14, 3.7], [-22.8, 14.42]],
+      "area_m2": 2500.0,
+      "perimetro_m": 200.97,
+      "fuente": "trazado sobre imagen (terreno_angus_ranch_V01.py), escalado a 2500 m²; no es una mensura"
+    },
+    "retiros": {
+      "frente_m": 3,
+      "fondo_m": 3,
+      "laterales_m": 0
+    },
+    "pendiente": null,
+    "fecha_sol": "2026-09-28",
+    "hora_sol": 12,
+    "huso_h": null
+  },
+  "casa": {
+    "esquema": "assambl/casa@0.1",
+    "nombre": "Angus Ranch",
+    "origen": {
+      "fuente": "angus_ranch_V11_11_capas.py",
+      "version": "V11",
+      "regresion": {
+        "piezas_madera": 828,
+        "pernos_solera": 100,
+        "soleras_con_anclaje_especial": 6
+      },
+      "nota": "Transcripción declarativa de V11. Las piezas, capas y cómputos se derivan con reglas; no se guardan acá."
+    },
+    "unidades": "m",
+    "ejes": {
+      "x": "este",
+      "y": "norte",
+      "z": "arriba",
+      "origen": "esquina suroeste de la planta principal, sobre el piso terminado"
+    },
+    "implantacion": {
+      "origen_en_lote_m": [-1.0, -22.3],
+      "giro_deg": 0.0,
+      "cota_piso_sobre_terreno_m": 0.2
+    },
+    "huella_m": [[0.0, 0.0], [9.6, 0.0], [9.6, -2.4], [18.0, -2.4], [18.0, 8.0], [0.0, 8.0]],
+    "sistemas": {
+      "exterior": {
+        "descripcion": "Muro exterior woodframe 45 × 140 con OSB, WRB, cámara ventilada y siding",
+        "espesor_arquitectonico_m": 0.2,
+        "capas": [
+          {
+            "capa": "terminacion_interior",
+            "material": "revoque_calido",
+            "espesor_mm": 12.5
+          },
+          {
+            "capa": "entramado",
+            "seccion_mm": [45, 140],
+            "modulo_mm": 600,
+            "material": "madera_estructura"
+          },
+          {
+            "capa": "aislante",
+            "material": "lana_mineral",
+            "espesor_mm": 140
+          },
+          {
+            "capa": "osb",
+            "material": "osb",
+            "espesor_mm": 12,
+            "placa_mm": [1200, 2400],
+            "junta_mm": 3.2
+          },
+          {
+            "capa": "wrb",
+            "material": "wrb",
+            "solape_mm": 150,
+            "retorno_esquina_mm": 300
+          },
+          {
+            "capa": "camara_ventilada",
+            "espesor_mm": 25,
+            "liston_mm": [45, 25],
+            "material": "madera_estructura"
+          },
+          {
+            "capa": "siding",
+            "material": "siding_oscuro",
+            "espesor_mm": 20,
+            "paso_mm": 180,
+            "esquinero_mm": 100,
+            "junta_esquinero_mm": 3
+          }
+        ]
+      },
+      "interior_portante": {
+        "descripcion": "Tabique portante 45 × 140, revoque en ambas caras",
+        "espesor_arquitectonico_m": 0.2,
+        "capas": [
+          {
+            "capa": "entramado",
+            "seccion_mm": [45, 140],
+            "modulo_mm": 600,
+            "material": "madera_estructura"
+          }
+        ],
+        "terminacion": "revoque_calido"
+      },
+      "tabique": {
+        "descripcion": "Tabique no portante 45 × 90, revoque en ambas caras",
+        "espesor_arquitectonico_m": 0.15,
+        "capas": [
+          {
+            "capa": "entramado",
+            "seccion_mm": [45, 90],
+            "modulo_mm": 600,
+            "material": "madera_estructura"
+          }
+        ],
+        "terminacion": "revoque_calido"
+      }
+    },
+    "parametros": {
+      "altura_tabiques_m": 2.8,
+      "esquinas": "el muro paralelo a X pasa de largo; el paralelo a Y apoya contra su cara",
+      "zocalo": {
+        "desde_m": 0.03,
+        "hasta_m": 0.11,
+        "espesor_mm": 14,
+        "material": "roble_natural"
+      },
+      "cielorraso": {
+        "cara_inferior_m": 2.76,
+        "espesor_m": 0.07,
+        "material": "revoque_calido",
+        "zonas_m": [[0, 0, 18, 8], [9.6, -2.4, 18, 0]]
+      },
+      "solado_general": "piso_piedra"
+    },
+    "muros": [
+      {
+        "id": "Norte",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [0.1, 7.9],
+          "hasta_m": [17.9, 7.9]
+        },
+        "lado_exterior": "norte",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": [
+          {
+            "id": "Norte/O0",
+            "tipo": "ventana",
+            "posicion_m": 0.6,
+            "ancho_m": 2.4,
+            "antepecho_m": 0.7,
+            "dintel_m": 2.4
+          },
+          {
+            "id": "Norte/O1",
+            "tipo": "ventana",
+            "posicion_m": 4.05,
+            "ancho_m": 1.0,
+            "antepecho_m": 1.7,
+            "dintel_m": 2.4
+          },
+          {
+            "id": "Norte/O2",
+            "tipo": "ventana_corrediza",
+            "posicion_m": 5.9,
+            "ancho_m": 4.0,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.5
+          },
+          {
+            "id": "Norte/O3",
+            "tipo": "ventana_corrediza",
+            "posicion_m": 10.3,
+            "ancho_m": 4.0,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.5
+          },
+          {
+            "id": "Norte/O4",
+            "tipo": "ventana",
+            "posicion_m": 15.35,
+            "ancho_m": 1.95,
+            "antepecho_m": 0.9,
+            "dintel_m": 2.35
+          }
+        ]
+      },
+      {
+        "id": "Oeste",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [0.1, 0.1],
+          "hasta_m": [0.1, 7.9]
+        },
+        "lado_exterior": "oeste",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": [
+          {
+            "id": "Oeste/O0",
+            "tipo": "ventana",
+            "posicion_m": 0.45,
+            "ancho_m": 1.1,
+            "antepecho_m": 1.0,
+            "dintel_m": 2.25
+          },
+          {
+            "id": "Oeste/O1",
+            "tipo": "ventana",
+            "posicion_m": 4.4,
+            "ancho_m": 2.4,
+            "antepecho_m": 0.7,
+            "dintel_m": 2.4
+          }
+        ]
+      },
+      {
+        "id": "Sur_principal",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [0.1, 0.1],
+          "hasta_m": [9.7, 0.1]
+        },
+        "lado_exterior": "sur",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": [
+          {
+            "id": "Sur_principal/O0",
+            "tipo": "ventana",
+            "posicion_m": 0.6,
+            "ancho_m": 1.45,
+            "antepecho_m": 1.0,
+            "dintel_m": 2.25
+          },
+          {
+            "id": "Sur_principal/O1",
+            "tipo": "ventana",
+            "posicion_m": 3.3,
+            "ancho_m": 1.6,
+            "antepecho_m": 0.8,
+            "dintel_m": 2.3
+          },
+          {
+            "id": "Sur_principal/O2",
+            "tipo": "ventana",
+            "posicion_m": 6.0,
+            "ancho_m": 2.6,
+            "antepecho_m": 1.25,
+            "dintel_m": 2.4
+          }
+        ]
+      },
+      {
+        "id": "Este",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [17.9, 0.0],
+          "hasta_m": [17.9, 7.9]
+        },
+        "lado_exterior": "este",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": [
+          {
+            "id": "Este/O0",
+            "tipo": "puerta",
+            "posicion_m": 1.6,
+            "ancho_m": 1.05,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.2,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": 70
+            }
+          },
+          {
+            "id": "Este/O1",
+            "tipo": "ventana",
+            "posicion_m": 4.2,
+            "ancho_m": 2.4,
+            "antepecho_m": 0.9,
+            "dintel_m": 2.35
+          }
+        ]
+      },
+      {
+        "id": "Este_anexo",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [17.9, -2.3],
+          "hasta_m": [17.9, 0.0]
+        },
+        "lado_exterior": "este",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "anexo_sur"
+        },
+        "aberturas": [
+          {
+            "id": "Este_anexo/O0",
+            "tipo": "ventana",
+            "posicion_m": 0.5,
+            "ancho_m": 1.6,
+            "antepecho_m": 0.9,
+            "dintel_m": 2.35
+          }
+        ]
+      },
+      {
+        "id": "Sur_anexo",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [9.7, -2.3],
+          "hasta_m": [17.9, -2.3]
+        },
+        "lado_exterior": "sur",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "anexo_sur"
+        },
+        "aberturas": [
+          {
+            "id": "Sur_anexo/O0",
+            "tipo": "ventana",
+            "posicion_m": 0.45,
+            "ancho_m": 1.0,
+            "antepecho_m": 1.65,
+            "dintel_m": 2.3
+          },
+          {
+            "id": "Sur_anexo/O1",
+            "tipo": "ventana",
+            "posicion_m": 3.7,
+            "ancho_m": 0.9,
+            "antepecho_m": 1.5,
+            "dintel_m": 2.3
+          },
+          {
+            "id": "Sur_anexo/O2",
+            "tipo": "ventana",
+            "posicion_m": 5.8,
+            "ancho_m": 1.7,
+            "antepecho_m": 0.9,
+            "dintel_m": 2.35
+          }
+        ]
+      },
+      {
+        "id": "Oeste_anexo",
+        "sistema": "exterior",
+        "eje": {
+          "desde_m": [9.7, -2.3],
+          "hasta_m": [9.7, 0.1]
+        },
+        "lado_exterior": "oeste",
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "anexo_sur"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Dorm2_N",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [0.2, 2.175],
+          "hasta_m": [2.75, 2.175]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": [
+          {
+            "id": "Dorm2_N/O0",
+            "tipo": "puerta",
+            "posicion_m": 1.5,
+            "ancho_m": 0.83,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": -70
+            }
+          }
+        ]
+      },
+      {
+        "id": "Dorm2_E",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [2.825, 0.2],
+          "hasta_m": [2.825, 2.25]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Principal_S",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [0.2, 3.375],
+          "hasta_m": [5.6, 3.375]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": [
+          {
+            "id": "Principal_S/O0",
+            "tipo": "puerta",
+            "posicion_m": 2.42,
+            "ancho_m": 0.85,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": 70
+            }
+          }
+        ]
+      },
+      {
+        "id": "Suite_E",
+        "sistema": "interior_portante",
+        "eje": {
+          "desde_m": [5.7, 3.45],
+          "hasta_m": [5.7, 7.8]
+        },
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Principal_E",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [3.675, 3.45],
+          "hasta_m": [3.675, 7.8]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": [
+          {
+            "id": "Principal_E/O0",
+            "tipo": "paso",
+            "posicion_m": 0.1,
+            "ancho_m": 0.8,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1
+          },
+          {
+            "id": "Principal_E/O1",
+            "tipo": "puerta",
+            "posicion_m": 1.95,
+            "ancho_m": 0.8,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": 70
+            }
+          }
+        ]
+      },
+      {
+        "id": "Vestidor_N",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [3.75, 4.475],
+          "hasta_m": [5.6, 4.475]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Bano_N",
+        "sistema": "interior_portante",
+        "eje": {
+          "desde_m": [9.77, 0.1],
+          "hasta_m": [12.975, 0.1]
+        },
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": [
+          {
+            "id": "Bano_N/O0",
+            "tipo": "puerta",
+            "posicion_m": 2.31,
+            "ancho_m": 0.8,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": -70
+            }
+          }
+        ]
+      },
+      {
+        "id": "Lavadero_N",
+        "sistema": "interior_portante",
+        "eje": {
+          "desde_m": [12.975, 0.1],
+          "hasta_m": [15.0, 0.1]
+        },
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": [
+          {
+            "id": "Lavadero_N/O0",
+            "tipo": "puerta",
+            "posicion_m": 0.505,
+            "ancho_m": 0.87,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": -70
+            }
+          }
+        ]
+      },
+      {
+        "id": "Bano_Lavadero",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [12.975, -2.2],
+          "hasta_m": [12.975, 0.0]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Ala_Este_Oeste_Sur",
+        "sistema": "interior_portante",
+        "eje": {
+          "desde_m": [14.9, 0.0],
+          "hasta_m": [14.9, 1.48]
+        },
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Ala_Este_Oeste_Norte",
+        "sistema": "interior_portante",
+        "eje": {
+          "desde_m": [14.9, 2.83],
+          "hasta_m": [14.9, 7.8]
+        },
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "principal"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Lavadero_Dorm3",
+        "sistema": "interior_portante",
+        "eje": {
+          "desde_m": [14.9, -2.2],
+          "hasta_m": [14.9, 0.0]
+        },
+        "altura": {
+          "tipo": "hasta_cubierta",
+          "cubierta": "anexo_sur"
+        },
+        "aberturas": []
+      },
+      {
+        "id": "Dorm3_N",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [15.0, 1.275],
+          "hasta_m": [17.8, 1.275]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": [
+          {
+            "id": "Dorm3_N/O0",
+            "tipo": "puerta",
+            "posicion_m": 0.18,
+            "ancho_m": 0.86,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": -70
+            }
+          }
+        ]
+      },
+      {
+        "id": "Oficina_S",
+        "sistema": "tabique",
+        "eje": {
+          "desde_m": [15.0, 3.125],
+          "hasta_m": [17.8, 3.125]
+        },
+        "altura": {
+          "tipo": "tabique"
+        },
+        "aberturas": [
+          {
+            "id": "Oficina_S/O0",
+            "tipo": "puerta",
+            "posicion_m": 0.18,
+            "ancho_m": 0.86,
+            "antepecho_m": 0.0,
+            "dintel_m": 2.1,
+            "hoja": {
+              "bisagra": "inicio",
+              "apertura_deg": 70
+            }
+          }
+        ]
+      }
+    ],
+    "ambientes": [
+      {
+        "id": "dorm_principal",
+        "nombre": "Dormitorio principal",
+        "uso": "dormitorio",
+        "contorno_m": [[0.2, 3.45], [3.6, 3.45], [3.6, 7.8], [0.2, 7.8]],
+        "solado": "piso_madera",
+        "estado": "propuesto"
+      },
+      {
+        "id": "dorm_2",
+        "nombre": "Dormitorio 2",
+        "uso": "dormitorio",
+        "contorno_m": [[0.2, 0.2], [2.75, 0.2], [2.75, 2.1], [0.2, 2.1]],
+        "solado": "piso_madera",
+        "estado": "propuesto"
+      },
+      {
+        "id": "vestidor",
+        "nombre": "Vestidor",
+        "uso": "vestidor",
+        "contorno_m": [[3.75, 3.45], [5.6, 3.45], [5.6, 4.4], [3.75, 4.4]],
+        "solado": "piso_madera",
+        "estado": "propuesto"
+      },
+      {
+        "id": "bano_suite",
+        "nombre": "Baño suite",
+        "uso": "bano",
+        "contorno_m": [[3.75, 4.55], [5.6, 4.55], [5.6, 7.8], [3.75, 7.8]],
+        "solado": "porcelanato",
+        "estado": "propuesto"
+      },
+      {
+        "id": "bano",
+        "nombre": "Baño",
+        "uso": "bano",
+        "contorno_m": [[9.8, -2.2], [12.9, -2.2], [12.9, 0.0], [9.8, 0.0]],
+        "solado": "porcelanato",
+        "estado": "propuesto"
+      },
+      {
+        "id": "lavadero",
+        "nombre": "Lavadero",
+        "uso": "lavadero",
+        "contorno_m": [[13.05, -2.2], [14.8, -2.2], [14.8, 0.0], [13.05, 0.0]],
+        "solado": "porcelanato",
+        "estado": "propuesto"
+      },
+      {
+        "id": "dorm_3",
+        "nombre": "Dormitorio 3",
+        "uso": "dormitorio",
+        "contorno_m": [[15.0, -2.2], [17.8, -2.2], [17.8, 1.2], [15.0, 1.2]],
+        "solado": "piso_madera",
+        "estado": "propuesto"
+      },
+      {
+        "id": "oficina",
+        "nombre": "Oficina",
+        "uso": "oficina",
+        "contorno_m": [[15.0, 3.2], [17.8, 3.2], [17.8, 7.8], [15.0, 7.8]],
+        "solado": "piso_piedra",
+        "estado": "propuesto"
+      },
+      {
+        "id": "estar_comedor_cocina",
+        "nombre": "Estar, comedor y cocina",
+        "uso": "social",
+        "contorno_m": null,
+        "solado": "piso_piedra",
+        "estado": "pendiente_datos",
+        "nota": "V11 no delimita el espacio social: es el resto de la planta principal (incluye el acceso y la circulación del ala este). Falta dibujar su contorno."
+      }
+    ],
+    "cubiertas": [
+      {
+        "id": "principal",
+        "tipo": "un_agua",
+        "material": "zinc",
+        "plano_apoyo": {
+          "cota_m": 3.35,
+          "en_m": [0, 0],
+          "pendiente_pct": 6.0,
+          "sube_hacia_deg": 0
+        },
+        "contorno_chapa_m": [-0.4, -0.4, 18.4, 8.4],
+        "chapa": {
+          "espesor_mm": 35,
+          "junta_alzada_paso_m": 0.5
+        },
+        "tablero": {
+          "espesor_mm": 18,
+          "contorno_m": [-0.35, -0.35, 18.35, 8.35],
+          "material": "roble_natural"
+        },
+        "cabios": {
+          "seccion_mm": [63, 240],
+          "cantidad": 31,
+          "desde_x_m": 0.08,
+          "hasta_x_m": 17.92,
+          "desde_y_m": -0.35,
+          "hasta_y_m": 8.35
+        },
+        "apoyos_intermedios": [
+          {
+            "tipo": "viga",
+            "eje_y_m": 4.0,
+            "seccion_mm": [200, 620],
+            "postes_x_m": [0.1, 5.7, 14.9, 17.9],
+            "seccion_poste_mm": [200, 200],
+            "estado": "pendiente_calculo",
+            "nota": "Viga de 9,2 m entre postes: madera laminada o ingeniería a definir."
+          }
+        ],
+        "fascias": {
+          "altura_m": 0.34,
+          "espesor_mm": 50,
+          "material": "grafito"
+        }
+      },
+      {
+        "id": "anexo_sur",
+        "tipo": "un_agua",
+        "material": "zinc",
+        "plano_apoyo": {
+          "cota_m": 3.0,
+          "en_m": [0, -2.3],
+          "pendiente_pct": 10.0,
+          "sube_hacia_deg": 0
+        },
+        "contorno_chapa_m": [9.35, -2.8, 18.4, 0.17],
+        "chapa": {
+          "espesor_mm": 35
+        },
+        "tablero": {
+          "espesor_mm": 18,
+          "contorno_m": [9.4, -2.75, 18.35, 0.15],
+          "material": "roble_natural"
+        },
+        "cabios": {
+          "seccion_mm": [63, 180],
+          "cantidad": 15,
+          "desde_x_m": 9.67,
+          "hasta_x_m": 17.93,
+          "desde_y_m": -2.7,
+          "hasta_y_m": 0.15
+        },
+        "apoyos_intermedios": [
+          {
+            "tipo": "viga_alta",
+            "eje_y_m": 0.08,
+            "seccion_mm": [140, 280],
+            "postes_x_m": [9.7, 12.975, 14.9, 17.9],
+            "seccion_poste_mm": [140, 140],
+            "estado": "pendiente_calculo"
+          }
+        ],
+        "nota": "Encuentro con la cubierta principal e impermeabilización por desarrollar."
+      },
+      {
+        "id": "galeria",
+        "tipo": "un_agua",
+        "material": "zinc",
+        "plano_apoyo": {
+          "cota_m": 3.03,
+          "en_m": [0, 8.0],
+          "pendiente_pct": 6.0,
+          "sube_hacia_deg": 180
+        },
+        "contorno_chapa_m": [4.9, 7.98, 15.1, 11.15],
+        "chapa": {
+          "espesor_mm": 30
+        },
+        "cabios": {
+          "seccion_mm": [60, 140],
+          "cantidad": 21,
+          "desde_x_m": 5.0,
+          "hasta_x_m": 15.0,
+          "desde_y_m": 8.0,
+          "hasta_y_m": 11.1
+        },
+        "apoyos_intermedios": [
+          {
+            "tipo": "viga",
+            "eje_y_m": 8.15,
+            "seccion_mm": [140, 200],
+            "largo_m": 10.2,
+            "postes_x_m": [5.1, 10.0, 14.9],
+            "seccion_poste_mm": [140, 140],
+            "estado": "pendiente_calculo"
+          },
+          {
+            "tipo": "viga",
+            "eje_y_m": 10.85,
+            "seccion_mm": [140, 200],
+            "largo_m": 10.2,
+            "postes_x_m": [5.1, 10.0, 14.9],
+            "seccion_poste_mm": [140, 140],
+            "estado": "pendiente_calculo"
+          }
+        ]
+      }
+    ],
+    "cimientos": {
+      "tipo": "platea",
+      "contorno": "huella",
+      "espesor_m": 0.36,
+      "junta_bajo_solera_mm": 3,
+      "solera_inferior": {
+        "material": "madera_tratada",
+        "barrera_capilar": true
+      },
+      "pernos": {
+        "diametro_mm": 12.7,
+        "empotramiento_mm": 180,
+        "separacion_max_m": 1.2,
+        "distancia_extremo_objetivo_m": 0.2,
+        "forma": "L"
+      },
+      "bases_postes": {
+        "dado_m": [0.45, 0.45, 0.594],
+        "elevacion_mm": 50,
+        "tipo": "base_U"
+      },
+      "estado": "pendiente_calculo",
+      "nota": "Volumen de estudio: sin armadura ni estudio de suelo."
+    },
+    "carpinterias": {
+      "marco": {
+        "seccion_mm": [46, 65],
+        "material": "grafito"
+      },
+      "hojas_ventana": "1 hasta 1,10 m de ancho, 2 hasta 3 m, 4 por encima",
+      "puerta": {
+        "hoja_mm": 40,
+        "material": "roble_natural",
+        "apertura_deg_por_defecto": 70
+      },
+      "alfeizar": {
+        "vuelo_m": 0.04,
+        "material": "piso_piedra"
+      },
+      "dintel": {
+        "tipo": "doble_tabla_con_separadores",
+        "altura_m": {
+          "hasta_2_6_m": 0.22,
+          "mayor": 0.3
+        },
+        "separadores": "4 de contrachapado 12,5 mm",
+        "estado": "pendiente_calculo"
+      }
+    },
+    "exteriores": {
+      "galeria": {
+        "cubierta": "galeria",
+        "deck": {
+          "contorno_m": [5.0, 8.0, 15.0, 11.0],
+          "tabla_mm": [132, 30],
+          "paso_mm": 139,
+          "bastidor_alto_m": 0.18,
+          "material": "madera_exterior"
+        },
+        "escalon": {
+          "centro_m": [10.0, 11.24],
+          "medidas_m": [4.0, 0.45, 0.13],
+          "material": "piso_piedra"
+        },
+        "equipamiento": [
+          {
+            "id": "Banco_galeria",
+            "tipo": "banco",
+            "centro_m": [6.7, 10.5],
+            "medidas_m": [2.3, 0.6, 0.525],
+            "giro_deg": 0
+          },
+          {
+            "id": "Mesa_galeria",
+            "tipo": "mesa",
+            "centro_m": [9.2, 10.0],
+            "medidas_m": [1.2, 0.7, 0.46],
+            "giro_deg": 0
+          },
+          {
+            "id": "Silla_galeria_1",
+            "tipo": "silla",
+            "centro_m": [8.85, 10.65],
+            "medidas_m": [0.46, 0.43, 0.925],
+            "giro_deg": 0
+          },
+          {
+            "id": "Silla_galeria_2",
+            "tipo": "silla",
+            "centro_m": [9.55, 10.65],
+            "medidas_m": [0.46, 0.43, 0.925],
+            "giro_deg": 0
+          },
+          {
+            "id": "Parrilla",
+            "tipo": "parrilla",
+            "centro_m": [14.4, 9.5],
+            "medidas_m": [0.8, 1.4, 3.48],
+            "giro_deg": 0,
+            "estado": "pendiente_revision",
+            "nota": "Volumetría. Resolver aislación, distancias y salida de humos."
+          },
+          {
+            "id": "Maceta_galeria",
+            "tipo": "planta",
+            "centro_m": [5.5, 8.7],
+            "medidas_m": [0.46, 0.46, 1.0],
+            "giro_deg": 0
+          }
+        ]
+      },
+      "sendero_entrada": {
+        "centro_m": [19.0, 2.1],
+        "medidas_m": [2.0, 1.3],
+        "material": "piso_piedra"
+      }
+    },
+    "artefactos": [
+      {
+        "id": "Suite_WC",
+        "tipo": "inodoro",
+        "ambiente": "bano_suite",
+        "centro_m": [4.24, 4.96],
+        "giro_deg": 0,
+        "desague": {
+          "salida_m": [4.24, 4.99, 0.05],
+          "dn_mm": 110,
+          "grupo": "suite"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": false
+        }
+      },
+      {
+        "id": "Suite_bidet",
+        "tipo": "bidet",
+        "ambiente": "bano_suite",
+        "centro_m": [5.14, 4.96],
+        "giro_deg": 0,
+        "desague": {
+          "salida_m": [5.14, 5.0, 0.28],
+          "dn_mm": 50,
+          "grupo": "suite"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Suite_ducha",
+        "tipo": "ducha",
+        "ambiente": "bano_suite",
+        "centro_m": [4.27, 7.15],
+        "giro_deg": 0,
+        "medidas_m": [0.95, 1.15],
+        "desague": {
+          "salida_m": [4.27, 7.15, 0.035],
+          "dn_mm": 50,
+          "grupo": "suite"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Suite_lavatorio",
+        "tipo": "vanitory",
+        "ambiente": "bano_suite",
+        "centro_m": [5.19, 7.33],
+        "giro_deg": 0,
+        "medidas_m": [0.62, 0.54],
+        "desague": {
+          "salida_m": [5.19, 7.33, 0.9],
+          "dn_mm": 50,
+          "grupo": "suite"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Cocina_bacha",
+        "tipo": "bacha_cocina",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.33, 0.54],
+        "giro_deg": 0,
+        "medidas_m": [0.53, 0.4],
+        "desague": {
+          "salida_m": [8.33, 0.54, 0.85],
+          "dn_mm": 50,
+          "grupo": "cocina"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Bano_WC",
+        "tipo": "inodoro",
+        "ambiente": "bano",
+        "centro_m": [11.54, -1.89],
+        "giro_deg": 0,
+        "desague": {
+          "salida_m": [11.54, -1.86, 0.05],
+          "dn_mm": 110,
+          "grupo": "bano"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": false
+        }
+      },
+      {
+        "id": "Bano_bidet",
+        "tipo": "bidet",
+        "ambiente": "bano",
+        "centro_m": [12.36, -1.89],
+        "giro_deg": 0,
+        "desague": {
+          "salida_m": [12.36, -1.85, 0.28],
+          "dn_mm": 50,
+          "grupo": "bano"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Bano_ducha",
+        "tipo": "ducha",
+        "ambiente": "bano",
+        "centro_m": [10.35, -1.39],
+        "giro_deg": 0,
+        "medidas_m": [0.97, 1.52],
+        "desague": {
+          "salida_m": [10.35, -1.39, 0.035],
+          "dn_mm": 50,
+          "grupo": "bano"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Bano_lavatorio",
+        "tipo": "vanitory",
+        "ambiente": "bano",
+        "centro_m": [11.29, -0.39],
+        "giro_deg": 0,
+        "medidas_m": [0.62, 0.54],
+        "desague": {
+          "salida_m": [11.29, -0.39, 0.9],
+          "dn_mm": 50,
+          "grupo": "bano"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Lavadero_pileta",
+        "tipo": "pileta_lavadero",
+        "ambiente": "lavadero",
+        "centro_m": [13.52, -1.84],
+        "giro_deg": 0,
+        "medidas_m": [0.62, 0.54],
+        "desague": {
+          "salida_m": [13.52, -1.84, 0.9],
+          "dn_mm": 50,
+          "grupo": "lavadero"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": true
+        }
+      },
+      {
+        "id": "Lavadero_lavarropas",
+        "tipo": "lavarropas",
+        "ambiente": "lavadero",
+        "centro_m": [14.34, -1.87],
+        "giro_deg": 0,
+        "medidas_m": [0.64, 0.62],
+        "desague": {
+          "salida_m": [14.34, -1.87, 0.7],
+          "dn_mm": 50,
+          "grupo": "lavadero"
+        },
+        "agua": {
+          "fria": true,
+          "caliente": false
+        }
+      }
+    ],
+    "mobiliario": [
+      {
+        "id": "Cocina_bajo_mesada",
+        "tipo": "bajo_mesada",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.9, 0.54],
+        "medidas_m": [4.2, 0.6, 0.88],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cocina_mesada",
+        "tipo": "mesada",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.9, 0.54],
+        "medidas_m": [4.2, 0.69, 0.9475],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cocina_anafe",
+        "tipo": "anafe_induccion",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [6.55, 0.54],
+        "medidas_m": [0.6, 0.52, 0.015],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cocina_horno",
+        "tipo": "horno_empotrado",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [6.55, 0.856],
+        "medidas_m": [0.52, 0.025, 0.49],
+        "giro_deg": 0
+      },
+      {
+        "id": "Heladera",
+        "tipo": "heladera",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [10.38, 0.56],
+        "medidas_m": [0.72, 0.72, 2.1],
+        "giro_deg": 0
+      },
+      {
+        "id": "Isla",
+        "tipo": "isla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.15, 2.7],
+        "medidas_m": [2.3, 1.02, 0.9575],
+        "giro_deg": 0
+      },
+      {
+        "id": "Taburete_1",
+        "tipo": "taburete",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.45, 3.4],
+        "medidas_m": [0.4, 0.4, 0.7],
+        "giro_deg": 0
+      },
+      {
+        "id": "Taburete_2",
+        "tipo": "taburete",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.15, 3.4],
+        "medidas_m": [0.4, 0.4, 0.7],
+        "giro_deg": 0
+      },
+      {
+        "id": "Taburete_3",
+        "tipo": "taburete",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.85, 3.4],
+        "medidas_m": [0.4, 0.4, 0.7],
+        "giro_deg": 0
+      },
+      {
+        "id": "Mesa_comedor",
+        "tipo": "mesa",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.2, 5.65],
+        "medidas_m": [1.05, 2.8, 0.7975],
+        "giro_deg": 0
+      },
+      {
+        "id": "Silla_comedor_O1",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.35, 4.6],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 90
+      },
+      {
+        "id": "Silla_comedor_O2",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.35, 5.3],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 90
+      },
+      {
+        "id": "Silla_comedor_O3",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.35, 6.0],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 90
+      },
+      {
+        "id": "Silla_comedor_O4",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [7.35, 6.7],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 90
+      },
+      {
+        "id": "Silla_comedor_E1",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [9.05, 4.6],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": -90
+      },
+      {
+        "id": "Silla_comedor_E2",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [9.05, 5.3],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": -90
+      },
+      {
+        "id": "Silla_comedor_E3",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [9.05, 6.0],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": -90
+      },
+      {
+        "id": "Silla_comedor_E4",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [9.05, 6.7],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": -90
+      },
+      {
+        "id": "Silla_cabecera_S",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.2, 3.96],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 180
+      },
+      {
+        "id": "Silla_cabecera_N",
+        "tipo": "silla",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [8.2, 7.34],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 0
+      },
+      {
+        "id": "Sofa",
+        "tipo": "sofa",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [11.13, 5.95],
+        "medidas_m": [0.92, 2.75, 0.985],
+        "giro_deg": 0
+      },
+      {
+        "id": "Sofa_chaise",
+        "tipo": "sofa_chaise",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [11.85, 6.83],
+        "medidas_m": [0.7, 0.82, 0.64],
+        "giro_deg": 0
+      },
+      {
+        "id": "Alfombra_living",
+        "tipo": "alfombra",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [12.1, 5.75],
+        "medidas_m": [3.4, 3.1, 0.018],
+        "giro_deg": 0
+      },
+      {
+        "id": "Mesa_living",
+        "tipo": "mesa_baja",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [12.55, 5.85],
+        "medidas_m": [0.65, 1.15, 0.4275],
+        "giro_deg": 0
+      },
+      {
+        "id": "Mueble_TV",
+        "tipo": "mueble_bajo",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.53, 5.8],
+        "medidas_m": [0.46, 2.8, 0.65],
+        "giro_deg": 0
+      },
+      {
+        "id": "TV",
+        "tipo": "televisor",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.45, 5.8],
+        "medidas_m": [0.075, 1.36, 0.79],
+        "giro_deg": 0
+      },
+      {
+        "id": "Biblioteca_estar_S",
+        "tipo": "estanteria",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.6, 4.6],
+        "medidas_m": [0.32, 0.52, 2.2175],
+        "giro_deg": 0
+      },
+      {
+        "id": "Biblioteca_estar_N",
+        "tipo": "estanteria",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.6, 7.0],
+        "medidas_m": [0.32, 0.52, 2.2175],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cama_principal",
+        "tipo": "cama",
+        "ambiente": "dorm_principal",
+        "centro_m": [1.85, 6.6],
+        "medidas_m": [1.68, 2.05, 1.22],
+        "giro_deg": 0
+      },
+      {
+        "id": "Mesa_luz_O",
+        "tipo": "mesa_luz",
+        "ambiente": "dorm_principal",
+        "centro_m": [0.69, 7.22],
+        "medidas_m": [0.44, 0.44, 0.65],
+        "giro_deg": 0
+      },
+      {
+        "id": "Mesa_luz_E",
+        "tipo": "mesa_luz",
+        "ambiente": "dorm_principal",
+        "centro_m": [3.0, 7.22],
+        "medidas_m": [0.44, 0.44, 0.65],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cama_dorm2",
+        "tipo": "cama",
+        "ambiente": "dorm_2",
+        "centro_m": [1.47, 0.92],
+        "medidas_m": [0.98, 2.05, 1.22],
+        "giro_deg": 90
+      },
+      {
+        "id": "Estante_dorm2",
+        "tipo": "estante_mural",
+        "ambiente": "dorm_2",
+        "centro_m": [1.2, 0.25],
+        "medidas_m": [1.3, 0.16, 0.03],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cama_dorm3",
+        "tipo": "cama",
+        "ambiente": "dorm_3",
+        "centro_m": [16.7, -0.72],
+        "medidas_m": [1.08, 2.05, 1.22],
+        "giro_deg": 0
+      },
+      {
+        "id": "Placard_dorm3",
+        "tipo": "placard",
+        "ambiente": "dorm_3",
+        "centro_m": [15.3, -1.325],
+        "medidas_m": [0.55, 1.55, 2.3],
+        "giro_deg": 0
+      },
+      {
+        "id": "Vestidor_mueble",
+        "tipo": "estanteria",
+        "ambiente": "vestidor",
+        "centro_m": [5.33, 3.92],
+        "medidas_m": [0.53, 0.9, 2.25],
+        "giro_deg": 0
+      },
+      {
+        "id": "Escritorio",
+        "tipo": "escritorio",
+        "ambiente": "oficina",
+        "centro_m": [16.35, 6.64],
+        "medidas_m": [1.75, 0.75, 0.7825],
+        "giro_deg": 0
+      },
+      {
+        "id": "Silla_oficina",
+        "tipo": "silla",
+        "ambiente": "oficina",
+        "centro_m": [16.35, 5.92],
+        "medidas_m": [0.46, 0.43, 0.925],
+        "giro_deg": 180
+      },
+      {
+        "id": "Biblioteca_oficina",
+        "tipo": "estanteria",
+        "ambiente": "oficina",
+        "centro_m": [16.95, 3.4],
+        "medidas_m": [1.4, 0.36, 2.2675],
+        "giro_deg": 0
+      },
+      {
+        "id": "Maceta_living",
+        "tipo": "planta",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.0, 3.8],
+        "medidas_m": [0.46, 0.46, 1.0],
+        "giro_deg": 0
+      }
+    ],
+    "instalaciones": {
+      "electrica": {
+        "tablero": {
+          "posicion_m": [17.7, 2.95, 1.5],
+          "medidas_m": [0.18, 0.48, 0.62],
+          "protecciones": "Seccionador general, DPS, diferenciales 30 mA y termomagnéticas por circuito"
+        },
+        "acometida": {
+          "desde_m": [18.6, 3.05, -0.48],
+          "estado": "pendiente_datos",
+          "nota": "Medidor y potencia a definir"
+        },
+        "puesta_a_tierra": {
+          "jabalina_m": [18.65, 2.95],
+          "hasta_cota_m": -1.95,
+          "estado": "pendiente_datos"
+        },
+        "altura_distribucion_m": 2.86,
+        "circuitos": [
+          {
+            "id": "IUG",
+            "uso": "Iluminación",
+            "seccion_mm2": 1.5
+          },
+          {
+            "id": "TUG_D",
+            "uso": "Tomas dormitorios",
+            "seccion_mm2": 2.5
+          },
+          {
+            "id": "TUG_E",
+            "uso": "Tomas estar y oficina",
+            "seccion_mm2": 2.5
+          },
+          {
+            "id": "TUG_C",
+            "uso": "Tomas de mesada",
+            "seccion_mm2": 2.5
+          },
+          {
+            "id": "TUG_B",
+            "uso": "Tomas baños",
+            "seccion_mm2": 2.5
+          },
+          {
+            "id": "HEL",
+            "uso": "Heladera",
+            "seccion_mm2": 2.5
+          },
+          {
+            "id": "LAV",
+            "uso": "Lavarropas",
+            "seccion_mm2": 2.5
+          },
+          {
+            "id": "HOR",
+            "uso": "Horno",
+            "seccion_mm2": 4.0
+          },
+          {
+            "id": "ANA",
+            "uso": "Anafe",
+            "seccion_mm2": 6.0
+          },
+          {
+            "id": "TER",
+            "uso": "Termotanque",
+            "seccion_mm2": 2.5
+          }
+        ],
+        "tomas": [
+          {
+            "id": "Dorm_principal_1",
+            "ambiente": "dorm_principal",
+            "posicion_m": [0.25, 3.95, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Dorm_principal_2",
+            "ambiente": "dorm_principal",
+            "posicion_m": [3.5, 7.2, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Dorm_principal_3",
+            "ambiente": "dorm_principal",
+            "posicion_m": [2.4, 3.51, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Dorm2_1",
+            "ambiente": "dorm_2",
+            "posicion_m": [0.25, 0.35, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Dorm2_2",
+            "ambiente": "dorm_2",
+            "posicion_m": [2.64, 1.65, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Dorm3_1",
+            "ambiente": "dorm_3",
+            "posicion_m": [15.05, -1.3, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Dorm3_2",
+            "ambiente": "dorm_3",
+            "posicion_m": [17.72, 0.65, 0.3],
+            "circuito": "TUG_D",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Estar_TV",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [14.72, 5.55, 0.3],
+            "circuito": "TUG_E",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Estar_aux",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [14.72, 7.1, 0.3],
+            "circuito": "TUG_E",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Comedor",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [5.88, 5.9, 0.3],
+            "circuito": "TUG_E",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Oficina_1",
+            "ambiente": "oficina",
+            "posicion_m": [16.1, 7.7, 0.3],
+            "circuito": "TUG_E",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Oficina_2",
+            "ambiente": "oficina",
+            "posicion_m": [17.72, 6.9, 0.3],
+            "circuito": "TUG_E",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Oficina_3",
+            "ambiente": "oficina",
+            "posicion_m": [15.07, 4.8, 0.3],
+            "circuito": "TUG_E",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Mesada_1",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [7.3, 0.28, 1.1],
+            "circuito": "TUG_C",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Mesada_2",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [9.45, 0.28, 1.1],
+            "circuito": "TUG_C",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Heladera",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [10.85, 0.28, 0.4],
+            "circuito": "HEL",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Horno",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [6.0, 0.28, 0.45],
+            "circuito": "HOR",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Anafe",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [6.8, 0.28, 0.65],
+            "circuito": "ANA",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Lavarropas",
+            "ambiente": "lavadero",
+            "posicion_m": [14.67, -2.09, 1.1],
+            "circuito": "LAV",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Termotanque",
+            "ambiente": "lavadero",
+            "posicion_m": [14.67, -2.09, 1.9],
+            "circuito": "TER",
+            "paralela_a": "x"
+          },
+          {
+            "id": "Bano",
+            "ambiente": "bano",
+            "posicion_m": [11.6, -0.8, 2.735],
+            "circuito": "IUG",
+            "paralela_a": "y"
+          },
+          {
+            "id": "Suite",
+            "ambiente": "bano_suite",
+            "posicion_m": [4.65, 6.3, 2.735],
+            "circuito": "IUG",
+            "paralela_a": "y"
+          }
+        ],
+        "bocas_luz": [
+          {
+            "id": "Dorm_principal",
+            "ambiente": "dorm_principal",
+            "posicion_m": [1.8, 5.5, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Dorm_principal"
+          },
+          {
+            "id": "Dorm2",
+            "ambiente": "dorm_2",
+            "posicion_m": [1.4, 1.1, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Dorm2"
+          },
+          {
+            "id": "Suite",
+            "ambiente": "bano_suite",
+            "posicion_m": [4.65, 6.3, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Suite"
+          },
+          {
+            "id": "Bano",
+            "ambiente": "bano",
+            "posicion_m": [11.6, -0.8, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Bano"
+          },
+          {
+            "id": "Lavadero",
+            "ambiente": "lavadero",
+            "posicion_m": [14.0, -1.0, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Lavadero"
+          },
+          {
+            "id": "Dorm3",
+            "ambiente": "dorm_3",
+            "posicion_m": [16.5, -0.4, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Dorm3"
+          },
+          {
+            "id": "Oficina",
+            "ambiente": "oficina",
+            "posicion_m": [16.4, 5.5, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Oficina"
+          },
+          {
+            "id": "Estar",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [12.4, 5.8, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Estar"
+          },
+          {
+            "id": "Cocina",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [8.2, 2.7, 2.735],
+            "circuito": "IUG",
+            "luminaria": "plafon",
+            "llave": "Llave_Cocina"
+          },
+          {
+            "id": "Vestidor",
+            "ambiente": "vestidor",
+            "posicion_m": [4.65, 3.95, 2.735],
+            "circuito": "IUG",
+            "luminaria": null,
+            "llave": "Llave_Vestidor"
+          },
+          {
+            "id": "Colgante_0",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [8.2, 4.9, 2.75],
+            "circuito": "IUG",
+            "luminaria": "colgante",
+            "llave": "Llave_Estar"
+          },
+          {
+            "id": "Colgante_1",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [8.2, 5.65, 2.75],
+            "circuito": "IUG",
+            "luminaria": "colgante",
+            "llave": "Llave_Estar"
+          },
+          {
+            "id": "Colgante_2",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [8.2, 6.4, 2.75],
+            "circuito": "IUG",
+            "luminaria": "colgante",
+            "llave": "Llave_Estar"
+          }
+        ],
+        "llaves": [
+          {
+            "id": "Llave_Dorm_principal",
+            "ambiente": "dorm_principal",
+            "posicion_m": [2.42, 3.51, 1.1],
+            "paralela_a": "x"
+          },
+          {
+            "id": "Llave_Dorm2",
+            "ambiente": "dorm_2",
+            "posicion_m": [1.5, 2.04, 1.1],
+            "paralela_a": "x"
+          },
+          {
+            "id": "Llave_Suite",
+            "ambiente": "bano_suite",
+            "posicion_m": [3.85, 6.42, 1.1],
+            "paralela_a": "y"
+          },
+          {
+            "id": "Llave_Bano",
+            "ambiente": "bano",
+            "posicion_m": [11.86, -0.08, 1.1],
+            "paralela_a": "x"
+          },
+          {
+            "id": "Llave_Lavadero",
+            "ambiente": "lavadero",
+            "posicion_m": [13.26, -0.08, 1.1],
+            "paralela_a": "x"
+          },
+          {
+            "id": "Llave_Dorm3",
+            "ambiente": "dorm_3",
+            "posicion_m": [16.25, 1.1, 1.1],
+            "paralela_a": "x"
+          },
+          {
+            "id": "Llave_Oficina",
+            "ambiente": "oficina",
+            "posicion_m": [16.25, 3.3, 1.1],
+            "paralela_a": "x"
+          },
+          {
+            "id": "Llave_Estar",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [17.7, 2.8, 1.1],
+            "paralela_a": "y"
+          },
+          {
+            "id": "Llave_Cocina",
+            "ambiente": "estar_comedor_cocina",
+            "posicion_m": [5.88, 3.7, 1.1],
+            "paralela_a": "y"
+          },
+          {
+            "id": "Llave_Vestidor",
+            "ambiente": "vestidor",
+            "posicion_m": [5.48, 4.3, 1.1],
+            "paralela_a": "x"
+          }
+        ]
+      },
+      "sanitaria": {
+        "desague": {
+          "pendiente": 0.02,
+          "colector_y_m": -3.3,
+          "cota_eje_inicio_m": -0.56,
+          "columnas": [
+            {
+              "grupo": "suite",
+              "x_m": 6.15
+            },
+            {
+              "grupo": "cocina",
+              "x_m": 9.15
+            },
+            {
+              "grupo": "bano",
+              "x_m": 12.7
+            },
+            {
+              "grupo": "lavadero",
+              "x_m": 14.65
+            }
+          ],
+          "camaras_inspeccion": [
+            {
+              "id": "CI_suite",
+              "x_m": 6.15
+            },
+            {
+              "id": "CI_servicios",
+              "x_m": 14.65
+            },
+            {
+              "id": "CI_salida",
+              "x_m": 19.2
+            }
+          ],
+          "salida": {
+            "x_m": 20.2,
+            "estado": "pendiente_datos",
+            "nota": "Red cloacal o tratamiento a definir"
+          },
+          "ventilacion": {
+            "estado": "pendiente_datos",
+            "nota": "V11 retiró los dos ramales de ventilación; falta redefinirla"
+          }
+        },
+        "agua": {
+          "entrada_m": [14.45, -3.85, -0.48],
+          "colector_m": [14.45, -0.65],
+          "altura_distribucion_m": 2.94,
+          "llave_general_m": [14.45, -0.65, 1.25],
+          "abastecimiento": {
+            "estado": "pendiente_datos",
+            "nota": "Tanque, bomba o red a definir"
+          },
+          "termotanque": {
+            "tipo": "electrico",
+            "capacidad_l": 60,
+            "centro_m": [14.3, -1.87, 1.91],
+            "medidas_m": [0.48, 0.48, 0.68],
+            "circuito": "TER"
+          }
+        }
+      },
+      "pluvial": {
+        "canaletas": [
+          {
+            "cubierta": "principal",
+            "borde": "sur",
+            "bajada": "oeste"
+          },
+          {
+            "cubierta": "anexo_sur",
+            "borde": "sur",
+            "bajada": "este"
+          },
+          {
+            "cubierta": "galeria",
+            "borde": "norte",
+            "bajada": "este"
+          }
+        ],
+        "seccion_mm": [160, 120],
+        "pendiente": 0.003,
+        "bajada_dn_mm": 90,
+        "material": "zinc",
+        "destino": {
+          "estado": "pendiente_datos",
+          "nota": "Separado del cloacal; destino a definir"
+        }
+      }
+    },
+    "materiales": {
+      "revoque_calido": {
+        "nombre": "Revoque cálido",
+        "color": "#e4dfd2",
+        "rugosidad": 0.86,
+        "metalico": 0
+      },
+      "roble_natural": {
+        "nombre": "Roble natural",
+        "color": "#ad7950",
+        "rugosidad": 0.62,
+        "metalico": 0
+      },
+      "madera_exterior": {
+        "nombre": "Madera exterior",
+        "color": "#88694c",
+        "rugosidad": 0.8,
+        "metalico": 0
+      },
+      "madera_estructura": {
+        "nombre": "Madera estructura",
+        "color": "#c69967",
+        "rugosidad": 0.72,
+        "metalico": 0
+      },
+      "siding_oscuro": {
+        "nombre": "Siding oscuro",
+        "color": "#343c3a",
+        "rugosidad": 0.86,
+        "metalico": 0
+      },
+      "lana_mineral": {
+        "nombre": "Lana mineral",
+        "color": "#c6ae69",
+        "rugosidad": 1,
+        "metalico": 0
+      },
+      "osb": {
+        "nombre": "OSB",
+        "color": "#b99157",
+        "rugosidad": 0.94,
+        "metalico": 0
+      },
+      "wrb": {
+        "nombre": "WRB",
+        "color": "#ecece3",
+        "rugosidad": 0.96,
+        "metalico": 0
+      },
+      "cinta_wrb": {
+        "nombre": "Cinta WRB",
+        "color": "#507c9a",
+        "rugosidad": 0.9,
+        "metalico": 0
+      },
+      "sellado_flexible": {
+        "nombre": "Sellado flexible",
+        "color": "#777569",
+        "rugosidad": 0.95,
+        "metalico": 0
+      },
+      "grafito": {
+        "nombre": "Grafito",
+        "color": "#252e31",
+        "rugosidad": 0.38,
+        "metalico": 0.6
+      },
+      "zinc": {
+        "nombre": "Zinc",
+        "color": "#3e494d",
+        "rugosidad": 0.45,
+        "metalico": 0.75
+      },
+      "vidrio": {
+        "nombre": "Vidrio",
+        "color": "#a6cbd2",
+        "rugosidad": 0.12,
+        "metalico": 0
+      },
+      "piso_piedra": {
+        "nombre": "Piso piedra",
+        "color": "#c4bdae",
+        "rugosidad": 0.78,
+        "metalico": 0
+      },
+      "porcelanato": {
+        "nombre": "Porcelanato",
+        "color": "#a1aba6",
+        "rugosidad": 0.65,
+        "metalico": 0
+      },
+      "ceramica_blanca": {
+        "nombre": "Cerámica blanca",
+        "color": "#f0eee8",
+        "rugosidad": 0.24,
+        "metalico": 0
+      },
+      "lino": {
+        "nombre": "Lino",
+        "color": "#d6c9af",
+        "rugosidad": 0.94,
+        "metalico": 0
+      },
+      "verde_oliva": {
+        "nombre": "Verde oliva",
+        "color": "#69745c",
+        "rugosidad": 0.95,
+        "metalico": 0
+      },
+      "terracota": {
+        "nombre": "Terracota",
+        "color": "#b97150",
+        "rugosidad": 0.86,
+        "metalico": 0
+      },
+      "acero": {
+        "nombre": "Acero",
+        "color": "#a8b3b7",
+        "rugosidad": 0.25,
+        "metalico": 0.9
+      },
+      "pantalla": {
+        "nombre": "Pantalla",
+        "color": "#14252b",
+        "rugosidad": 0.3,
+        "metalico": 0.15
+      },
+      "tierra": {
+        "nombre": "Tierra",
+        "color": "#75816a",
+        "rugosidad": 1,
+        "metalico": 0
+      },
+      "grava": {
+        "nombre": "Grava",
+        "color": "#c5c2b5",
+        "rugosidad": 1,
+        "metalico": 0
+      },
+      "follaje": {
+        "nombre": "Follaje",
+        "color": "#516849",
+        "rugosidad": 1,
+        "metalico": 0
+      },
+      "luz": {
+        "nombre": "Luz",
+        "color": "#fff0ca",
+        "rugosidad": 0.3,
+        "metalico": 0
+      },
+      "negro": {
+        "nombre": "Negro",
+        "color": "#171c1d",
+        "rugosidad": 0.5,
+        "metalico": 0
+      },
+      "juntas": {
+        "nombre": "Juntas",
+        "color": "#777b71",
+        "rugosidad": 1,
+        "metalico": 0
+      },
+      "agua": {
+        "nombre": "Agua",
+        "color": "#759da2",
+        "rugosidad": 0.16,
+        "metalico": 0
+      },
+      "contrachapado": {
+        "nombre": "Contrachapado",
+        "color": "#8c5c33",
+        "rugosidad": 0.55,
+        "metalico": 0
+      },
+      "madera_tratada": {
+        "nombre": "Madera tratada",
+        "color": "#668752",
+        "rugosidad": 0.55,
+        "metalico": 0
+      },
+      "barrera_capilar": {
+        "nombre": "Barrera capilar",
+        "color": "#1c292e",
+        "rugosidad": 0.55,
+        "metalico": 0
+      },
+      "acero_galvanizado": {
+        "nombre": "Acero galvanizado",
+        "color": "#6191ab",
+        "rugosidad": 0.55,
+        "metalico": 0.75
+      },
+      "hormigon": {
+        "nombre": "Hormigon",
+        "color": "#999e9c",
+        "rugosidad": 0.55,
+        "metalico": 0
+      },
+      "inst_canalizacion": {
+        "nombre": "INST_Canalizacion",
+        "color": "#6b707a",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_fase": {
+        "nombre": "INST_Fase",
+        "color": "#753814",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_neutro": {
+        "nombre": "INST_Neutro",
+        "color": "#1f7af2",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_tierra": {
+        "nombre": "INST_Tierra",
+        "color": "#38b81f",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_cloacal": {
+        "nombre": "INST_Cloacal",
+        "color": "#a6471a",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_fria": {
+        "nombre": "INST_Fria",
+        "color": "#0d66e6",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_caliente": {
+        "nombre": "INST_Caliente",
+        "color": "#e61f14",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      },
+      "inst_reserva": {
+        "nombre": "INST_Reserva",
+        "color": "#f2b21a",
+        "rugosidad": 0.6,
+        "metalico": 0.0
+      }
+    }
+  }
+}
