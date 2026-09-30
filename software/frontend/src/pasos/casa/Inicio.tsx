@@ -20,6 +20,7 @@ interface Props {
   empezarImagen: (archivo?: File) => void;
   empezarDibujo: () => void;
   abrirEjemplo: () => void;
+  verReferencias: () => void;
   volverAlEditor: () => void;
 }
 
@@ -91,8 +92,8 @@ export default function Inicio(p: Props) {
             <div className="flex gap-4 items-center">
               <Monti animo="contento" tamano={80} />
               <p className="text-sm leading-relaxed">
-                «Hola, soy Monti. Te hago unas pocas preguntas —dormitorios, tamaño, cocina— con opciones para elegir, y
-                te explico qué cambia con cada una. <span className="text-rebar">Ideal si no sabés por dónde empezar.</span>»
+                «Hola, soy Monti. Te hago unas pocas preguntas —dormitorios, tamaño, cocina, cómo llegás a la casa— con
+                opciones para elegir, y te explico qué ganás y qué resignás con cada una. <span className="text-rebar">Ideal si no sabés por dónde empezar.</span>»
               </p>
             </div>
             <div className="mt-auto pt-4 flex justify-end">
@@ -130,6 +131,22 @@ export default function Inicio(p: Props) {
             </div>
           </section>
         </div>
+
+        <button
+          onClick={p.verReferencias}
+          className="mt-4 w-full border border-line bg-concrete-2 p-4 text-left hover:border-ink flex items-center justify-between gap-4"
+        >
+          <span>
+            <span className="text-base font-semibold">
+              <span className="text-signal mr-2">4</span>Partí de una casa que funciona
+            </span>
+            <span className="block text-rebar text-xs mt-1">
+              Diez plantas de 60 a 204 m² con lo que gana y lo que resigna cada una: sin pasillo, con hall central, dormitorios
+              divididos, en L, con garage… Son las mismas que usa Monti para sus propuestas.
+            </span>
+          </span>
+          <span className="text-xs whitespace-nowrap">Ver plantas →</span>
+        </button>
 
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-rebar">
           <button className="hover:text-ink underline underline-offset-2" onClick={p.empezarDibujo}>

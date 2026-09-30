@@ -16,6 +16,7 @@
         { "codigo": "ventana_150_110", "tipo": "ventana", "nombre": "Ventana 150 × 110", "ancho_m": 1.50, "alto_m": 1.10, "antepecho_m": 1.00, "uso": "exterior", "sugerida_para": ["dormitorio", "oficina"] },
         { "codigo": "ventana_200_110", "tipo": "ventana", "nombre": "Ventana 200 × 110", "ancho_m": 2.00, "alto_m": 1.10, "antepecho_m": 1.00, "uso": "exterior", "sugerida_para": ["social"] },
         { "codigo": "corrediza_200_205", "tipo": "ventana_corrediza", "nombre": "Puerta-ventana corrediza 200 × 205", "ancho_m": 2.00, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["social", "dormitorio"] },
+        { "codigo": "porton_480_210", "tipo": "porton", "nombre": "Portón de garage 480 × 210", "ancho_m": 4.80, "alto_m": 2.10, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["garage"] },
         { "codigo": "corrediza_240_205", "tipo": "ventana_corrediza", "nombre": "Puerta-ventana corrediza 240 × 205", "ancho_m": 2.40, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["social"] }
       ]
     }

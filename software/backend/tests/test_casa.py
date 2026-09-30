@@ -24,8 +24,8 @@ def programa_familia() -> Programa:
 # ---------------------------------------------------------------- generador
 
 @pytest.mark.parametrize("lat", [-31.4, 40.4])
-def test_alternativas_cierran_y_todos_los_ambientes_tienen_puerta(lat):
-    alts = casa.alternativas(programa_familia(), lat=lat)
+def test_partidos_generados_cierran_y_todos_los_ambientes_tienen_puerta(lat):
+    alts = casa.generadas(programa_familia(), lat=lat)
     assert [a["id"] for a in alts] == ["compacta", "lineal", "compacta_espejada"]
     for a in alts:
         c = a["casa"]
@@ -40,7 +40,7 @@ def test_alternativas_cierran_y_todos_los_ambientes_tienen_puerta(lat):
 
 def test_el_estar_mira_al_sol_segun_el_hemisferio():
     for lat, lado in [(-31.4, "norte"), (40.4, "sur")]:
-        c = casa.alternativas(programa_familia(), lat=lat)[0]["casa"]
+        c = casa.generadas(programa_familia(), lat=lat)[0]["casa"]
         fachada = next(m for m in c["muros"] if m.get("lado_exterior") == lado)
         assert any(o["tipo"] == "ventana_corrediza" for o in fachada["aberturas"])
 
@@ -126,13 +126,15 @@ def charlar(modo, respuestas):
 
 def test_orientador_pregunta_de_a_una_y_termina_listo():
     turnos = charlar("orientador", [("3 dormitorios", "3"), ("Media", "115"), ("Dos", "2"),
-                                    ("Integrada", "integrada"), ("Lavadero", "lavadero")])
+                                    ("Integrada", "integrada"), ("El principal aparte", "divididos"),
+                                    ("Con recibidor", "recibidor"), ("No", "no"), ("Lavadero", "lavadero")])
     assert all(t.pregunta and t.pregunta.opciones for t in turnos[:-1])
     fin = turnos[-1]
     assert fin.listo and fin.pregunta is None
     usos = [a.uso for a in fin.programa.ambientes]
     assert usos.count("dormitorio") == 3 and usos.count("bano") == 2 and "lavadero" in usos
     assert fin.programa.superficie_objetivo_m2 == 115
+    assert (fin.programa.dormitorios, fin.programa.entrada, fin.programa.garage) == ("divididos", "recibidor", False)
     total = sum(a.area_m2 for a in fin.programa.ambientes)
     assert total == pytest.approx(115 * guion.FRACCION_UTIL, rel=0.12)
 
@@ -197,3 +199,87 @@ def test_eleccion_de_proveedor_por_entorno(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-prueba")
     monkeypatch.setenv("IA_MODELO", "")
     assert proveedores.obtener().modelo == proveedores.MODELO_POR_DEFECTO["anthropic"]
+
+
+# ---------------------------------------------------------------- fundamentos
+
+from assambl.fundamentos import evaluar, grafo, referencias  # noqa: E402
+
+
+def _planta_ref(rid: str) -> dict:
+    planta = next(p for p in referencias.cargar()["plantas"] if p["id"] == rid)
+    c, adv = casa.planta_desde_rectangulos(referencias.rectangulos(planta))
+    assert not adv, adv
+    return c
+
+
+@pytest.mark.parametrize("rid", [p["id"] for p in referencias.cargar()["plantas"]])
+def test_plantas_de_referencia_se_arman_sin_problemas(rid):
+    c = _planta_ref(rid)
+    # Lo único que las reglas dejan abierto son rasgos propios de la planta original:
+    # el header del portón de garage (necesita cálculo) y algún cuarto chico.
+    problemas = {v["id"] for v in r03_planta.analizar_planta(c)["verificaciones"] if v["estado"] != "comprobado_por_reglas"}
+    assert problemas <= {"R03.05", "R03.08"}, problemas
+    ev = evaluar.evaluar(c, -31.4)
+    assert 0.5 <= ev["puntaje"] <= 1
+    assert {o["fundamento"] for o in ev["observaciones"]} >= {"F01", "F03", "F04", "F05", "F07", "F08", "F12"}
+
+
+def test_grafo_reconoce_suite_hall_y_entrada():
+    g = grafo.construir(_planta_ref("ref_106"))
+    assert g.relacion("dorm_principal", "bano_suite").tipo == "puerta"
+    assert g.relacion("estar", "cocina") is None or g.relacion("estar", "cocina").tipo == "abierto"
+    assert g.uso(g.accesos[0]) == "circulacion"
+    # Una visita llega al toilette sin pasar por un dormitorio.
+    assert g.camino(g.accesos[0], "toilette", {"dorm_principal", "dorm_2", "dorm_3"})
+
+
+def test_fundamentos_distinguen_planta_sin_pasillo_de_planta_con_hall():
+    sin_pasillo = {o["fundamento"]: o for o in evaluar.evaluar(_planta_ref("ref_060"))["observaciones"]}
+    con_hall = {o["fundamento"]: o for o in evaluar.evaluar(_planta_ref("ref_106"))["observaciones"]}
+    assert con_hall["F03"]["puntaje"] > sin_pasillo["F03"]["puntaje"]
+    assert sin_pasillo["F04"]["puntaje"] >= con_hall["F04"]["puntaje"]
+    assert sin_pasillo["F12"]["puntaje"] >= con_hall["F12"]["puntaje"]
+
+
+def test_angus_ranch_se_evalua_en_forma_parcial():
+    c = json.loads(ANGUS.read_text())["casa"]
+    ev = evaluar.evaluar(c, -31.4)
+    assert any(o["titulo"] == "Evaluación parcial" for o in ev["observaciones"])
+    assert not any(o["fundamento"] == "F01" for o in ev["observaciones"])
+
+
+def test_alternativas_parten_de_plantas_de_referencia():
+    alts = casa.alternativas(programa_familia(), lat=-31.4)
+    assert len(alts) == 3
+    assert all(a["origen"]["tipo"] == "referencia" for a in alts)
+    for a in alts:
+        nombres = {x["nombre"] for x in a["casa"]["ambientes"]}
+        assert "Dormitorio principal" in nombres, nombres
+        assert a["evaluacion"]["criterios"] and a["resumen"]["superficie_cubierta_m2"] > 80
+        # El estar mira al sol.
+        luz = next(o for o in a["evaluacion"]["observaciones"] if o["fundamento"] == "F09")
+        assert "el estar también" in luz["texto"], luz["texto"]
+
+
+def test_preferencias_del_programa_ordenan_las_referencias():
+    prog = programa_familia().model_copy(update={"dormitorios": "divididos", "garage": True})
+    alts = casa.alternativas(prog, lat=-31.4)
+    assert any(x["uso"] == "garage" for x in alts[0]["casa"]["ambientes"])
+    sin_garage = casa.alternativas(programa_familia().model_copy(update={"garage": False}), lat=-31.4)
+    assert not any(x["uso"] == "garage" for a in sin_garage for x in a["casa"]["ambientes"])
+
+
+def test_programa_sin_referencia_usa_el_generador():
+    prog = guion.programa_desde_conteos(5, 2, 180, cocina_integrada=True)
+    alts = casa.alternativas(prog, lat=-31.4)
+    assert [a["origen"]["tipo"] for a in alts] == ["generada"] * 3
+    assert all(a["evaluacion"]["puntaje"] is not None for a in alts)
+
+
+def test_fundamentos_no_citan_fuentes():
+    """Los fundamentos son conocimiento de Assambl: se explica el razonamiento, sin citar libros, autores ni normas."""
+    texto = json.dumps({"f": evaluar.FUNDAMENTOS, "c": evaluar.CRITERIOS,
+                        "e": evaluar.evaluar(_planta_ref("ref_106"), -31.4)}, ensure_ascii=False)
+    for prohibido in ("fuente", "RID", "IRC", "cap.", "Alexander", "Newman", "Susanka", "Mitton", "Nystuen", "libro"):
+        assert prohibido not in texto, prohibido

@@ -80,24 +80,43 @@ Reglas de conversación (están en el prompt de sistema, `ia/asistente.py`):
 
 - **Una pregunta por vez**, siempre con **2 a 4 opciones** y la **consecuencia** de cada una en pocas
   palabras («Integrada · un solo ambiente, más luz y menos muros»). Siempre se puede escribir en vez de elegir.
-- Primero lo que más cambia la casa: dormitorios → tamaño → baños → cocina integrada o separada → extras.
-- Si el usuario no sabe, se sugiere la opción más común y se sigue. En 5 a 7 preguntas debe estar listo.
+- Primero lo que más cambia la casa: dormitorios → tamaño → baños → cocina integrada o separada →
+  dormitorios juntos o el principal aparte → recibidor o entrada directa → garage → extras. Las tres
+  preguntas de zonas y llegada salen de los [fundamentos de diseño](fundamentos_diseno.md): no tienen
+  respuesta correcta y cada opción dice qué gana y qué resigna.
+- Si el usuario no sabe, se sugiere la opción más común y se sigue. En 6 a 9 preguntas debe estar listo.
 - Fuera del dominio (dos plantas, curvas, más de 200 m²) se explica por qué y se ofrece lo más parecido.
 - A la derecha, «Lo que va anotando Monti» muestra el programa en vivo: ambientes, superficies y total.
 
 ### 2.3 Momento de decisión · alternativas
 
-Cuando el programa alcanza, se muestran **tres partidos** del mismo pedido (`capas/casa.py → alternativas`):
+Cuando el programa alcanza, se muestran **tres partidos** del mismo pedido (`capas/casa.py → alternativas`).
+No son aleatorios: salen de **diez plantas de referencia** (`docs/interior_fundamentals/`, transcriptas en
+`fundamentos/plantas_referencia.json`) adaptadas al programa —dormitorios, baños, garage, galería, superficie,
+preferencias— y orientadas al sol, y se evalúan con los **fundamentos de diseño** de Assambl. El detalle está
+en [`fundamentos_diseno.md`](fundamentos_diseno.md). Si ninguna referencia sirve (por ejemplo, cinco dormitorios) se usan los partidos del generador:
 
-| Partido | Qué es | A cambio de |
+| Partido generado | Qué es | A cambio de |
 | --- | --- | --- |
 | Compacta en dos franjas | Estar a un lado; pasillo corto; dormitorios al sol, baños y lavadero del lado opuesto | — (menos muro exterior) |
 | Lineal, todo al sol | Una tira de ambientes, pasillo del lado frío | Más fachada y más muro exterior |
 | Compacta, estar al este | La compacta espejada: estar con sol de mañana | — |
 
-Cada tarjeta muestra la planta en miniatura con estados, superficie cubierta, frente × fondo y **metros de
-muro exterior** (el dato que un entusiasta no mira y que más pesa en costo y en pérdida de calor). «Al sol»
-significa norte en el hemisferio sur y sur en el norte: se usa la latitud de la capa 01 si existe.
+Cada tarjeta muestra la planta en miniatura con estados, de qué planta de referencia sale, las barras de los
+seis criterios (privacidad, recorridos, luz y sol, ambientes cómodos, instalaciones agrupadas, economía de obra),
+lo más destacado **a favor** y **a considerar**, qué se adaptó de la planta original, superficie cubierta,
+frente × fondo y **metros de muro exterior**. «Al sol» significa norte en el hemisferio sur y sur en el norte:
+se usa la latitud de la capa 01 si existe.
+
+### 2.3 bis Entrada 4 · «Partí de una casa que funciona»
+
+Galería de las diez plantas de referencia: dibujo original y versión Assambl orientada al sol, rasgos
+(«hall central», «planta dividida», «garage como colchón»…), lectura en palabras y evaluación. Cualquiera se abre
+en el editor. Una segunda pestaña muestra los fundamentos completos: principio, por qué, qué mide Assambl y qué se
+resigna. En el editor, la sección *Fundamentos de diseño* se recalcula con cada cambio.
+
+| ![Plantas de referencia](paso_casa/7_referencias.png) Galería de referencias | ![Alternativas fundamentadas](paso_casa/8_alternativas_fundamentadas.png) Alternativas con su «por qué» |
+| --- | --- |
 
 ### 2.4 Entrada 2 · «Subí un bosquejo o un plano»
 
@@ -248,7 +267,10 @@ GET  /api/casa/catalogo              catálogo del mercado (aberturas)
 POST /api/casa/conversar             un turno de charla → mensaje, pregunta con opciones, programa, listo
 POST /api/casa/alternativas          programa → 3 partidos con su casa y su análisis R03
 POST /api/casa/interpretar-imagen    imagen (data URL) → lectura, planta a revisar, análisis
-POST /api/casa/analizar              casa → estado por pieza y verificaciones R03
+POST /api/casa/analizar              casa → estado por pieza, verificaciones R03 y evaluación de fundamentos
+GET  /api/casa/fundamentos           fundamentos de diseño y su razonamiento
+GET  /api/casa/referencias           plantas de referencia (galería)
+POST /api/casa/referencias/{id}      una planta de referencia armada y orientada al sol
 ```
 
 ## 9. Pendientes
@@ -260,5 +282,7 @@ POST /api/casa/analizar              casa → estado por pieza y verificaciones 
   dormitorio principal») traducidos a operaciones.
 - **Implantación:** mover y girar la casa sobre el lote, con retiros dibujados (hoy se centra en el lote).
 - **Dibujo libre asistido:** detectar ambientes cerrados por muros y proponer nombres.
-- Partidos en L y en U; galería como volumen.
+- Más plantas de referencia (hoy diez, de 2 a 4 dormitorios) y fundamentos que dependen de muebles e
+  instalaciones: triángulo de trabajo de la cocina, pasos alrededor de la cama, artefactos del baño.
+- Galería como volumen.
 - Prueba de usabilidad con 5 entusiastas: ¿entienden los estados sin la leyenda? ¿qué entrada eligen?

@@ -5,7 +5,9 @@
 - `POST /api/casa/conversar`            un turno de la charla con el asistente
 - `POST /api/casa/alternativas`         partidos de planta para un programa
 - `POST /api/casa/interpretar-imagen`   bosquejo o plano → planta a revisar
-- `POST /api/casa/analizar`             reglas R03 sobre la planta: estado por pieza
+- `POST /api/casa/analizar`             reglas R03 (estado por pieza) y fundamentos de diseño
+- `GET  /api/casa/fundamentos`          los fundamentos de diseño y su razonamiento
+- `GET  /api/casa/referencias`          las plantas de referencia (galería)
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from assambl.capas import casa as capa
+from assambl.fundamentos import evaluar, referencias
 from assambl.ia import asistente, proveedores
 from assambl.modelo.casa import MensajeChat, Programa, RespuestaAsistente
 from assambl.modelo.estados import Estado
@@ -41,6 +44,34 @@ def estado_ia() -> dict:
 @router.get("/catalogo")
 def catalogo() -> dict:
     return capa.catalogo()
+
+
+@router.get("/fundamentos")
+def fundamentos() -> dict:
+    return {"criterios": evaluar.CRITERIOS, "fundamentos": evaluar.FUNDAMENTOS}
+
+
+@router.get("/referencias")
+def plantas_referencia() -> dict:
+    return {"plantas": referencias.resumen_referencias()}
+
+
+class PedidoReferencia(BaseModel):
+    lat: float | None = Field(default=None, ge=-90, le=90)
+
+
+@router.post("/referencias/{rid}")
+def partir_de_referencia(rid: str, pedido: PedidoReferencia) -> dict:
+    """Una planta de referencia tal cual (orientada al sol) para empezar a editar desde ella."""
+    planta = next((p for p in referencias.cargar()["plantas"] if p["id"] == rid), None)
+    if planta is None:
+        raise HTTPException(404, "No existe esa planta de referencia")
+    origen = {"fuente": "assambl/fundamentos/plantas_referencia.json", "referencia": rid, "archivo": planta["archivo"],
+              "nota": f"Planta de referencia «{planta['nombre']}»."}
+    rects, casa, adv, ev, nota = referencias.orientar(referencias.rectangulos(planta), pedido.lat, Estado.PROPUESTO, origen)
+    return {"rectangulos": [r.model_dump() for r in rects], "casa": casa, "advertencias": adv,
+            "adaptacion": [nota] if nota else [], "evaluacion": ev,
+            "analisis": r03_planta.analizar_planta(casa)}
 
 
 class PedidoConversar(BaseModel):
@@ -105,14 +136,22 @@ async def interpretar_imagen(pedido: PedidoImagen) -> dict:
         "casa": casa,
         "advertencias": lectura.advertencias + advertencias + adv,
         "analisis": r03_planta.analizar_planta(casa),
+        "evaluacion": evaluar.evaluar(casa, pedido.lat),
         "simulado": proveedor.simulado,
     }
 
 
 class PedidoAnalizar(BaseModel):
     casa: dict
+    lat: float | None = Field(default=None, ge=-90, le=90)
 
 
 @router.post("/analizar")
 def analizar(pedido: PedidoAnalizar) -> dict:
-    return r03_planta.analizar_planta(pedido.casa)
+    analisis = r03_planta.analizar_planta(pedido.casa)
+    try:
+        analisis["fundamentos"] = evaluar.evaluar(pedido.casa, pedido.lat)
+    except (KeyError, TypeError, ValueError, IndexError):
+        # Una planta a medio dibujar no impide ver el estado de las piezas.
+        analisis["fundamentos"] = None
+    return analisis
