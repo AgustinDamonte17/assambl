@@ -6,7 +6,7 @@
 - `POST /api/casa/alternativas`         partidos de planta para un programa
 - `POST /api/casa/interpretar-imagen`   bosquejo o plano → planta a revisar
 - `POST /api/casa/analizar`             reglas R03 (estado por pieza) y fundamentos de diseño
-- `GET  /api/casa/fundamentos`          los fundamentos de diseño con sus fuentes
+- `GET  /api/casa/fundamentos`          los fundamentos de diseño y su razonamiento
 - `GET  /api/casa/referencias`          las plantas de referencia (galería)
 """
 
@@ -48,7 +48,7 @@ def catalogo() -> dict:
 
 @router.get("/fundamentos")
 def fundamentos() -> dict:
-    return {"fuente": evaluar.FUENTE, "criterios": evaluar.CRITERIOS, "fundamentos": evaluar.FUNDAMENTOS}
+    return {"criterios": evaluar.CRITERIOS, "fundamentos": evaluar.FUNDAMENTOS}
 
 
 @router.get("/referencias")

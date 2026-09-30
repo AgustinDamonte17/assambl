@@ -93,9 +93,8 @@ Reglas de conversación (están en el prompt de sistema, `ia/asistente.py`):
 Cuando el programa alcanza, se muestran **tres partidos** del mismo pedido (`capas/casa.py → alternativas`).
 No son aleatorios: salen de **diez plantas de referencia** (`docs/interior_fundamentals/`, transcriptas en
 `fundamentos/plantas_referencia.json`) adaptadas al programa —dormitorios, baños, garage, galería, superficie,
-preferencias— y orientadas al sol, y se evalúan con **fundamentos de diseño** tomados de *Residential Interior
-Design* (Mitton y Nystuen). El detalle está en [`fundamentos_diseno.md`](fundamentos_diseno.md). Si ninguna
-referencia sirve (por ejemplo, cinco dormitorios) se usan los partidos del generador:
+preferencias— y orientadas al sol, y se evalúan con los **fundamentos de diseño** de Assambl. El detalle está
+en [`fundamentos_diseno.md`](fundamentos_diseno.md). Si ninguna referencia sirve (por ejemplo, cinco dormitorios) se usan los partidos del generador:
 
 | Partido generado | Qué es | A cambio de |
 | --- | --- | --- |
@@ -113,8 +112,8 @@ se usa la latitud de la capa 01 si existe.
 
 Galería de las diez plantas de referencia: dibujo original y versión Assambl orientada al sol, rasgos
 («hall central», «planta dividida», «garage como colchón»…), lectura en palabras y evaluación. Cualquiera se abre
-en el editor. Una segunda pestaña muestra los fundamentos completos: principio, por qué, qué mide Assambl, qué se
-resigna y la fuente. En el editor, la sección *Fundamentos de diseño* se recalcula con cada cambio.
+en el editor. Una segunda pestaña muestra los fundamentos completos: principio, por qué, qué mide Assambl y qué se
+resigna. En el editor, la sección *Fundamentos de diseño* se recalcula con cada cambio.
 
 | ![Plantas de referencia](paso_casa/7_referencias.png) Galería de referencias | ![Alternativas fundamentadas](paso_casa/8_alternativas_fundamentadas.png) Alternativas con su «por qué» |
 | --- | --- |
@@ -269,7 +268,7 @@ POST /api/casa/conversar             un turno de charla → mensaje, pregunta co
 POST /api/casa/alternativas          programa → 3 partidos con su casa y su análisis R03
 POST /api/casa/interpretar-imagen    imagen (data URL) → lectura, planta a revisar, análisis
 POST /api/casa/analizar              casa → estado por pieza, verificaciones R03 y evaluación de fundamentos
-GET  /api/casa/fundamentos           fundamentos de diseño con su fuente
+GET  /api/casa/fundamentos           fundamentos de diseño y su razonamiento
 GET  /api/casa/referencias           plantas de referencia (galería)
 POST /api/casa/referencias/{id}      una planta de referencia armada y orientada al sol
 ```

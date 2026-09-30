@@ -6,11 +6,9 @@ usuario qué gana y qué resigna con cada una. Por eso no producen estados, sino
 observaciones «a favor», «a considerar» o informativas, con un puntaje de 0 a 1
 que solo sirve para ordenar y comparar.
 
-Fuente principal: M. Mitton y C. Nystuen, *Residential Interior Design: A Guide
-to Planning Spaces*, 3.ª ed., Wiley, 2016 (citado «RID» con capítulo y página),
-que a su vez recoge a Alexander (*A Pattern Language*), Newman, Hall, Susanka y
-el International Residential Code (IRC 2015). Los umbrales en metros son la
-conversión de los del libro y deben leerse como orientativos.
+Son conocimiento propio de Assambl: al usuario se le explica el razonamiento
+(principio, por qué, qué se mide, qué se resigna), sin citar autores, libros ni
+normas. Los umbrales son orientativos.
 """
 
 from __future__ import annotations
@@ -19,8 +17,6 @@ import math
 
 from ..geometria import poligono
 from . import grafo as g
-
-FUENTE = "Mitton y Nystuen, Residential Interior Design, 3.ª ed. (Wiley, 2016)"
 
 CRITERIOS = [
     {"id": "privacidad", "nombre": "Privacidad y zonas", "pregunta": "¿La casa separa lo social de lo íntimo?"},
@@ -35,8 +31,7 @@ FUNDAMENTOS = [
     {
         "id": "F01", "criterio": "privacidad", "titulo": "Gradiente de intimidad",
         "principio": "Los espacios se ordenan de lo público a lo privado: entrada, estar, circulación y, al final, dormitorios y baños. Un dormitorio no debería abrirse al medio del estar.",
-        "por_que": "Si los ambientes no siguen el orden de su privacidad, las visitas de extraños, amigos o la propia familia resultan siempre un poco incómodas (Alexander). La casa ofrece una jerarquía clara de territorios, de lo público a lo privado (Lang).",
-        "fuente": "RID cap. 1, pp. 2–4 (Alexander, Pattern 127; Lang; Newman)",
+        "por_que": "Si los ambientes no siguen el orden de su privacidad, las visitas de extraños, amigos o la propia familia resultan siempre un poco incómodas. Una casa cómoda ofrece una jerarquía clara de territorios, de lo público a lo privado.",
         "mide": "Qué ambiente da acceso a cada dormitorio: un pasillo o recibidor (a favor) o directamente el estar o la cocina.",
         "tension": "Sin pasillo se ahorra superficie (las plantas compactas de 60 y 101 m² lo hacen). Es válido en casas chicas o para una pareja; con chicos o visitas frecuentes se nota.",
     },
@@ -44,23 +39,20 @@ FUNDAMENTOS = [
         "id": "F02", "criterio": "privacidad", "titulo": "Dormitorios lejos del ruido",
         "principio": "La ubicación de los dormitorios se piensa en relación con la circulación de la familia y el ruido. Placares y baños entre el dormitorio y el estar funcionan como colchón.",
         "por_que": "El dormitorio es refugio: se usa para dormir, vestirse, la intimidad y recuperarse de una enfermedad.",
-        "fuente": "RID cap. 5, p. 126",
         "mide": "Cuánto muro comparte cada dormitorio con el estar o la cocina, en proporción a su perímetro.",
         "tension": "Separar del todo alarga recorridos; un placar en el muro compartido suele alcanzar.",
     },
     {
         "id": "F03", "criterio": "privacidad", "titulo": "Entrada como transición",
         "principio": "Entre la calle y el interior hace falta un lugar de transición: un recibidor con placar, más ancho que profundo, cerca del estar y del toilette, y a resguardo del viento dominante.",
-        "por_que": "Si la transición es demasiado brusca no hay sensación de llegada (Alexander, Pattern 112). La entrada es el colchón clave entre lo más público y lo más privado.",
-        "fuente": "RID cap. 2, pp. 29–31",
+        "por_que": "Si la transición es demasiado brusca no hay sensación de llegada. La entrada es el colchón clave entre lo más público y lo más privado.",
         "mide": "A qué ambiente da la puerta de acceso: un recibidor (a favor), el estar o la cocina.",
-        "tension": "Un recibidor ocupa 2,5 % a 5 % de la casa (RID fig. 2-6 a 2-10). En casas muy chicas se resuelve con un mueble o un cambio de piso.",
+        "tension": "Un recibidor ocupa 2,5 % a 5 % de la casa. En casas muy chicas se resuelve con un mueble o un cambio de piso.",
     },
     {
         "id": "F06", "criterio": "privacidad", "titulo": "Baño para las visitas",
         "principio": "Una visita tiene que poder llegar a un baño o toilette sin atravesar un dormitorio.",
         "por_que": "Es uno de los tres criterios de visitabilidad junto con la entrada sin escalones y las puertas anchas; el toilette cerca del acceso es la adyacencia típica del recibidor.",
-        "fuente": "RID cap. 1, p. 7 y cap. 2, p. 31",
         "mide": "Si existe un recorrido desde la entrada hasta algún baño que no pase por un dormitorio o vestidor.",
         "tension": "Con un solo baño en suite, las visitas entran al dormitorio principal.",
     },
@@ -68,7 +60,6 @@ FUNDAMENTOS = [
         "id": "F04", "criterio": "recorridos", "titulo": "Circulación justa",
         "principio": "La superficie dedicada solo a circular es improductiva y conviene minimizarla. Un pasillo con puertas a ambos lados (doble carga) sirve el doble que uno con puertas de un solo lado.",
         "por_que": "La circulación simple es el doble de larga y lleva el doble de tiempo que la doble; solo se justifica cuando el recorrido es parte de la experiencia (vistas, galería).",
-        "fuente": "RID cap. 2, p. 42 (fig. 2-18)",
         "mide": "Metros cuadrados de pasillos y recibidores sobre la superficie útil. Orientativo: hasta 10 % muy eficiente, más de 18 % es mucho.",
         "tension": "Menos circulación suele significar dormitorios que se abren al estar (F01).",
     },
@@ -76,7 +67,6 @@ FUNDAMENTOS = [
         "id": "F16", "criterio": "recorridos", "titulo": "Anchos para todos",
         "principio": "Pasillos de 0,90 m como mínimo (1,10–1,20 m para cruzarse cómodos) y puertas que dejen 0,80 m libres, que en la práctica son hojas de 0,90 m.",
         "por_que": "Con 0,90 m dos adultos no se cruzan de frente; una silla de ruedas necesita 0,80 m libres en las puertas y 1,50 m para girar. Diseñar así desde el principio no cuesta más (diseño universal).",
-        "fuente": "RID cap. 2, pp. 38–40 y 46; cap. 1, pp. 6–7",
         "mide": "El ancho del pasillo más angosto y la hoja de puerta interior más angosta.",
         "tension": "Cada 10 cm de pasillo, multiplicados por su largo, son superficie que se construye.",
     },
@@ -84,7 +74,6 @@ FUNDAMENTOS = [
         "id": "F10", "criterio": "ambientes", "titulo": "Estar para reunirse",
         "principio": "El estar se organiza en grupos de conversación de unas seis personas, en un círculo de 3,7 a 4 m. Las puertas y los pasos no deben obligar a cruzar el grupo; cuantas más puertas, menos formas de amoblarlo.",
         "por_que": "Los grupos más grandes se parten en conversaciones menores; el tránsito de punta a punta de un ambiente rectangular es el que más limita el amoblamiento.",
-        "fuente": "RID cap. 3, pp. 52 y 56–59 (fig. 3-1 y 3-9)",
         "mide": "El lado menor del estar (≥ 3,6 m) y cuántas puertas o pasos desembocan en él.",
         "tension": "Un estar integrado con cocina y comedor gana amplitud pero reúne más accesos.",
     },
@@ -92,7 +81,6 @@ FUNDAMENTOS = [
         "id": "F07", "criterio": "ambientes", "titulo": "Dormitorios con lugar para amoblar",
         "principio": "Un dormitorio casi cuadrado de 12 a 13,5 m² admite cama de dos plazas y cómoda en dos paredes; desde 14 m², en tres. El mínimo legal es 6,5 m² con 2,13 m de lado. El placard, cerca de la puerta.",
         "por_que": "La cama manda en el dormitorio: hacen falta 0,90 a 1,20 m de paso principal y 0,45 a 0,60 m para tender la cama.",
-        "fuente": "RID cap. 5, pp. 126, 129 y 136 (IRC R304)",
         "mide": "Superficie, lado menor y proporción de cada dormitorio (principal ≥ 12 m² y 3 m de lado; los demás ≥ 9 m² y 2,7 m).",
         "tension": "Dormitorios más grandes suman superficie cubierta, que es lo que más cuesta.",
     },
@@ -100,15 +88,13 @@ FUNDAMENTOS = [
         "id": "F11", "criterio": "ambientes", "titulo": "Cocina conectada",
         "principio": "La cocina se abre al comedor y queda cerca de una entrada de servicio, el lavadero o el garage, para que las compras y la ropa no crucen el estar.",
         "por_que": "La cocina volvió a ser el centro social de la casa; el lavadero cerca de la cocina o de una entrada secundaria es una de las ubicaciones preferidas.",
-        "fuente": "RID cap. 4, pp. 66–71; cap. 7, p. 188",
         "mide": "Si la cocina está abierta o comunicada con el comedor y si linda con el lavadero, el garage o tiene salida propia.",
         "tension": "La cocina integrada lleva olores y ruido al estar.",
     },
     {
         "id": "F08", "criterio": "luz", "titulo": "Luz natural suficiente",
         "principio": "Los ambientes habitables llevan ventanas por al menos el 8 % de su superficie y aberturas de ventilación por el 4 %.",
-        "por_que": "Es el mínimo del IRC; los efectos de la luz natural sobre la salud y el ahorro de energía están bien documentados, así que conviene superarlo.",
-        "fuente": "RID cap. 1, p. 17 y cap. 3, p. 62 (IRC R303)",
+        "por_que": "Es el mínimo habitual en las normas de construcción; los efectos de la luz natural sobre la salud y el ahorro de energía están bien documentados, así que conviene superarlo.",
         "mide": "Superficie vidriada de cada dormitorio, estar, cocina y oficina sobre su superficie de piso.",
         "tension": "Más vidrio es más pérdida de calor en invierno si no está bien orientado.",
     },
@@ -116,7 +102,6 @@ FUNDAMENTOS = [
         "id": "F09", "criterio": "luz", "titulo": "Orientación al sol",
         "principio": "El estar y los dormitorios miran al sol (al norte en Argentina); baños, lavadero y circulaciones van del lado frío y hacen de colchón.",
         "por_que": "La ubicación de las ventanas respecto del sol define la ganancia y la pérdida de calor; la orientación es una decisión de sitio que se toma desde el primer diagrama.",
-        "fuente": "RID cap. 9, p. 229; cap. 8, p. 205; práctica bioclimática para el hemisferio sur",
         "mide": "Qué ambientes habitables tienen ventana hacia el sol; el estar cuenta doble.",
         "tension": "La mejor vista o la calle pueden estar del otro lado.",
     },
@@ -124,7 +109,6 @@ FUNDAMENTOS = [
         "id": "F05", "criterio": "instalaciones", "titulo": "Núcleo húmedo",
         "principio": "Baños, cocina y lavadero juntos, compartiendo muros con cañerías. Mejor en muros interiores que en exteriores en climas fríos.",
         "por_que": "Mover o multiplicar cañerías es de lo que más encarece una obra; en Assambl, además, cada grupo húmedo son pases en la platea (capa 02) y perforaciones en la estructura (capa 13).",
-        "fuente": "RID cap. 6, pp. 176–178; cap. 10, p. 241",
         "mide": "En cuántos grupos separados quedan los ambientes húmedos y qué tan lejos están entre sí.",
         "tension": "Un baño en suite casi siempre forma un segundo grupo.",
     },
@@ -132,15 +116,13 @@ FUNDAMENTOS = [
         "id": "F12", "criterio": "economia", "titulo": "Compacidad",
         "principio": "A igual superficie, una planta más compacta tiene menos muro exterior, menos esquinas y un techo más simple.",
         "por_que": "El entramado (pisos, muros, aberturas y techo) es el 45 % a 55 % del costo de una obra; el muro exterior es además por donde se pierde el calor.",
-        "fuente": "RID cap. 10, p. 243; MVP_01 §3.3",
         "mide": "Índice de compacidad (perímetro / perímetro del cuadrado de igual área: 1,0 es un cuadrado) y cantidad de esquinas.",
         "tension": "Las plantas en L o con alas ganan luz, vistas y privacidad a cambio de muro.",
     },
     {
         "id": "F13", "criterio": "economia", "titulo": "Superficie que se aprovecha",
         "principio": "Lo programado (los ambientes) suele ser el 80 % a 85 % de la superficie bruta; el resto son muros y circulación.",
-        "por_que": "Es la proporción con la que el libro dimensiona su proyecto de ejemplo; bien por debajo, se está pagando superficie que no se usa.",
-        "fuente": "RID cap. 8, p. 203 (tabla 8-1)",
+        "por_que": "Es la proporción habitual de una casa bien resuelta; bien por debajo, se está pagando superficie que no se usa.",
         "mide": "Suma de superficies de los ambientes sobre la superficie cubierta.",
         "tension": "Muros más gruesos (mejor aislación) bajan este número a propósito.",
     },
@@ -459,7 +441,6 @@ def evaluar(casa: dict, lat: float | None = None) -> dict:
         "criterios": criterios,
         "observaciones": obs,
         "puntaje": round(sum(validos) / len(validos), 2) if validos else None,
-        "fuente": FUENTE,
     }
 
 

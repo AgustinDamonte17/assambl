@@ -203,7 +203,7 @@ export interface Rectangulo {
   abre_a?: string | null;
 }
 
-/* Fundamentos de diseño (backend/assambl/fundamentos, docs/fundamentos_diseno.md) */
+/* Fundamentos de diseño: conocimiento propio de Assambl (backend/assambl/fundamentos, docs/fundamentos_diseno.md) */
 
 export type NivelObservacion = "a_favor" | "neutral" | "a_considerar" | "info";
 
@@ -228,7 +228,6 @@ export interface Evaluacion {
   criterios: Criterio[];
   observaciones: Observacion[];
   puntaje: number | null;
-  fuente: string;
 }
 
 export interface Fundamento {
@@ -237,7 +236,6 @@ export interface Fundamento {
   titulo: string;
   principio: string;
   por_que: string;
-  fuente: string;
   mide: string;
   tension: string;
 }

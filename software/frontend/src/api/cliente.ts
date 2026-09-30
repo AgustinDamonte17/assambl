@@ -113,7 +113,7 @@ export const api = {
     pedir<AnalisisPlanta>("/api/casa/analizar", { method: "POST", body: JSON.stringify({ casa, lat }) }),
 
   fundamentos: () =>
-    pedir<{ fuente: string; criterios: Omit<Criterio, "puntaje">[]; fundamentos: Fundamento[] }>("/api/casa/fundamentos"),
+    pedir<{ criterios: Omit<Criterio, "puntaje">[]; fundamentos: Fundamento[] }>("/api/casa/fundamentos"),
 
   referencias: () => pedir<{ plantas: PlantaReferencia[] }>("/api/casa/referencias").then((r) => r.plantas),
 

@@ -67,7 +67,8 @@ Usos válidos: """ + ", ".join(USOS) + """.
 
 # Resumen de docs/fundamentos_diseno.md para que las opciones que ofrece Monti
 # expliquen qué se gana y qué se resigna, sin presentarlas como reglas.
-FUNDAMENTOS = """Criterios de diseño que usás para explicar las opciones (no son obligatorios: cada casa elige):
+FUNDAMENTOS = """Criterios de diseño que usás para explicar las opciones (no son obligatorios: cada casa elige).
+Son conocimiento propio de Assambl: explicá el razonamiento con tus palabras, sin citar libros, autores ni normas.
 - Gradiente de intimidad: de lo público (entrada, estar) a lo privado (dormitorios). Dormitorios que se abren al estar ahorran pasillo pero pierden privacidad.
 - Dormitorios juntos (zona de noche silenciosa, chicos cerca) o el principal aparte (privacidad entre padres e hijos o con huéspedes).
 - Recibidor: transición entre la calle y el estar, lugar para abrigos; cuesta unos metros. Entrar directo al estar ahorra superficie.

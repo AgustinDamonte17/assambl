@@ -275,3 +275,11 @@ def test_programa_sin_referencia_usa_el_generador():
     alts = casa.alternativas(prog, lat=-31.4)
     assert [a["origen"]["tipo"] for a in alts] == ["generada"] * 3
     assert all(a["evaluacion"]["puntaje"] is not None for a in alts)
+
+
+def test_fundamentos_no_citan_fuentes():
+    """Los fundamentos son conocimiento de Assambl: se explica el razonamiento, sin citar libros, autores ni normas."""
+    texto = json.dumps({"f": evaluar.FUNDAMENTOS, "c": evaluar.CRITERIOS,
+                        "e": evaluar.evaluar(_planta_ref("ref_106"), -31.4)}, ensure_ascii=False)
+    for prohibido in ("fuente", "RID", "IRC", "cap.", "Alexander", "Newman", "Susanka", "Mitton", "Nystuen", "libro"):
+        assert prohibido not in texto, prohibido

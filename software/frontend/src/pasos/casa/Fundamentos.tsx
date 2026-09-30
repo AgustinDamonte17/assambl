@@ -1,6 +1,6 @@
 /** Fundamentos de diseño: cómo se muestra la evaluación de una planta (backend/assambl/fundamentos).
  *  No son estados ni errores: son observaciones «a favor» o «a considerar» para comparar alternativas y
- *  decidir con criterio. La teoría y las fuentes están en docs/fundamentos_diseno.md. */
+ *  decidir con criterio. El razonamiento está en docs/fundamentos_diseno.md. */
 
 import { useEffect, useState } from "react";
 import { api } from "../../api/cliente";
@@ -111,16 +111,16 @@ export function PanelFundamentos({
           {todas ? "Ver solo lo que conviene mirar" : `Ver las ${obs.length} observaciones`}
         </button>
         <button className="text-rebar hover:text-ink underline underline-offset-2" onClick={verTeoria}>
-          ¿De dónde sale esto?
+          ¿Por qué Assambl piensa esto?
         </button>
       </div>
     </div>
   );
 }
 
-/** Los fundamentos completos: principio, por qué, qué se mide, qué se resigna y la fuente. */
+/** Los fundamentos completos: principio, por qué, qué mide Assambl y qué se resigna. */
 export function Teoria() {
-  const [datos, setDatos] = useState<{ fuente: string; criterios: { id: string; nombre: string; pregunta: string }[]; fundamentos: Fundamento[] } | null>(null);
+  const [datos, setDatos] = useState<{ criterios: { id: string; nombre: string; pregunta: string }[]; fundamentos: Fundamento[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     api.fundamentos().then(setDatos).catch((e) => setError((e as Error).message));
@@ -152,13 +152,11 @@ export function Teoria() {
                   <p className="mt-1 text-rebar">
                     <b className="text-ink">Qué se resigna.</b> {f.tension}
                   </p>
-                  <p className="mt-2 text-[10px] text-rebar italic">{f.fuente}</p>
                 </article>
               ))}
           </div>
         </section>
       ))}
-      <p className="text-[11px] text-rebar">Fuente principal: {datos.fuente}.</p>
     </div>
   );
 }

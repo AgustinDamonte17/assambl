@@ -1,10 +1,15 @@
 # Fundamentos de diseño de la planta
 
-> Capa 03 · Casa. Código: `backend/assambl/fundamentos/`. Material de estudio: `docs/interior_fundamentals/`.
+> Capa 03 · Casa. Código: `backend/assambl/fundamentos/`. Plantas de referencia: `docs/interior_fundamentals/`.
 
 Las alternativas que propone Monti no son aleatorias: salen de **plantas de referencia** que ya funcionan y se
-evalúan con **fundamentos de diseño** tomados de la teoría de planificación de interiores. Este documento resume esa
-teoría, explica cómo la mide Assambl y qué muestra de cada una de las diez plantas de referencia.
+evalúan con los **fundamentos de diseño** de Assambl. Este documento reúne ese conocimiento, explica cómo lo mide
+Assambl y qué muestra de cada una de las diez plantas de referencia.
+
+> **Convención.** Los fundamentos son conocimiento propio de Assambl, guardado en su «memoria». Assambl no cita
+> libros, autores, normas ni páginas: le explica al usuario su razonamiento —el principio, por qué, qué midió y
+> qué se resigna— y la lógica que siguió. Vale para este documento, para la interfaz, para los textos de Monti y
+> para cualquier fundamento que se agregue en el futuro.
 
 ## Qué son y qué no son
 
@@ -22,44 +27,38 @@ vivir. Por eso:
 
 La decisión es siempre del usuario: la herramienta le muestra qué gana y qué resigna con cada partido.
 
-## Fuente
+Los umbrales en metros son orientativos y están redondeados.
 
-M. Mitton y C. Nystuen, *Residential Interior Design: A Guide to Planning Spaces*, 3.ª ed., Wiley, 2016 (citado
-**RID**, con capítulo y página del libro). El libro reúne a su vez a C. Alexander (*A Pattern Language*), O. Newman
-(espacio defendible), E. T. Hall (proxémica), S. Susanka (*The Not So Big House*) y el International Residential
-Code 2015 (IRC). Los umbrales del libro están en pies y pulgadas; acá están convertidos y redondeados, y deben
-leerse como orientativos. Las páginas se refieren al libro, no al PDF (en el PDF de estudio, página del libro + 8).
+## Ideas centrales
 
-## Ideas centrales del libro
-
-1. **Privacidad y territorio** (cap. 1). La casa ofrece una jerarquía de territorios de lo público a lo privado
-   (Newman: público, semipúblico, semiprivado, privado, con zonas colchón entre ellos). Alexander lo llama
-   *gradiente de intimidad*: entrada y estar adelante, dormitorios y baños al fondo. Si los ambientes no siguen ese
+1. **Privacidad y territorio**. La casa ofrece una jerarquía de territorios de lo público a lo privado
+   (público, semipúblico, semiprivado, privado, con zonas colchón entre ellos): un *gradiente de intimidad*, con
+   entrada y estar adelante, dormitorios y baños al fondo. Si los ambientes no siguen ese
    orden, las visitas —de extraños, de amigos o de la propia familia— siempre resultan un poco incómodas.
-2. **Calidad antes que cantidad** (cap. 1, Susanka). Una casa más chica y bien pensada rinde más que una grande con
+2. **Calidad antes que cantidad**. Una casa más chica y bien pensada rinde más que una grande con
    ambientes que no se usan. En Assambl se traduce en mirar la circulación y la superficie aprovechada.
-3. **La entrada como transición** (cap. 2). Entre la calle y el interior hace falta un lugar de llegada; si la
+3. **La entrada como transición**. Entre la calle y el interior hace falta un lugar de llegada; si la
    transición es brusca no hay sensación de llegar. El recibidor ocupa entre 2,5 % y 5 % de la casa, idealmente es
    tan ancho como profundo, está a resguardo del viento dominante, cerca del estar y del toilette, y tiene placar.
    El garage y el lavadero-mudroom funcionan como colchón en la entrada de servicio.
-4. **La circulación no produce** (cap. 2). Los pasillos son superficie que se paga y no se vive: conviene
+4. **La circulación no produce**. Los pasillos son superficie que se paga y no se vive: conviene
    minimizarlos. Un pasillo con puertas a ambos lados (doble carga) sirve el doble que uno con puertas de un solo
    lado. Pasillos de 0,90 m como mínimo, mejor 1,05–1,20 m; puertas de 0,90 m; 1,50 m de giro para silla de ruedas.
-5. **El estar se organiza en grupos de conversación** (cap. 3): de hasta seis personas, en un círculo de unos 3,7–4 m.
+5. **El estar se organiza en grupos de conversación**: de hasta seis personas, en un círculo de unos 3,7–4 m.
    El tránsito no debe cruzar el grupo; el paso de punta a punta de un ambiente rectangular es el que más limita
    cómo se lo amuebla.
-6. **La cocina es el centro** (cap. 4): abierta al comedor, con el triángulo de trabajo (heladera, pileta, cocina)
+6. **La cocina es el centro**: abierta al comedor, con el triángulo de trabajo (heladera, pileta, cocina)
    fuera del paso, cerca de una entrada de servicio y del lavadero.
-7. **Dormitorios** (cap. 5): ubicados según la circulación de la familia y el ruido; 12–13,5 m² casi cuadrados para
+7. **Dormitorios**: ubicados según la circulación de la familia y el ruido; 12–13,5 m² casi cuadrados para
    una cama de dos plazas con muebles en dos paredes, 14 m² o más para tres; placar cerca de la puerta; la posición
    de la puerta respecto de las ventanas define cómo se amuebla. Planta *dividida* (principal lejos de los demás)
    o *agrupada*: ninguna es mejor, depende de la familia.
-8. **Baños** (cap. 6): menos y mejores, compartimentados; muros húmedos compartidos; mejor no en muros exteriores
+8. **Baños**: menos y mejores, compartimentados; muros húmedos compartidos; mejor no en muros exteriores
    en climas fríos; que la puerta no mire al inodoro; baño completo mínimo 1,50 × 2,25 m, toilette 1,3–1,7 m².
-9. **Programa, diagramas y superficie** (cap. 8): del programa a un diagrama de burbujas (adyacencias), después a un
+9. **Programa, diagramas y superficie**: del programa a un diagrama de burbujas (adyacencias), después a un
    diagrama de bloques orientado al sitio y recién ahí a la planta. Lo programado es el 80–85 % de la superficie
    bruta; el resto son muros y circulación (Assambl usa 82 % en `ia/guion.py`).
-10. **Evaluar varias soluciones distintas** (cap. 10): generar partidos bien diferentes y compararlos contra los
+10. **Evaluar varias soluciones distintas**: generar partidos bien diferentes y compararlos contra los
     requisitos, en lugar de pulir la primera idea. El entramado es el 45–55 % del costo de la obra y mover
     cañerías es de lo más caro: la compacidad y el núcleo húmedo pesan en la economía.
 
@@ -69,30 +68,30 @@ Agrupados en seis criterios. La implementación está en `fundamentos/evaluar.py
 (`fundamentos/grafo.py`): qué ambiente linda con cuál, si entre ellos hay muro, puerta o nada, qué fachadas tiene
 cada uno, por dónde se entra y cómo se llega de un ambiente a otro.
 
-| Criterio | Id | Fundamento | Qué mide | Referencia | Fuente |
-|---|---|---|---|---|---|
-| Privacidad y zonas | F01 | Gradiente de intimidad | A qué ambiente se abre cada dormitorio | Pasillo o recibidor, no el estar | RID 1, pp. 2–4 |
-| | F02 | Dormitorios lejos del ruido | Muro compartido entre dormitorios y estar o cocina | Menos de 15 % del perímetro | RID 5, p. 126 |
-| | F03 | Entrada como transición | A qué ambiente da la puerta de acceso | Un recibidor | RID 2, pp. 29–31 |
-| | F06 | Baño para las visitas | Recorrido de la entrada a un baño sin cruzar dormitorios | Que exista | RID 1, p. 7; 2, p. 31 |
-| Recorridos | F04 | Circulación justa | Pasillos y recibidores / superficie útil | ≤ 10 % muy eficiente; > 18 % mucho | RID 2, p. 42 |
-| | F16 | Anchos para todos | Pasillo más angosto y puerta interior más angosta | ≥ 1,05 m y ≥ 0,80 m | RID 2, pp. 38–46 |
-| Luz y sol | F08 | Luz natural suficiente | Vidrio / superficie de cada ambiente habitable | ≥ 8 % (IRC), ideal 10 % | RID 1, p. 17; 3, p. 62 |
-| | F09 | Orientación al sol | Ventanas del estar (doble peso) y dormitorios hacia el sol | Norte en el hemisferio sur | RID 9, p. 229 |
-| Ambientes cómodos | F10 | Estar para reunirse | Lado menor del estar y puertas que desembocan | ≥ 3,6 m; ≤ 4 accesos | RID 3, pp. 52–59 |
-| | F07 | Dormitorios con lugar para amoblar | Superficie, lado menor y proporción | Principal ≥ 12 m² y 3 m; otros ≥ 9 m² y 2,7 m | RID 5, pp. 126–136 |
-| | F11 | Cocina conectada | Abierta o comunicada con el comedor; junto a lavadero, garage o salida | Las dos cosas | RID 4, pp. 66–71; 7, p. 188 |
-| Instalaciones agrupadas | F05 | Núcleo húmedo | Grupos de ambientes con agua que se tocan | Un solo grupo | RID 6, pp. 176–178; 10, p. 241 |
-| Economía de obra | F12 | Compacidad | Perímetro / perímetro del cuadrado de igual área; esquinas | ≤ 1,08 | RID 10, p. 243 |
-| | F13 | Superficie que se aprovecha | Ambientes / superficie cubierta | 80–85 % | RID 8, p. 203 |
+| Criterio | Id | Fundamento | Qué mide | Orientativo |
+|---|---|---|---|---|
+| Privacidad y zonas | F01 | Gradiente de intimidad | A qué ambiente se abre cada dormitorio | Pasillo o recibidor, no el estar |
+| | F02 | Dormitorios lejos del ruido | Muro compartido entre dormitorios y estar o cocina | Menos de 15 % del perímetro |
+| | F03 | Entrada como transición | A qué ambiente da la puerta de acceso | Un recibidor |
+| | F06 | Baño para las visitas | Recorrido de la entrada a un baño sin cruzar dormitorios | Que exista |
+| Recorridos | F04 | Circulación justa | Pasillos y recibidores / superficie útil | ≤ 10 % muy eficiente; > 18 % mucho |
+| | F16 | Anchos para todos | Pasillo más angosto y puerta interior más angosta | ≥ 1,05 m y ≥ 0,80 m |
+| Luz y sol | F08 | Luz natural suficiente | Vidrio / superficie de cada ambiente habitable | ≥ 8 %, ideal 10 % |
+| | F09 | Orientación al sol | Ventanas del estar (doble peso) y dormitorios hacia el sol | Norte en el hemisferio sur |
+| Ambientes cómodos | F10 | Estar para reunirse | Lado menor del estar y puertas que desembocan | ≥ 3,6 m; ≤ 4 accesos |
+| | F07 | Dormitorios con lugar para amoblar | Superficie, lado menor y proporción | Principal ≥ 12 m² y 3 m; otros ≥ 9 m² y 2,7 m |
+| | F11 | Cocina conectada | Abierta o comunicada con el comedor; junto a lavadero, garage o salida | Las dos cosas |
+| Instalaciones agrupadas | F05 | Núcleo húmedo | Grupos de ambientes con agua que se tocan | Un solo grupo |
+| Economía de obra | F12 | Compacidad | Perímetro / perímetro del cuadrado de igual área; esquinas | ≤ 1,08 |
+| | F13 | Superficie que se aprovecha | Ambientes / superficie cubierta | 80–85 % |
 
-Cada fundamento lleva en el código su principio, el porqué, lo que mide, la tensión con otros y la fuente; la API
+Cada fundamento lleva en el código su principio, el porqué, lo que mide y la tensión con otros; la API
 los expone en `GET /api/casa/fundamentos` y la pestaña *Fundamentos de diseño* los muestra al usuario.
 
 Cuando una planta tiene ambientes sin contorno (el estar de Angus Ranch es «lo que queda»), no se sabe por dónde se
 circula: la evaluación lo avisa y omite los fundamentos que dependen de eso.
 
-### Del libro, todavía no medidos
+### Todavía no medidos
 
 Quedan para cuando el editor tenga muebles e instalaciones (capas 12 y 13): el triángulo de trabajo de la cocina
 (lados de 1,2 a 2,7 m, total 3,6 a 7,9 m), los grupos de conversación con muebles reales, las distancias de paso
@@ -163,7 +162,7 @@ de fundamentos en su prompt (`ia/asistente.py`) para explicar las opciones con e
 
 - **Formas de empezar → Partí de una casa que funciona**: la galería de las diez plantas (dibujo original y versión
   Assambl), con sus rasgos, su evaluación y un botón para empezar desde cualquiera. Otra pestaña muestra los
-  fundamentos completos con su fuente.
+  fundamentos completos con su razonamiento.
 - **Alternativas**: cada tarjeta suma el origen, las barras de los seis criterios, lo más destacado a favor y a
   considerar, qué se adaptó y todas las observaciones.
 - **Editor**: la sección *Fundamentos de diseño* se recalcula con cada cambio (`POST /api/casa/analizar`); al pasar
