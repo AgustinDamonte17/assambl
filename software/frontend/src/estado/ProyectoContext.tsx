@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from "react";
+import type { Casa } from "../modelo/casa";
 import { area, lados as calcularLados, perimetro } from "../modelo/geometria";
 import {
   ahora,
@@ -28,7 +29,8 @@ type Accion =
   | { tipo: "retiros"; retiros: Retiros }
   | { tipo: "sol_fecha"; fecha: string }
   | { tipo: "sol_hora"; hora: number }
-  | { tipo: "sol_huso"; huso_h: number | null };
+  | { tipo: "sol_huso"; huso_h: number | null }
+  | { tipo: "casa"; casa: Casa | null };
 
 function tocar(p: Proyecto): Proyecto {
   return { ...p, modificado: ahora() };
@@ -118,6 +120,8 @@ function reducir(p: Proyecto, a: Accion): Proyecto {
       return tocar({ ...p, terreno: { ...p.terreno, hora_sol: a.hora } });
     case "sol_huso":
       return tocar({ ...p, terreno: { ...p.terreno, huso_h: a.huso_h } });
+    case "casa":
+      return tocar({ ...p, casa: a.casa });
   }
 }
 

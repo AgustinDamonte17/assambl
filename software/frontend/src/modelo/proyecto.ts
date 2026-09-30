@@ -1,5 +1,7 @@
 /** Espejo TypeScript del esquema casa.assambl.json (backend/assambl/modelo/proyecto.py). */
 
+import type { Casa } from "./casa";
+
 export const ESQUEMA_ACTUAL = "assambl/proyecto@0.2";
 
 export type Estado =
@@ -88,6 +90,8 @@ export interface Proyecto {
   creado: string;
   modificado: string;
   terreno: Terreno;
+  /** Capa 03: la planta de la casa. Ausente hasta que el usuario empieza a diseñarla. */
+  casa?: Casa | null;
 }
 
 /* Datos del sitio (caché regenerable, backend/assambl/modelo/sitio.py) */
