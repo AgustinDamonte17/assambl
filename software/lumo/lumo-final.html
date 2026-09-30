@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lumo · Versión final</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111111;--concrete:#E8E6E1;--signal:#FF4F1F;--rebar:#7A7A78;--line:#262626;--lumo-c:#6C4DFF}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--concrete);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body.dark{background:var(--ink);color:#EDEDEB}
+.eyebrow{font:500 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--rebar)}
+.mono{font-family:'IBM Plex Mono',monospace}
+code{font-family:'IBM Plex Mono',monospace;font-size:.92em}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 32px 64px}
+@media(max-width:760px){.wrap{padding:20px 16px 48px}}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+h1{font:400 48px/1 'Archivo Black',sans-serif;margin-top:8px}
+h1 span{color:var(--signal)}
+h2{font:400 26px/1.1 'Archivo Black',sans-serif;margin:6px 0 6px}
+.lede{font-size:14px;line-height:1.55;opacity:.8;max-width:620px;margin-top:8px}
+.seg{display:inline-flex;border:1px solid currentColor;border-radius:8px;overflow:hidden}
+.seg button{background:none;border:0;color:inherit;font:500 12px 'IBM Plex Mono',monospace;padding:7px 11px;cursor:pointer}
+.seg button.on{background:currentColor}
+.seg button.on span{color:var(--concrete)}
+body.dark .seg button.on span{color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0;margin-top:24px;border-radius:16px;overflow:hidden;border:1px solid rgba(17,17,17,.12)}
+body.dark .hero{border-color:#262626}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.stage{background:var(--concrete);color:var(--ink);padding:18px;display:flex;flex-direction:column;min-height:520px}
+body.dark .stage{background:#0b0b0b;color:#EDEDEB}
+.stage .big{flex:1;display:flex;align-items:center;justify-content:center}
+.stage .big .lumo{width:min(340px,70vw);height:auto}
+.statebar{display:flex;flex-wrap:wrap;gap:6px}
+.statebar button{border:1px solid currentColor;background:none;color:inherit;border-radius:999px;padding:6px 11px;font:500 12px 'IBM Plex Mono',monospace;cursor:pointer;opacity:.7}
+.statebar button.on{opacity:1;background:var(--lumo-c);border-color:var(--lumo-c);color:#fff}
+.spec{background:var(--ink);color:#EDEDEB;padding:26px 28px 28px}
+.spec .eyebrow{color:#9a9a97}
+.spec h3{font:600 28px/1.1 Inter,sans-serif;margin:6px 0 6px}
+.spec p{font-size:14px;line-height:1.55;color:#bdbdb9}
+.sec{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
+.anat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.anat div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}
+.anat b{display:block;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a97;margin-bottom:4px}
+.pal{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.sw{border-radius:8px;height:74px;padding:8px;display:flex;flex-direction:column;justify-content:flex-end;font:500 11px/1.35 'IBM Plex Mono',monospace;border:1px solid var(--line)}
+.scales{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.scale{flex:1;min-width:220px;border-radius:10px;padding:12px;display:flex;gap:16px;align-items:flex-end;border:1px solid var(--line)}
+.scale.cc{background:var(--concrete);color:var(--ink)}.scale.ik{background:#0b0b0b}
+.scale figure{display:flex;flex-direction:column;align-items:center;gap:4px}
+.scale figcaption{font:500 10px 'IBM Plex Mono',monospace;color:var(--rebar)}
+.metric{display:flex;justify-content:space-between;font-size:13px;border-bottom:1px dashed #2c2c2c;padding:6px 0}
+.metric .v{font-family:'IBM Plex Mono',monospace;color:#7ee2a8}
+
+/* grid de animaciones */
+.anims{margin-top:48px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:18px}
+.card{border:1px solid rgba(17,17,17,.14);border-radius:14px;padding:12px 14px 14px;display:flex;flex-direction:column;cursor:pointer;background:none;color:inherit;text-align:left;font:inherit;transition:transform .15s,border-color .15s}
+body.dark .card{border-color:#262626}
+.card:hover{transform:translateY(-2px);border-color:var(--lumo-c)}
+.card .st{height:170px;display:flex;align-items:center;justify-content:center}
+.card .st .lumo{width:150px;height:150px}
+.card .top{display:flex;justify-content:space-between;align-items:center}
+.card .n{font:500 11px 'IBM Plex Mono',monospace;color:var(--rebar)}
+.card .tag{font:500 11px 'IBM Plex Mono',monospace;background:rgba(108,77,255,.12);color:var(--lumo-c);padding:2px 7px;border-radius:5px}
+body.dark .card .tag{background:rgba(108,77,255,.22);color:#B7A8FF}
+.card h4{font-size:16px;font-weight:600;margin-top:2px}
+.card .when{font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--rebar);margin-top:8px}
+.card p{font-size:13px;line-height:1.45;opacity:.85;margin-top:3px}
+
+/* demo chat */
+.demo{margin-top:48px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.demo{grid-template-columns:1fr}}
+.chat{background:#0b0b0b;color:#EDEDEB;border:1px solid var(--line);border-radius:14px;padding:16px;min-height:300px}
+.chat .logo{font:400 18px 'Archivo Black',sans-serif}.chat .logo span{color:var(--signal)}
+.row{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
+.row.me{justify-content:flex-end}
+.bub{max-width:80%;border-radius:12px;padding:9px 12px;font-size:13px;line-height:1.45}
+.me .bub{background:#1d1d1d;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.me .bub .arg{color:var(--signal)}
+.lu .bub{border:1.5px solid var(--lumo-c)}
+.status{display:flex;gap:10px;align-items:center;margin-top:14px;font:500 11px 'IBM Plex Mono',monospace;color:#9a9a97;letter-spacing:.08em;text-transform:uppercase}
+.status .dot{width:7px;height:7px;border-radius:50%;background:var(--lumo-c)}
+.fade{animation:fin .35s ease-out}
+@keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.flow{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.flow div{display:flex;gap:10px;align-items:center;font-size:13px;padding:7px 10px;border-radius:8px;border:1px solid transparent;opacity:.55;transition:all .2s}
+.flow div.on{opacity:1;border-color:var(--lumo-c)}
+.flow code{min-width:74px}
+
+/* código */
+.code{margin-top:48px}
+pre{background:#0b0b0b;color:#dcdcd8;border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;font:12px/1.6 'IBM Plex Mono',monospace;margin-top:12px;position:relative}
+pre .k{color:#B7A8FF}pre .s{color:#ffb38f}pre .c{color:#6f6f6c}
+.copy{position:absolute;top:10px;right:10px;background:#1d1d1d;color:#eee;border:1px solid #333;border-radius:6px;font:500 11px 'IBM Plex Mono',monospace;padding:5px 9px;cursor:pointer}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.files div{border:1px solid rgba(17,17,17,.14);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}
+body.dark .files div{border-color:#262626}
+.files b{font-family:'IBM Plex Mono',monospace;font-weight:500;display:block;margin-bottom:2px}
+
+/* ===== lumo.css ===== */
+/* ==========================================================
+   LUMO · Mascota IA de Assambl · v1.0
+   Estados: idle | wave | listen | think | build | reply |
+            success | oops | sleep | curious
+   Uso: <svg class="lumo" data-state="think">…</svg>
+   ========================================================== */
+
+.lumo { --lumo: #6C4DFF; --lumo-ink: #111111; --lumo-signal: #FF4F1F; overflow: visible; display: block; }
+
+/* Pivotes: cada grupo transforma sobre su propia caja */
+.lumo .lumo-rig,
+.lumo .lumo-eye,
+.lumo .lumo-look,
+.lumo .lumo-shadow,
+.lumo [class^="lumo-fx"] * { transform-box: fill-box; }
+.lumo .lumo-rig    { transform-origin: 50% 100%; }   /* base de la llama */
+.lumo .lumo-eye    { transform-origin: 50% 50%; }
+.lumo .lumo-look   { transform-origin: 50% 50%; }
+.lumo .lumo-shadow { transform-origin: 50% 50%; }
+.lumo [class^="lumo-fx"] * { transform-origin: 50% 50%; }
+.lumo .lumo-look,
+.lumo .lumo-rig    { transition: transform .25s ease-out, filter .4s; }
+
+/* Efectos ocultos por defecto */
+.lumo [class^="lumo-fx"] { opacity: 0; transition: opacity .2s; }
+
+/* ---------- 01 · Reposo (idle) ---------- */
+.lumo[data-state="idle"] .lumo-rig { animation: lumo-breathe 3.2s ease-in-out infinite; }
+.lumo[data-state="idle"] .lumo-eye { animation: lumo-blink 5s infinite; }
+
+/* ---------- 02 · Saludo (wave) ---------- */
+.lumo[data-state="wave"] .lumo-rig    { animation: lumo-hop 2s ease-in-out infinite; }
+.lumo[data-state="wave"] .lumo-eye-r  { animation: lumo-wink 2s infinite; }
+.lumo[data-state="wave"] .lumo-shadow { animation: lumo-shadow-hop 2s ease-in-out infinite; }
+
+/* ---------- 03 · Escuchando (listen) ---------- */
+.lumo[data-state="listen"] .lumo-rig  { animation: lumo-lean 3s ease-in-out infinite; }
+.lumo[data-state="listen"] .lumo-look { transform: translate(-4px, 1px); }
+.lumo[data-state="listen"] .lumo-eye  { animation: lumo-blink 4s infinite; }
+.lumo[data-state="listen"] .lumo-fx-rings { opacity: 1; }
+.lumo[data-state="listen"] .lumo-fx-rings circle { animation: lumo-ring 2s ease-out infinite; }
+.lumo[data-state="listen"] .lumo-fx-rings circle:nth-child(2) { animation-delay: 1s; }
+
+/* ---------- 04 · Pensando (think) ---------- */
+.lumo[data-state="think"] .lumo-rig  { animation: lumo-sway 4s ease-in-out infinite; }
+.lumo[data-state="think"] .lumo-look { animation: lumo-ponder 4s ease-in-out infinite; }
+.lumo[data-state="think"] .lumo-fx-sparks { opacity: 1; }
+.lumo[data-state="think"] .lumo-fx-sparks circle { animation: lumo-rise 2.1s ease-out infinite; }
+.lumo[data-state="think"] .lumo-fx-sparks circle:nth-child(2) { animation-delay: .7s; }
+.lumo[data-state="think"] .lumo-fx-sparks circle:nth-child(3) { animation-delay: 1.4s; }
+
+/* ---------- 05 · Ensamblando (build) ---------- */
+.lumo[data-state="build"] .lumo-rig  { animation: lumo-nod 2.4s ease-in-out infinite; }
+.lumo[data-state="build"] .lumo-look { transform: translate(5px, 3px); }
+.lumo[data-state="build"] .lumo-fx-blocks { opacity: 1; }
+.lumo[data-state="build"] .lumo-fx-blocks rect { animation: lumo-drop 2.4s cubic-bezier(.5,0,.7,1.4) infinite both; }
+.lumo[data-state="build"] .lumo-fx-blocks rect:nth-child(2) { animation-delay: .35s; }
+.lumo[data-state="build"] .lumo-fx-blocks rect:nth-child(3) { animation-delay: .7s; }
+
+/* ---------- 06 · Respondiendo (reply) ---------- */
+.lumo[data-state="reply"] .lumo-rig { animation: lumo-talk .45s ease-in-out infinite alternate; }
+.lumo[data-state="reply"] .lumo-eye { animation: lumo-blink 3.5s infinite; }
+.lumo[data-state="reply"] .lumo-fx-dots { opacity: 1; }
+.lumo[data-state="reply"] .lumo-fx-dots circle { animation: lumo-dot 1.2s ease-in-out infinite; }
+.lumo[data-state="reply"] .lumo-fx-dots circle:nth-child(2) { animation-delay: .2s; }
+.lumo[data-state="reply"] .lumo-fx-dots circle:nth-child(3) { animation-delay: .4s; }
+
+/* ---------- 07 · Éxito (success) ---------- */
+.lumo[data-state="success"] .lumo-rig    { animation: lumo-jump 1.6s ease-in-out infinite; }
+.lumo[data-state="success"] .lumo-eye    { animation: lumo-squint 1.6s ease-in-out infinite; }
+.lumo[data-state="success"] .lumo-shadow { animation: lumo-shadow-jump 1.6s ease-in-out infinite; }
+.lumo[data-state="success"] .lumo-fx-sparks { opacity: 1; }
+.lumo[data-state="success"] .lumo-fx-sparks circle { animation: lumo-burst 1.6s ease-out infinite; }
+
+/* ---------- 08 · Ups (oops) ---------- */
+.lumo[data-state="oops"] .lumo-rig  { animation: lumo-shake 2.2s ease-in-out infinite; }
+.lumo[data-state="oops"] .lumo-look { transform: translate(0, 2px) scale(.85); }
+.lumo[data-state="oops"] .lumo-fx-sweat { opacity: 1; }
+.lumo[data-state="oops"] .lumo-fx-sweat path { animation: lumo-sweat 2.2s ease-in infinite; }
+
+/* ---------- 09 · Durmiendo (sleep) ---------- */
+.lumo[data-state="sleep"] .lumo-rig  { animation: lumo-breathe 4.5s ease-in-out infinite; filter: saturate(.35) brightness(.95); }
+.lumo[data-state="sleep"] .lumo-look { transform: translate(0, 3px); }
+.lumo[data-state="sleep"] .lumo-eye  { transform: scaleY(.12); }
+.lumo[data-state="sleep"] .lumo-fx-zz { opacity: 1; }
+.lumo[data-state="sleep"] .lumo-fx-zz text { animation: lumo-zz 3s ease-out infinite; }
+.lumo[data-state="sleep"] .lumo-fx-zz text:nth-child(2) { animation-delay: 1.5s; }
+
+/* ---------- 10 · Curioso (curious) — mirada y rig los mueve JS ---------- */
+.lumo[data-state="curious"] .lumo-eye { animation: lumo-blink 4.5s infinite; }
+
+/* ---------- Keyframes ---------- */
+@keyframes lumo-breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.025,.975); } }
+@keyframes lumo-blink   { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes lumo-wink    { 0%,8%,38%,100% { transform: scaleY(1); } 12%,32% { transform: scaleY(.1); } }
+@keyframes lumo-hop {
+  0%,55%,100% { transform: translateY(0) rotate(0); }
+  10% { transform: translateY(-14px) rotate(-6deg); }
+  20% { transform: translateY(0) rotate(0) scale(1.04,.96); }
+  30% { transform: translateY(-14px) rotate(6deg); }
+  40% { transform: translateY(0) rotate(0) scale(1.04,.96); }
+}
+@keyframes lumo-shadow-hop { 0%,55%,100% { transform: scaleX(1); opacity: 1; } 10%,30% { transform: scaleX(.75); opacity: .6; } }
+@keyframes lumo-lean   { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(-7deg) scale(1.015); } }
+@keyframes lumo-ring   { 0% { opacity: .55; transform: scale(.72); } 100% { opacity: 0; transform: scale(1.2); } }
+@keyframes lumo-sway   { 0%,100% { transform: skewX(-3deg); } 50% { transform: skewX(3deg) scale(1,1.02); } }
+@keyframes lumo-ponder { 0%,100% { transform: translate(4px,-5px); } 50% { transform: translate(-3px,-6px); } }
+@keyframes lumo-rise   { 0% { opacity: 0; transform: translateY(8px) scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-28px) scale(1); } }
+@keyframes lumo-nod    { 0%,100% { transform: scale(1,1); } 15%,30%,45% { transform: scale(1.02,.98); } }
+@keyframes lumo-drop   { 0% { opacity: 0; transform: translateY(-56px); } 18% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(0); } }
+@keyframes lumo-talk   { from { transform: translateY(0) scale(1,1); } to { transform: translateY(-3px) scale(.99,1.02); } }
+@keyframes lumo-dot    { 0%,100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-5px); } }
+@keyframes lumo-jump {
+  0%,75%,100% { transform: translateY(0) scale(1,1); }
+  12% { transform: translateY(0) scale(1.12,.86); }
+  32% { transform: translateY(-34px) scale(.93,1.08); }
+  50% { transform: translateY(0) scale(1.1,.9); }
+  62% { transform: translateY(0) scale(.98,1.02); }
+}
+@keyframes lumo-shadow-jump { 0%,12%,50%,100% { transform: scaleX(1); opacity: 1; } 32% { transform: scaleX(.6); opacity: .5; } }
+@keyframes lumo-squint { 0%,20%,60%,100% { transform: scaleY(1); } 30%,45% { transform: scaleY(.45); } }
+@keyframes lumo-burst  { 0%,28% { opacity: 0; transform: translate(0,0) scale(.4); } 38% { opacity: 1; } 75%,100% { opacity: 0; transform: translate(var(--tx),var(--ty)) scale(1.1); } }
+@keyframes lumo-shake {
+  0%,40%,100% { transform: translateX(0) rotate(0); }
+  5% { transform: translateX(-6px) rotate(-3deg); } 10% { transform: translateX(6px) rotate(3deg); }
+  15% { transform: translateX(-4px) rotate(-2deg); } 20% { transform: translateX(3px) rotate(1deg); }
+  25% { transform: translateX(0) scale(.97,1.02); }
+}
+@keyframes lumo-sweat { 0%,10% { opacity: 0; transform: translateY(-4px); } 25% { opacity: 1; } 80% { opacity: 1; transform: translateY(14px); } 100% { opacity: 0; transform: translateY(18px); } }
+@keyframes lumo-zz     { 0% { opacity: 0; transform: translate(0,6px) scale(.7); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(14px,-26px) scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lumo *, .lumo [class^="lumo-fx"] * { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Assambl · Mascota IA · v1.0 · Versión final</div>
+      <h1>LUMO<span>()</span></h1>
+      <p class="lede">La forma de <b>07 Prompt</b> con la sonrisa fija de <b>10 Geo</b>. Una llama índigo que vive dentro de <code>assambl(intent)</code>.</p>
+    </div>
+    <div style="display:flex;gap:14px;align-items:center">
+      <span class="eyebrow">Fondo</span>
+      <div class="seg" id="bgSeg"><button class="on" data-bg="light"><span>Concrete</span></button><button data-bg="dark"><span>Ink</span></button></div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="stage">
+      <div class="statebar" id="statebar"></div>
+      <div class="big" id="bigStage"></div>
+      <div class="eyebrow" id="stateCaption"></div>
+    </div>
+    <div class="spec">
+      <div class="eyebrow">L07 · Familia Lumo · Final</div>
+      <h3>Lumo</h3>
+      <p>Llama asimétrica con el mechón inclinado hacia adelante, como si estuviera por decir algo. Ojos ovalados con brillo y una sonrisa fija, simple y siempre amable.</p>
+
+      <div class="sec"><div class="eyebrow">Anatomía</div>
+        <div class="anat">
+          <div><b>Cuerpo</b>Silueta de 07 Prompt: mechón a la derecha, lengüeta a la izquierda.</div>
+          <div><b>Ojos</b>Óvalos 7×10 en Ink con brillo blanco arriba a la derecha.</div>
+          <div><b>Sonrisa</b>Curva de 10 Geo, trazo 4.5 redondeado. Fija en todos los estados.</div>
+          <div><b>Efectos</b>Chispas, ondas, puntos y zzz en índigo. Bloques en Signal.</div>
+        </div>
+      </div>
+
+      <div class="sec"><div class="eyebrow">Paleta</div>
+        <div class="pal">
+          <div class="sw" style="background:#6C4DFF;color:#fff">#6C4DFF<br>Lumo</div>
+          <div class="sw" style="background:#111;color:#eee">#111111<br>Ojos / sonrisa</div>
+          <div class="sw" style="background:#fff;color:#111">#FFFFFF<br>Brillo</div>
+          <div class="sw" style="background:#FF4F1F;color:#111">#FF4F1F<br>Bloques build</div>
+        </div>
+        <div class="metric"><span>Contraste vs Ink</span><span class="v" id="m1"></span></div>
+        <div class="metric"><span>Contraste vs Concrete</span><span class="v" id="m2"></span></div>
+        <div class="metric"><span>Tono vs Signal</span><span class="v" id="m3"></span></div>
+      </div>
+
+      <div class="sec"><div class="eyebrow">Escala</div>
+        <div class="scales" id="scales"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="anims">
+    <div class="eyebrow">10 animaciones · <span class="mono">data-state</span></div>
+    <h2>Lo que puede hacer Lumo</h2>
+    <p class="lede">Cada estado es una clase CSS sobre el mismo SVG: no hay que cambiar el dibujo, sólo el atributo <code>data-state</code>. Hacé clic en una tarjeta para verla en grande.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="demo">
+    <div>
+      <div class="eyebrow">En contexto</div>
+      <h2>Un pedido de punta a punta</h2>
+      <p class="lede">Así se encadenan los estados durante una generación real. La secuencia corre sola.</p>
+      <div class="flow" id="flow"></div>
+    </div>
+    <div class="chat" id="chat"></div>
+  </section>
+
+  <section class="code">
+    <div class="eyebrow">Código</div>
+    <h2>Llevarlo a Assambl</h2>
+    <div class="files">
+      <div><b>Lumo.tsx</b>Componente React con prop <code>state</code>, <code>size</code> y <code>color</code>. Incluye el objeto <code>LUMO</code> con paths, colores y medidas.</div>
+      <div><b>lumo.css</b>Los 10 estados y sus keyframes. Respeta <code>prefers-reduced-motion</code>.</div>
+      <div><b>lumo.svg</b>Marca estática, recorte cuadrado. Para favicon, avatar o exportar a PNG.</div>
+    </div>
+<pre id="usage"><button class="copy" data-copy="usage">Copiar</button><span class="k">import</span> { Lumo } <span class="k">from</span> <span class="s">"./Lumo"</span>;
+
+<span class="c">// reposo en el header</span>
+&lt;Lumo size={32} /&gt;
+
+<span class="c">// avatar del chat, sigue el ciclo de la respuesta</span>
+&lt;Lumo state={isTyping ? <span class="s">"listen"</span> : phase} size={40} /&gt;
+<span class="c">// phase: "think" → "build" → "reply" → "success" | "oops"</span></pre>
+  </section>
+</div>
+
+<script>
+const INK='#111111',CONCRETE='#E8E6E1',SIGNAL='#FF4F1F',LUMO='#6C4DFF';
+const BODY='M112 16 C104 50 150 84 160 128 C170 172 140 205 100 205 C60 205 36 176 40 140 C44 104 76 88 86 66 C90 84 100 92 106 94 C100 70 100 40 112 16 Z';
+const SWEAT='M150 60 C153 67 156 70 156 74 C156 77.5 153.3 80 150 80 C146.7 80 144 77.5 144 74 C144 70 147 67 150 60 Z';
+
+function lumoSVG(state='idle',size=150,opts={}){
+  const vb=opts.mark?'2 12 196 196':'-20 -10 240 240';
+  const fx=opts.mark?'':`
+    <g class="lumo-fx-rings" style="fill:none;stroke:var(--lumo);stroke-width:3"><circle cx="100" cy="120" r="92"/><circle cx="100" cy="120" r="92"/></g>
+    <ellipse class="lumo-shadow" cx="100" cy="213" rx="52" ry="6" style="fill:currentColor;fill-opacity:.14"/>
+    <g class="lumo-fx-blocks" style="fill:var(--lumo-signal)"><rect x="172" y="191" width="14" height="14" rx="1.5"/><rect x="172" y="175" width="14" height="14" rx="1.5"/><rect x="172" y="159" width="14" height="14" rx="1.5"/></g>
+    <g class="lumo-fx-dots" style="fill:var(--lumo)"><circle cx="178" cy="112" r="4.5"/><circle cx="191" cy="112" r="4.5"/><circle cx="204" cy="112" r="4.5"/></g>
+    <g class="lumo-fx-zz" style="fill:var(--lumo);font-family:'Archivo Black','Arial Black',sans-serif"><text x="150" y="54" font-size="20">z</text><text x="150" y="54" font-size="15">z</text></g>`;
+  const fxTop=opts.mark?'':`
+    <g class="lumo-fx-sparks" style="fill:var(--lumo)"><circle cx="112" cy="6" r="4" style="--tx:0px;--ty:-26px"/><circle cx="128" cy="16" r="3" style="--tx:24px;--ty:-12px"/><circle cx="96" cy="18" r="3" style="--tx:-24px;--ty:-10px"/></g>
+    <g class="lumo-fx-sweat"><path d="${SWEAT}" style="fill:#CFE3FF;stroke:var(--lumo);stroke-width:2"/></g>`;
+  return `<svg class="lumo" data-state="${state}" viewBox="${vb}" width="${size}" height="${size}" role="img" aria-label="Lumo">${fx}
+    <g class="lumo-rig">
+      <path class="lumo-body" d="${BODY}" style="fill:var(--lumo)"/>
+      <g class="lumo-face">
+        <g class="lumo-look">
+          <g class="lumo-eye lumo-eye-l"><ellipse cx="86" cy="136" rx="7" ry="10" style="fill:var(--lumo-ink)"/><circle cx="88" cy="131" r="2.6" style="fill:#fff"/></g>
+          <g class="lumo-eye lumo-eye-r"><ellipse cx="120" cy="136" rx="7" ry="10" style="fill:var(--lumo-ink)"/><circle cx="122" cy="131" r="2.6" style="fill:#fff"/></g>
+        </g>
+        <path class="lumo-mouth" d="M93 154 Q103 162 113 154" style="fill:none;stroke:var(--lumo-ink);stroke-width:4.5;stroke-linecap:round"/>
+      </g>
+    </g>${fxTop}
+  </svg>`;
+}
+
+const STATES=[
+ {id:'idle',n:'Reposo',when:'Por defecto',d:'Respira y parpadea. Chat abierto sin actividad, header, empty states.'},
+ {id:'wave',n:'Saludo',when:'Bienvenida',d:'Dos saltitos y un guiño. Al abrir Assambl, primer uso o al iniciar sesión.'},
+ {id:'listen',n:'Escuchando',when:'Usuario escribe',d:'Se inclina hacia el input con ondas suaves. Mientras se escribe o dicta la intención.'},
+ {id:'think',n:'Pensando',when:'Procesando',d:'Se balancea, mira hacia arriba y suelta chispas. Entre el envío y la primera respuesta.'},
+ {id:'build',n:'Ensamblando',when:'Generando',d:'Bloques Signal caen y se apilan a su lado: es assambl() en acción mientras arma el edificio.'},
+ {id:'reply',n:'Respondiendo',when:'Streaming',d:'Rebote corto con puntos de escritura mientras llega el texto.'},
+ {id:'success',n:'Éxito',when:'Listo',d:'Salto con squash & stretch y estallido de chispas. Generación terminada o proyecto guardado.'},
+ {id:'oops',n:'Ups',when:'Error recuperable',d:'Sacudida y gotita de sudor, sin dramatismo. Falta un dato o algo falló y se puede reintentar.'},
+ {id:'sleep',n:'Durmiendo',when:'Inactivo / offline',d:'Se desatura, cierra los ojos y suelta zzz. Sesión inactiva o sin conexión.'},
+ {id:'curious',n:'Curioso',when:'Hover / onboarding',d:'Sigue el cursor con la mirada y se inclina hacia él. Mové el mouse por la página.'}
+];
+
+/* ---------- hero ---------- */
+let heroState='idle';
+const statebar=document.getElementById('statebar'),big=document.getElementById('bigStage'),cap=document.getElementById('stateCaption');
+function renderHero(){
+  statebar.innerHTML=STATES.map((s,i)=>`<button data-s="${s.id}" class="${s.id===heroState?'on':''}">${String(i+1).padStart(2,'0')} ${s.n}</button>`).join('');
+  big.innerHTML=lumoSVG(heroState,340);
+  const s=STATES.find(x=>x.id===heroState);
+  cap.innerHTML=`data-state="${s.id}" · ${s.when}`;
+}
+statebar.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;heroState=b.dataset.s;renderHero()});
+
+/* ---------- specs ---------- */
+const rgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16&255,n>>8&255,n&255]};
+const lum=h=>rgb(h).map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+const cr=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+const hue=h=>{let[r,g,b]=rgb(h).map(v=>v/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(!d)return 0;let H=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;H*=60;return H<0?H+360:H};
+document.getElementById('m1').textContent=cr(LUMO,INK).toFixed(2)+':1 ✓';
+document.getElementById('m2').textContent=cr(LUMO,CONCRETE).toFixed(2)+':1 ✓';
+const hd=Math.abs(hue(LUMO)-hue(SIGNAL));document.getElementById('m3').textContent=Math.round(Math.min(hd,360-hd))+'° · opuesto';
+document.getElementById('scales').innerHTML=['cc','ik'].map(c=>`<div class="scale ${c}">${[96,48,32,24,16].map(s=>`<figure>${lumoSVG('idle',s,{mark:true})}<figcaption>${s}</figcaption></figure>`).join('')}</div>`).join('');
+
+/* ---------- grid ---------- */
+document.getElementById('grid').innerHTML=STATES.map((s,i)=>`<button class="card" data-s="${s.id}">
+  <div class="top"><span class="n">${String(i+1).padStart(2,'0')}</span><span class="tag">${s.id}</span></div>
+  <div class="st">${lumoSVG(s.id,150)}</div>
+  <h4>${s.n}</h4><div class="when">${s.when}</div><p>${s.d}</p></button>`).join('');
+document.getElementById('grid').addEventListener('click',e=>{const b=e.target.closest('.card');if(!b)return;heroState=b.dataset.s;renderHero();document.querySelector('.hero').scrollIntoView({behavior:'smooth'})});
+
+/* ---------- curious: seguir el puntero ---------- */
+window.addEventListener('pointermove',e=>{
+  document.querySelectorAll('.lumo[data-state="curious"]').forEach(svg=>{
+    const r=svg.getBoundingClientRect();
+    const cx=r.left+(123/240)*r.width, cy=r.top+(146/240)*r.height;
+    const dx=e.clientX-cx, dy=e.clientY-cy, d=Math.hypot(dx,dy)||1, k=Math.min(1,d/280);
+    const ux=dx/d*k, uy=dy/d*k;
+    svg.querySelector('.lumo-look').style.transform=`translate(${(ux*6).toFixed(2)}px,${(uy*5).toFixed(2)}px)`;
+    svg.querySelector('.lumo-rig').style.transform=`rotate(${(ux*6).toFixed(2)}deg)`;
+  });
+});
+
+/* ---------- demo ---------- */
+const SEQ=[
+ {s:'listen',t:2600,label:'El usuario escribe'},
+ {s:'think',t:2600,label:'Lumo interpreta la intención'},
+ {s:'build',t:3600,label:'assambl() arma la propuesta'},
+ {s:'reply',t:2800,label:'Lumo responde'},
+ {s:'success',t:2400,label:'Listo'}
+];
+const flow=document.getElementById('flow'),chat=document.getElementById('chat');
+flow.innerHTML=SEQ.map((x,i)=>`<div data-i="${i}"><code>${x.s}</code>${x.label}</div>`).join('');
+let step=0,timer;
+function runDemo(){
+  const x=SEQ[step];
+  flow.querySelectorAll('div').forEach((d,i)=>d.classList.toggle('on',i===step));
+  const intent='casa de 2 plantas';
+  const typed=step===0?'':`<div class="row me fade"><div class="bub">assambl(<span class="arg">${intent}</span>)</div></div>`;
+  const answer=step>=3?`<div class="row lu fade">${lumoSVG(step===4?'success':'reply',60)}<div class="bub">Listo: dos plantas, living integrado y 3 dormitorios arriba. ¿Lo ajustamos?</div></div>`:
+    `<div class="row lu">${lumoSVG(x.s,60)}<div class="status"><span class="dot"></span>${x.label}${step===0?'…':''}</div></div>`;
+  chat.innerHTML=`<div class="logo">ASSAMBL<span>()</span></div>${step===0?`<div class="row me"><div class="bub" style="opacity:.6">assambl(<span class="arg">casa de 2 pl</span>▍</div></div>`:typed}${answer}`;
+  clearTimeout(timer);timer=setTimeout(()=>{step=(step+1)%SEQ.length;runDemo()},x.t);
+}
+flow.addEventListener('click',e=>{const d=e.target.closest('[data-i]');if(!d)return;step=+d.dataset.i;runDemo()});
+
+/* ---------- fondo + copiar ---------- */
+document.getElementById('bgSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#bgSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  document.body.classList.toggle('dark',b.dataset.bg==='dark')});
+document.querySelectorAll('.copy').forEach(btn=>btn.addEventListener('click',()=>{
+  const pre=document.getElementById(btn.dataset.copy);const t=pre.innerText.replace(/^Copiar\s*/,'');
+  try{navigator.clipboard.writeText(t);btn.textContent='Copiado';setTimeout(()=>btn.textContent='Copiar',1400)}catch(e){}
+}));
+
+renderHero();runDemo();
+</script>
+</body>
+</html>
