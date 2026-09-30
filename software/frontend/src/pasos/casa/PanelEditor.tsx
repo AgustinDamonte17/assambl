@@ -15,6 +15,7 @@ import {
   type Uso,
 } from "../../modelo/casa";
 import { Boton, Dato, Etiqueta, Seccion } from "../../componentes/ui";
+import { PanelFundamentos } from "./Fundamentos";
 import type { Herramienta } from "./EditorPlanta";
 import { ASPECTO, contarDeclaradas, contarEstados, estadoDe, ORDEN_ESTADOS } from "./estados";
 import {
@@ -64,6 +65,7 @@ interface Props {
   deshacer: (() => void) | null;
   rehacer: (() => void) | null;
   resaltar: (ids: string[]) => void;
+  verTeoria: () => void;
   empezarDeNuevo: () => void;
 }
 
@@ -197,6 +199,18 @@ export default function PanelEditor(p: Props) {
             ))}
           </ul>
         )}
+      </Seccion>
+
+      <Seccion titulo="Fundamentos de diseño">
+        <PanelFundamentos
+          evaluacion={analisis?.fundamentos}
+          resaltar={p.resaltar}
+          alTocar={(o) => {
+            const pieza = o.piezas[0] ? piezaDeId(casa, o.piezas[0]) : null;
+            if (pieza) p.setSeleccion(pieza);
+          }}
+          verTeoria={p.verTeoria}
+        />
       </Seccion>
 
       <Seccion

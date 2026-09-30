@@ -3,7 +3,12 @@ import type {
   AnalisisPlanta,
   Casa,
   EstadoIA,
+  Criterio,
+  Evaluacion,
+  Fundamento,
   MensajeChat,
+  PlantaReferencia,
+  Rectangulo,
   Programa,
   RespuestaAsistente,
   RespuestaImagen,
@@ -104,6 +109,21 @@ export const api = {
       body: JSON.stringify({ imagen, notas, ancho_total_m, lat }),
     }),
 
-  analizarPlanta: (casa: Casa) =>
-    pedir<AnalisisPlanta>("/api/casa/analizar", { method: "POST", body: JSON.stringify({ casa }) }),
+  analizarPlanta: (casa: Casa, lat: number | null = null) =>
+    pedir<AnalisisPlanta>("/api/casa/analizar", { method: "POST", body: JSON.stringify({ casa, lat }) }),
+
+  fundamentos: () =>
+    pedir<{ fuente: string; criterios: Omit<Criterio, "puntaje">[]; fundamentos: Fundamento[] }>("/api/casa/fundamentos"),
+
+  referencias: () => pedir<{ plantas: PlantaReferencia[] }>("/api/casa/referencias").then((r) => r.plantas),
+
+  partirDeReferencia: (id: string, lat: number | null) =>
+    pedir<{
+      rectangulos: Rectangulo[];
+      casa: Casa;
+      advertencias: string[];
+      adaptacion: string[];
+      evaluacion: Evaluacion;
+      analisis: AnalisisPlanta;
+    }>(`/api/casa/referencias/${encodeURIComponent(id)}`, { method: "POST", body: JSON.stringify({ lat }) }),
 };

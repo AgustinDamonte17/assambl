@@ -6,7 +6,7 @@ Las diez plantas de `docs/interior_fundamentals/` están transcriptas en
 1. se eligen las que tienen los dormitorios pedidos (o uno más, que pasa a ser
    oficina o cuarto de huéspedes);
 2. se ajustan: se quita el garage o la galería si no se pidieron y se escala la
-   planta hacia la superficie objetivo, sin achicar más de 7 % ni agrandar más de 12 % para no deformar
+   planta hacia la superficie objetivo, solo agrandando (hasta 12 %): achicarla angostaría pasillos y puertas para no deformar
    pasillos y dormitorios;
 3. se renombran los ambientes con los nombres del programa;
 4. se prueban los ocho giros y espejados y se queda la orientación que mejor
@@ -30,7 +30,8 @@ from ..modelo.estados import Estado
 from . import evaluar
 
 RUTA = Path(__file__).with_name("plantas_referencia.json")
-ESCALA_MIN, ESCALA_MAX = 0.93, 1.12
+# Solo se agranda: achicar una planta angosta pasillos y puertas por debajo de lo usable.
+ESCALA_MIN, ESCALA_MAX = 1.0, 1.12
 
 RASGOS = {
     "sin_pasillo": "Sin pasillo: los ambientes se recorren a través del estar",
@@ -211,9 +212,12 @@ def adaptar(planta: dict, programa: Programa) -> tuple[list[Rectangulo], list[st
         escala = min(ESCALA_MAX, max(ESCALA_MIN, math.sqrt(relacion)))
         if abs(escala - 1) > 0.015:
             rects = _transformar(rects, 0, False, escala)
-            cambios.append(f"Escalada {'+' if escala > 1 else '−'}{abs(escala - 1) * 100:.0f} % en cada lado "
+            cambios.append(f"Agrandada {(escala - 1) * 100:.0f} % en cada lado "
                            f"para acercarse a los {objetivo:.0f} m² que buscás.")
         fuera = relacion / escala ** 2
+        if fuera < 0.9:
+            cambios.append(f"Es unos {cubierta * escala ** 2 * 0.9 - objetivo * 0.9:.0f} m² más grande que lo que buscás: "
+                           "se puede achicar en el editor corriendo muros.")
         if fuera < 0.85 or fuera > 1.18:
             parecido -= min(0.35, abs(math.log(fuera)))
     return rects, cambios, max(0.0, min(1.0, parecido))

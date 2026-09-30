@@ -108,7 +108,7 @@ FUNDAMENTOS = [
         "id": "F08", "criterio": "luz", "titulo": "Luz natural suficiente",
         "principio": "Los ambientes habitables llevan ventanas por al menos el 8 % de su superficie y aberturas de ventilación por el 4 %.",
         "por_que": "Es el mínimo del IRC; los efectos de la luz natural sobre la salud y el ahorro de energía están bien documentados, así que conviene superarlo.",
-        "fuente": "RID cap. 1, p. 14 y cap. 3, p. 62 (IRC R303)",
+        "fuente": "RID cap. 1, p. 17 y cap. 3, p. 62 (IRC R303)",
         "mide": "Superficie vidriada de cada dormitorio, estar, cocina y oficina sobre su superficie de piso.",
         "tension": "Más vidrio es más pérdida de calor en invierno si no está bien orientado.",
     },

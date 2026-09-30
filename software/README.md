@@ -107,7 +107,10 @@ El proyecto se guarda automáticamente en el navegador y se exporta/importa como
 
 1. **Cómo empezar.** Contarla con palabras (IA), armarla paso a paso con Monti (IA con preguntas y opciones),
    subir un bosquejo o un plano (IA con visión), dibujar desde cero o abrir el ejemplo Angus Ranch.
-2. **Alternativas.** El programa armado en la charla se resuelve en tres partidos de planta para elegir.
+2. **Alternativas fundamentadas.** El programa armado en la charla se resuelve en tres partidos de planta que
+   parten de diez plantas de referencia y explican qué ganan y qué resignan según fundamentos de diseño
+   ([`docs/fundamentos_diseno.md`](docs/fundamentos_diseno.md)). También se puede partir directamente de una
+   de esas plantas.
 3. **Editor 2D.** Muros a 90° con imanes, puertas y ventanas del catálogo, ambientes con nombre, arrastre de
    muros que arrastra lo conectado, deshacer, y el estado de cada pieza verificado en vivo con las reglas R03.
 

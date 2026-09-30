@@ -297,6 +297,10 @@ function SimboloAbertura({
     const m1 = t0 + o.ancho_m * 0.55;
     const m2 = t0 + o.ancho_m * 0.45;
     partes.push(linea(P(t0, -e / 8), P(m1, -e / 8), 2, undefined, "h1"), linea(P(m2, e / 8), P(t1, e / 8), 2, undefined, "h2"));
+  } else if (o.tipo === "porton") {
+    // Portón de garage: la hoja sube y se dibuja proyectada, en trazo cortado hacia adentro.
+    partes.push(linea(P(t0, 0), P(t1, 0), 1.5, undefined, "p"));
+    partes.push(linea(P(t0, e / 2 + 0.6), P(t1, e / 2 + 0.6), 0.8, "4 3", "proy"));
   } else if (o.tipo === "puerta") {
     const lado = (o.hoja?.apertura_deg ?? 70) >= 0 ? 1 : -1;
     const bisagraFin = o.hoja?.bisagra === "fin";
