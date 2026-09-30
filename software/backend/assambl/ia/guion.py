@@ -37,7 +37,8 @@ def _cuenta(texto: str, patron: str) -> int | None:
 # ---------------------------------------------------------------- programa
 
 def programa_desde_conteos(dormitorios: int, banos: int, superficie: float | None, cocina_integrada: bool = True,
-                           extras: list[str] | None = None, galeria: bool | None = None) -> Programa:
+                           extras: list[str] | None = None, galeria: bool | None = None, garage: bool | None = None,
+                           zona: str | None = None, entrada: str | None = None) -> Programa:
     extras = extras or []
     ambs = [AmbientePrograma(id="estar", nombre="Estar y comedor" + (" con cocina" if cocina_integrada else ""), uso="social")]
     if not cocina_integrada:
@@ -55,7 +56,8 @@ def programa_desde_conteos(dormitorios: int, banos: int, superficie: float | Non
         if e in nombres:
             ambs.append(AmbientePrograma(id=e, nombre=nombres[e], uso=e))  # type: ignore[arg-type]
     return completar_programa(Programa(superficie_objetivo_m2=superficie, ambientes=ambs,
-                                       cocina_integrada=cocina_integrada, galeria=galeria))
+                                       cocina_integrada=cocina_integrada, galeria=galeria, garage=garage,
+                                       dormitorios=zona, entrada=entrada))
 
 
 def completar_programa(p: Programa) -> Programa:
@@ -126,6 +128,25 @@ def _pregunta(clave: str, g: dict) -> Pregunta:
             Opcion(id="integrada", etiqueta="Integrada", detalle="Un solo ambiente social, más luz y menos muros"),
             Opcion(id="separada", etiqueta="Separada", detalle="Olores y ruidos aparte"),
         ])
+    # Las tres que siguen salen de los fundamentos (docs/fundamentos_diseno.md):
+    # no tienen respuesta correcta, cada opción gana algo y resigna otra cosa.
+    if clave == "zona":
+        return Pregunta(texto="¿Cómo querés los dormitorios?", opciones=[
+            Opcion(id="juntos", etiqueta="Todos juntos", detalle="Una zona de noche silenciosa; los chicos cerca de los padres"),
+            Opcion(id="divididos", etiqueta="El principal aparte", detalle="Más privacidad entre padres e hijos o con huéspedes"),
+            Opcion(id="igual", etiqueta="Me da igual", detalle="Te muestro de las dos"),
+        ])
+    if clave == "entrada":
+        return Pregunta(texto="¿Cómo te imaginás la llegada a la casa?", opciones=[
+            Opcion(id="recibidor", etiqueta="Con recibidor", detalle="Un lugar para dejar abrigos antes de entrar al estar"),
+            Opcion(id="directa", etiqueta="Directo al estar", detalle="Menos pasillo, más metros para vivir"),
+            Opcion(id="igual", etiqueta="Me da igual"),
+        ])
+    if clave == "garage":
+        return Pregunta(texto="¿Querés garage cubierto pegado a la casa?", opciones=[
+            Opcion(id="si", etiqueta="Sí", detalle="Suma unos 36 m²; bien ubicado protege a la casa de la calle"),
+            Opcion(id="no", etiqueta="No", detalle="Un auto al aire libre o un techito aparte"),
+        ])
     return Pregunta(texto="¿Querés sumar algo más? Podés elegir varios.", multiple=True, importante=False, opciones=[
         Opcion(id="lavadero", etiqueta="Lavadero"),
         Opcion(id="oficina", etiqueta="Oficina / estudio"),
@@ -135,7 +156,12 @@ def _pregunta(clave: str, g: dict) -> Pregunta:
     ])
 
 
-_ORDEN = ["dormitorios", "superficie", "banos", "cocina", "extras"]
+_ORDEN = ["dormitorios", "superficie", "banos", "cocina", "zona", "entrada", "garage", "extras"]
+
+
+def _orden(g: dict) -> list[str]:
+    # Con un dormitorio no hay nada que agrupar ni dividir.
+    return [k for k in _ORDEN if not (k == "zona" and int(g.get("dormitorios", 2)) < 2)]
 
 
 def _aplicar_respuesta(clave: str, texto: str, opciones: list[str], g: dict) -> bool:
@@ -165,6 +191,19 @@ def _aplicar_respuesta(clave: str, texto: str, opciones: list[str], g: dict) -> 
         else:
             return False
         return True
+    if clave in ("zona", "entrada", "garage"):
+        v = opciones[0] if opciones else None
+        if v is None:
+            claves = {"zona": {"juntos": ("junt", "cerca"), "divididos": ("divid", "separ", "aparte", "lejos")},
+                      "entrada": {"recibidor": ("recibidor", "hall", "entrada"), "directa": ("direct", "sin")},
+                      "garage": {"no": ("no",), "si": ("si", "quiero", "dale")}}[clave]
+            v = next((k for k, ws in claves.items() if any(re.search(rf"\b{w}", t) for w in ws)), None)
+            if v is None and ("igual" in t or "indistinto" in t):
+                v = "igual"
+        if v is None:
+            return False
+        g[clave] = None if v == "igual" else (v == "si") if clave == "garage" else v
+        return True
     sel = opciones or [k for k in ("lavadero", "oficina", "vestidor", "galeria") if k[:5] in t]
     g[clave] = [s for s in sel if s != "nada"]
     return True
@@ -187,6 +226,14 @@ def _desde_texto_libre(texto: str, g: dict) -> None:
         g["cocina"] = False
     elif "cocina integrada" in t or "cocina abierta" in t or "cocina comedor" in t:
         g["cocina"] = True
+    if re.search(r"\bgarage|\bcochera", t):
+        g["garage"] = not re.search(r"sin (?:garage|cochera)", t)
+    if re.search(r"dormitorios? (?:separad|dividid)|principal (?:aparte|separad|lejos)", t):
+        g["zona"] = "divididos"
+    elif re.search(r"dormitorios? (?:junt|cerca)", t):
+        g["zona"] = "juntos"
+    if "recibidor" in t or "hall de entrada" in t:
+        g["entrada"] = "recibidor"
     extras = set(g.get("extras") or [])
     for clave, palabras in {"oficina": ("oficina", "escritorio", "estudio"), "lavadero": ("lavadero",),
                             "vestidor": ("vestidor",), "galeria": ("galeria", "quincho", "porche")}.items():
@@ -205,6 +252,9 @@ def _programa_de_guion(g: dict) -> Programa:
         cocina_integrada=g.get("cocina", True),
         extras=[e for e in extras if e != "galeria"],
         galeria="galeria" in extras if "extras" in g else None,
+        garage=g.get("garage"),
+        zona=g.get("zona"),
+        entrada=g.get("entrada"),
     )
 
 
@@ -220,7 +270,7 @@ def responder(modo: str, historial: list, programa: Programa | None, opciones: l
 
     # Lo imprescindible para proponer: dormitorios. El resto tiene valores por defecto
     # y en modo libre no se pregunta si el usuario no lo mencionó.
-    imprescindibles = ["dormitorios"] if modo == "libre" else _ORDEN
+    imprescindibles = ["dormitorios"] if modo == "libre" else _orden(g)
     if modo == "libre" and "superficie" not in g and "dormitorios" in g:
         imprescindibles = ["dormitorios", "superficie"]
     falta = next((k for k in imprescindibles if k not in g), None)
@@ -254,6 +304,12 @@ def _eco(g: dict) -> str:
         partes.append(f"unos {g['superficie']:.0f} m²")
     if "cocina" in g:
         partes.append("cocina integrada" if g["cocina"] else "cocina separada")
+    if g.get("zona"):
+        partes.append("dormitorios juntos" if g["zona"] == "juntos" else "el principal aparte")
+    if g.get("entrada"):
+        partes.append("con recibidor" if g["entrada"] == "recibidor" else "entrada directa al estar")
+    if g.get("garage") is not None:
+        partes.append("con garage" if g["garage"] else "sin garage")
     extras = [e for e in g.get("extras") or []]
     if extras:
         partes.append(", ".join(extras))
