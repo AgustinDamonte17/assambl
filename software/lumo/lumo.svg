@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 12 196 196" width="196" height="196" role="img" aria-label="Lumo">
+  <title>Lumo · Assambl</title>
+  <path d="M112 16 C104 50 150 84 160 128 C170 172 140 205 100 205 C60 205 36 176 40 140 C44 104 76 88 86 66 C90 84 100 92 106 94 C100 70 100 40 112 16 Z" fill="#6C4DFF"/>
+  <ellipse cx="86" cy="136" rx="7" ry="10" fill="#111111"/>
+  <ellipse cx="120" cy="136" rx="7" ry="10" fill="#111111"/>
+  <circle cx="88" cy="131" r="2.6" fill="#FFFFFF"/>
+  <circle cx="122" cy="131" r="2.6" fill="#FFFFFF"/>
+  <path d="M93 154 Q103 162 113 154" fill="none" stroke="#111111" stroke-width="4.5" stroke-linecap="round"/>
+</svg>

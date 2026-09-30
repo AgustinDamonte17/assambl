@@ -1,0 +1,134 @@
+/* ==========================================================
+   LUMO · Mascota IA de Assambl · v1.0
+   Estados: idle | wave | listen | think | build | reply |
+            success | oops | sleep | curious
+   Uso: <svg class="lumo" data-state="think">…</svg>
+   ========================================================== */
+
+.lumo { --lumo: #6C4DFF; --lumo-ink: #111111; --lumo-signal: #FF4F1F; overflow: visible; display: block; }
+
+/* Pivotes: cada grupo transforma sobre su propia caja */
+.lumo .lumo-rig,
+.lumo .lumo-eye,
+.lumo .lumo-look,
+.lumo .lumo-shadow,
+.lumo [class^="lumo-fx"] * { transform-box: fill-box; }
+.lumo .lumo-rig    { transform-origin: 50% 100%; }   /* base de la llama */
+.lumo .lumo-eye    { transform-origin: 50% 50%; }
+.lumo .lumo-look   { transform-origin: 50% 50%; }
+.lumo .lumo-shadow { transform-origin: 50% 50%; }
+.lumo [class^="lumo-fx"] * { transform-origin: 50% 50%; }
+.lumo .lumo-look,
+.lumo .lumo-rig    { transition: transform .25s ease-out, filter .4s; }
+
+/* Efectos ocultos por defecto */
+.lumo [class^="lumo-fx"] { opacity: 0; transition: opacity .2s; }
+
+/* ---------- 01 · Reposo (idle) ---------- */
+.lumo[data-state="idle"] .lumo-rig { animation: lumo-breathe 3.2s ease-in-out infinite; }
+.lumo[data-state="idle"] .lumo-eye { animation: lumo-blink 5s infinite; }
+
+/* ---------- 02 · Saludo (wave) ---------- */
+.lumo[data-state="wave"] .lumo-rig    { animation: lumo-hop 2s ease-in-out infinite; }
+.lumo[data-state="wave"] .lumo-eye-r  { animation: lumo-wink 2s infinite; }
+.lumo[data-state="wave"] .lumo-shadow { animation: lumo-shadow-hop 2s ease-in-out infinite; }
+
+/* ---------- 03 · Escuchando (listen) ---------- */
+.lumo[data-state="listen"] .lumo-rig  { animation: lumo-lean 3s ease-in-out infinite; }
+.lumo[data-state="listen"] .lumo-look { transform: translate(-4px, 1px); }
+.lumo[data-state="listen"] .lumo-eye  { animation: lumo-blink 4s infinite; }
+.lumo[data-state="listen"] .lumo-fx-rings { opacity: 1; }
+.lumo[data-state="listen"] .lumo-fx-rings circle { animation: lumo-ring 2s ease-out infinite; }
+.lumo[data-state="listen"] .lumo-fx-rings circle:nth-child(2) { animation-delay: 1s; }
+
+/* ---------- 04 · Pensando (think) ---------- */
+.lumo[data-state="think"] .lumo-rig  { animation: lumo-sway 4s ease-in-out infinite; }
+.lumo[data-state="think"] .lumo-look { animation: lumo-ponder 4s ease-in-out infinite; }
+.lumo[data-state="think"] .lumo-fx-sparks { opacity: 1; }
+.lumo[data-state="think"] .lumo-fx-sparks circle { animation: lumo-rise 2.1s ease-out infinite; }
+.lumo[data-state="think"] .lumo-fx-sparks circle:nth-child(2) { animation-delay: .7s; }
+.lumo[data-state="think"] .lumo-fx-sparks circle:nth-child(3) { animation-delay: 1.4s; }
+
+/* ---------- 05 · Ensamblando (build) ---------- */
+.lumo[data-state="build"] .lumo-rig  { animation: lumo-nod 2.4s ease-in-out infinite; }
+.lumo[data-state="build"] .lumo-look { transform: translate(5px, 3px); }
+.lumo[data-state="build"] .lumo-fx-blocks { opacity: 1; }
+.lumo[data-state="build"] .lumo-fx-blocks rect { animation: lumo-drop 2.4s cubic-bezier(.5,0,.7,1.4) infinite both; }
+.lumo[data-state="build"] .lumo-fx-blocks rect:nth-child(2) { animation-delay: .35s; }
+.lumo[data-state="build"] .lumo-fx-blocks rect:nth-child(3) { animation-delay: .7s; }
+
+/* ---------- 06 · Respondiendo (reply) ---------- */
+.lumo[data-state="reply"] .lumo-rig { animation: lumo-talk .45s ease-in-out infinite alternate; }
+.lumo[data-state="reply"] .lumo-eye { animation: lumo-blink 3.5s infinite; }
+.lumo[data-state="reply"] .lumo-fx-dots { opacity: 1; }
+.lumo[data-state="reply"] .lumo-fx-dots circle { animation: lumo-dot 1.2s ease-in-out infinite; }
+.lumo[data-state="reply"] .lumo-fx-dots circle:nth-child(2) { animation-delay: .2s; }
+.lumo[data-state="reply"] .lumo-fx-dots circle:nth-child(3) { animation-delay: .4s; }
+
+/* ---------- 07 · Éxito (success) ---------- */
+.lumo[data-state="success"] .lumo-rig    { animation: lumo-jump 1.6s ease-in-out infinite; }
+.lumo[data-state="success"] .lumo-eye    { animation: lumo-squint 1.6s ease-in-out infinite; }
+.lumo[data-state="success"] .lumo-shadow { animation: lumo-shadow-jump 1.6s ease-in-out infinite; }
+.lumo[data-state="success"] .lumo-fx-sparks { opacity: 1; }
+.lumo[data-state="success"] .lumo-fx-sparks circle { animation: lumo-burst 1.6s ease-out infinite; }
+
+/* ---------- 08 · Ups (oops) ---------- */
+.lumo[data-state="oops"] .lumo-rig  { animation: lumo-shake 2.2s ease-in-out infinite; }
+.lumo[data-state="oops"] .lumo-look { transform: translate(0, 2px) scale(.85); }
+.lumo[data-state="oops"] .lumo-fx-sweat { opacity: 1; }
+.lumo[data-state="oops"] .lumo-fx-sweat path { animation: lumo-sweat 2.2s ease-in infinite; }
+
+/* ---------- 09 · Durmiendo (sleep) ---------- */
+.lumo[data-state="sleep"] .lumo-rig  { animation: lumo-breathe 4.5s ease-in-out infinite; filter: saturate(.35) brightness(.95); }
+.lumo[data-state="sleep"] .lumo-look { transform: translate(0, 3px); }
+.lumo[data-state="sleep"] .lumo-eye  { transform: scaleY(.12); }
+.lumo[data-state="sleep"] .lumo-fx-zz { opacity: 1; }
+.lumo[data-state="sleep"] .lumo-fx-zz text { animation: lumo-zz 3s ease-out infinite; }
+.lumo[data-state="sleep"] .lumo-fx-zz text:nth-child(2) { animation-delay: 1.5s; }
+
+/* ---------- 10 · Curioso (curious) — mirada y rig los mueve JS ---------- */
+.lumo[data-state="curious"] .lumo-eye { animation: lumo-blink 4.5s infinite; }
+
+/* ---------- Keyframes ---------- */
+@keyframes lumo-breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.025,.975); } }
+@keyframes lumo-blink   { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes lumo-wink    { 0%,8%,38%,100% { transform: scaleY(1); } 12%,32% { transform: scaleY(.1); } }
+@keyframes lumo-hop {
+  0%,55%,100% { transform: translateY(0) rotate(0); }
+  10% { transform: translateY(-14px) rotate(-6deg); }
+  20% { transform: translateY(0) rotate(0) scale(1.04,.96); }
+  30% { transform: translateY(-14px) rotate(6deg); }
+  40% { transform: translateY(0) rotate(0) scale(1.04,.96); }
+}
+@keyframes lumo-shadow-hop { 0%,55%,100% { transform: scaleX(1); opacity: 1; } 10%,30% { transform: scaleX(.75); opacity: .6; } }
+@keyframes lumo-lean   { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(-7deg) scale(1.015); } }
+@keyframes lumo-ring   { 0% { opacity: .55; transform: scale(.72); } 100% { opacity: 0; transform: scale(1.2); } }
+@keyframes lumo-sway   { 0%,100% { transform: skewX(-3deg); } 50% { transform: skewX(3deg) scale(1,1.02); } }
+@keyframes lumo-ponder { 0%,100% { transform: translate(4px,-5px); } 50% { transform: translate(-3px,-6px); } }
+@keyframes lumo-rise   { 0% { opacity: 0; transform: translateY(8px) scale(.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-28px) scale(1); } }
+@keyframes lumo-nod    { 0%,100% { transform: scale(1,1); } 15%,30%,45% { transform: scale(1.02,.98); } }
+@keyframes lumo-drop   { 0% { opacity: 0; transform: translateY(-56px); } 18% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(0); } }
+@keyframes lumo-talk   { from { transform: translateY(0) scale(1,1); } to { transform: translateY(-3px) scale(.99,1.02); } }
+@keyframes lumo-dot    { 0%,100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-5px); } }
+@keyframes lumo-jump {
+  0%,75%,100% { transform: translateY(0) scale(1,1); }
+  12% { transform: translateY(0) scale(1.12,.86); }
+  32% { transform: translateY(-34px) scale(.93,1.08); }
+  50% { transform: translateY(0) scale(1.1,.9); }
+  62% { transform: translateY(0) scale(.98,1.02); }
+}
+@keyframes lumo-shadow-jump { 0%,12%,50%,100% { transform: scaleX(1); opacity: 1; } 32% { transform: scaleX(.6); opacity: .5; } }
+@keyframes lumo-squint { 0%,20%,60%,100% { transform: scaleY(1); } 30%,45% { transform: scaleY(.45); } }
+@keyframes lumo-burst  { 0%,28% { opacity: 0; transform: translate(0,0) scale(.4); } 38% { opacity: 1; } 75%,100% { opacity: 0; transform: translate(var(--tx),var(--ty)) scale(1.1); } }
+@keyframes lumo-shake {
+  0%,40%,100% { transform: translateX(0) rotate(0); }
+  5% { transform: translateX(-6px) rotate(-3deg); } 10% { transform: translateX(6px) rotate(3deg); }
+  15% { transform: translateX(-4px) rotate(-2deg); } 20% { transform: translateX(3px) rotate(1deg); }
+  25% { transform: translateX(0) scale(.97,1.02); }
+}
+@keyframes lumo-sweat { 0%,10% { opacity: 0; transform: translateY(-4px); } 25% { opacity: 1; } 80% { opacity: 1; transform: translateY(14px); } 100% { opacity: 0; transform: translateY(18px); } }
+@keyframes lumo-zz     { 0% { opacity: 0; transform: translate(0,6px) scale(.7); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(14px,-26px) scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lumo *, .lumo [class^="lumo-fx"] * { animation: none !important; transition: none !important; }
+}

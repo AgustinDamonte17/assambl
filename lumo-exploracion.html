@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lumo · Exploración</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111111;--concrete:#E8E6E1;--signal:#FF4F1F;--rebar:#7A7A78;--line:#262626}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--concrete);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);min-height:100vh}
+.left{padding:28px 32px 48px;transition:background .25s,color .25s}
+.left.dark{background:var(--ink);color:#EDEDEB}
+.right{background:var(--ink);color:#EDEDEB;padding:36px 40px 60px;position:sticky;top:0;height:100vh;overflow:auto;border-left:1px solid #000}
+@media(max-width:980px){.wrap{grid-template-columns:1fr}.right{position:static;height:auto}.left,.right{padding:22px 16px 36px}}
+.eyebrow{font:500 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--rebar)}
+.eyebrow b{color:inherit;font-weight:500}
+.right .eyebrow{color:#9a9a97}
+h1{font:400 44px/1 'Archivo Black',sans-serif;letter-spacing:-.01em;margin:10px 0 8px}
+h1 .p{color:var(--signal)}
+.lede{max-width:640px;font-size:14px;line-height:1.55;opacity:.8}
+.lede code,.mono{font-family:'IBM Plex Mono',monospace}
+.controls{display:flex;flex-wrap:wrap;gap:18px 28px;margin:22px 0 6px;align-items:flex-end}
+.ctl{display:flex;flex-direction:column;gap:7px}
+.seg{display:inline-flex;border:1px solid currentColor;border-radius:8px;overflow:hidden;opacity:.9}
+.seg button{background:none;border:0;color:inherit;font:500 12px 'IBM Plex Mono',monospace;padding:7px 11px;cursor:pointer}
+.seg button.on{background:currentColor}
+.seg button.on span{color:var(--concrete)}
+.left.dark .seg button.on span{color:var(--ink)}
+.chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.chip{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;outline-offset:2px}
+.chip.on{outline:2px solid currentColor}
+.chip.auto{background:conic-gradient(#3D5CFF,#9B51E0,#0E8F8A,#008F5D,#6C4DFF,#3D5CFF)}
+.chip input{opacity:0;width:100%;height:100%;cursor:pointer}
+.chip.custom{background:repeating-conic-gradient(#bbb 0 25%,#fff 0 50%) 50%/10px 10px;position:relative;overflow:hidden}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:12px;margin-top:22px}
+.card{background:none;border:1px solid rgba(17,17,17,.14);border-radius:12px;padding:10px 12px 12px;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:border-color .15s,transform .15s}
+.left.dark .card{border-color:rgba(255,255,255,.12)}
+.card:hover{transform:translateY(-2px)}
+.card.on{border-color:var(--signal);box-shadow:0 0 0 1px var(--signal)}
+.stage{display:flex;justify-content:center;align-items:flex-end;height:170px}
+.meta{display:flex;align-items:center;gap:8px;margin-top:6px}
+.num{font:500 11px 'IBM Plex Mono',monospace;color:var(--rebar)}
+.nm{font-weight:600;font-size:14px;flex:1}
+.sw{width:12px;height:12px;border-radius:3px}
+.note{margin-top:26px;border-left:3px solid var(--signal);padding:10px 14px;font-size:13px;line-height:1.55;max-width:680px;background:rgba(17,17,17,.04)}
+.left.dark .note{background:rgba(255,255,255,.05)}
+/* right */
+.r-title{font:600 30px/1.1 Inter,sans-serif;margin:8px 0 6px;letter-spacing:-.01em}
+.r-desc{font-size:14px;line-height:1.55;color:#bdbdb9;max-width:620px}
+.sec{border-top:1px solid var(--line);margin-top:22px;padding-top:16px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.tile{border-radius:10px;height:220px;display:flex;flex-direction:column;justify-content:space-between;padding:10px 12px;border:1px solid var(--line)}
+.tile .c{display:flex;justify-content:center;align-items:center;flex:1}
+.tile.cc{background:var(--concrete);color:var(--ink)}
+.tile.ik{background:#0b0b0b;color:#EDEDEB}
+.tile .eyebrow{font-size:10px}
+.scales{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.scale{border-radius:10px;padding:14px;display:flex;gap:18px;align-items:flex-end;border:1px solid var(--line)}
+.scale.cc{background:var(--concrete)} .scale.ik{background:#0b0b0b}
+.scale figure{display:flex;flex-direction:column;align-items:center;gap:6px}
+.scale figcaption{font:500 10px 'IBM Plex Mono',monospace;color:var(--rebar)}
+.colorrow{display:grid;grid-template-columns:120px 1fr;gap:12px;margin-top:12px;align-items:stretch}
+.bigsw{border-radius:10px;padding:10px;display:flex;align-items:flex-end;font:500 12px 'IBM Plex Mono',monospace;color:#fff;min-height:96px}
+.metrics{display:flex;flex-direction:column;gap:7px;font-size:13px}
+.metric{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed #2c2c2c;padding-bottom:6px}
+.metric .v{font-family:'IBM Plex Mono',monospace}
+.ok{color:#7ee2a8}.warn{color:#ffb86b}.bad{color:#ff7a7a}
+.chat{margin-top:12px;background:#0b0b0b;border:1px solid var(--line);border-radius:12px;padding:14px}
+.chat .logo{font:400 18px 'Archivo Black',sans-serif;color:#EDEDEB}
+.chat .logo span{color:var(--signal)}
+.msg{display:flex;gap:10px;margin-top:12px;align-items:flex-end}
+.msg.me{justify-content:flex-end}
+.bub{max-width:78%;border-radius:12px;padding:9px 12px;font-size:13px;line-height:1.45}
+.me .bub{background:#1d1d1d;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.me .bub .arg{color:var(--signal)}
+.lu .bub{background:transparent;border:1.5px solid var(--lc)}
+.risk{margin-top:12px;border-left:3px solid var(--signal);background:#1a1a1a;padding:10px 14px;font-size:13px;line-height:1.55;color:#d6d6d3}
+/* motion */
+.lumo{overflow:visible;display:block}
+.lumo .all,.lumo .eyes{transform-box:fill-box}
+.lumo .all{transform-origin:50% 100%}
+.lumo .eyes{transform-origin:50% 50%}
+body.motion .lumo .all{animation:flick 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+body.motion .lumo .eyes{animation:blink 5.5s infinite;animation-delay:var(--d,0s)}
+body.motion .lumo .cursor{animation:cur 1.05s steps(1) infinite}
+@keyframes flick{0%,100%{transform:scale(1,1)}35%{transform:scale(1.025,.975) skewX(-1deg)}70%{transform:scale(.985,1.02) skewX(1deg)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.08)}}
+@keyframes cur{0%{opacity:1}50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){body.motion .lumo *{animation:none!important}}
+</style>
+</head>
+<body class="motion">
+<div class="wrap">
+  <main class="left" id="left">
+    <div class="eyebrow">Assambl · Mascota IA · 10 alternativas</div>
+    <h1>LUMO<span class="p">()</span></h1>
+    <p class="lede">La llama que vive dentro de <code>assambl(intent)</code>. Hacé clic en cada variante para verla en detalle: fondos, escalas, contraste y en contexto de chat.</p>
+
+    <div class="controls">
+      <div class="ctl"><span class="eyebrow">Fondo</span>
+        <div class="seg" id="bgSeg">
+          <button data-bg="concrete" class="on"><span>Concrete</span></button>
+          <button data-bg="ink"><span>Ink</span></button>
+        </div>
+      </div>
+      <div class="ctl"><span class="eyebrow">Color</span>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="ctl"><span class="eyebrow">Movimiento</span>
+        <div class="seg" id="motSeg">
+          <button data-m="1" class="on"><span>On</span></button>
+          <button data-m="0"><span>Off</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="note">
+      <b>Por qué no naranja:</b> una llama "natural" en naranja/rojo competiría con Signal <span class="mono">#FF4F1F</span> y se confundiría con los paréntesis del logo. La propuesta base es <b>llama azul</b>: es la zona más caliente del fuego (buena metáfora para la IA) y es el complementario del Signal, así que convive con la marca sin pelearse. Todos los colores del selector están calibrados en luminancia media para tener ≥3:1 tanto sobre Ink como sobre Concrete.
+    </div>
+  </main>
+
+  <aside class="right" id="right"></aside>
+</div>
+
+<script>
+const INK='#111111', CONCRETE='#E8E6E1', SIGNAL='#FF4F1F', W='#FFFFFF';
+const PALETTE=[
+  {n:'Azul eléctrico',h:'#3D5CFF'},
+  {n:'Índigo',h:'#6C4DFF'},
+  {n:'Violeta',h:'#9B51E0'},
+  {n:'Teal',h:'#0E8F8A'},
+  {n:'Verde terminal',h:'#008F5D'},
+  {n:'Magenta',h:'#D63393'}
+];
+
+/* ---------- color utils ---------- */
+const rgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16&255,n>>8&255,n&255]};
+const hex=a=>'#'+a.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('').toUpperCase();
+const mix=(a,b,t)=>{const x=rgb(a),y=rgb(b);return hex(x.map((v,i)=>v+(y[i]-v)*t))};
+const lum=h=>rgb(h).map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+const cr=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+const hue=h=>{let[r,g,b]=rgb(h).map(v=>v/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(!d)return 0;let H=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;H*=60;return H<0?H+360:H};
+const hueDist=(a,b)=>{const d=Math.abs(hue(a)-hue(b));return Math.min(d,360-d)};
+
+/* ---------- svg helpers ---------- */
+const stroke=(d,w=5,c=INK)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const dot=(x,y,r,c=INK,o=1)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" fill-opacity="${o}"/>`;
+const ell=(x,y,rx,ry,c=INK,o=1)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${c}" fill-opacity="${o}"/>`;
+const eyes=s=>`<g class="eyes">${s}</g>`;
+
+const P={
+  chispa:'M100 18 C125 60 165 90 165 140 C165 180 136 205 100 205 C64 205 35 180 35 140 C35 105 60 85 72 60 C78 80 88 90 96 92 C92 70 94 40 100 18 Z',
+  gota:'M100 20 C120 60 160 95 160 140 C160 178 133 205 100 205 C67 205 40 178 40 140 C40 95 80 60 100 20 Z',
+  corona:'M100 30 C108 55 118 65 128 72 C132 60 138 50 146 44 C150 70 168 100 166 140 C164 180 136 205 100 205 C64 205 36 180 34 140 C32 100 50 70 54 44 C62 50 68 60 72 72 C82 65 92 55 100 30 Z',
+  bloque:'M90 20 H110 V40 H130 V60 H150 V100 H170 V180 H150 V200 H50 V180 H30 V100 H50 V60 H70 V40 H90 Z',
+  ensamble:'M100 205 C62 205 38 178 38 142 C38 100 70 80 90 50 C98 38 100 26 96 14 C124 26 138 52 132 78 C150 92 162 114 162 142 C162 178 138 205 100 205 Z',
+  wisp:'M172 128 C177 140 186 148 186 160 C186 170 180 178 172 178 C164 178 158 170 158 160 C158 148 167 140 172 128 Z',
+  prompt:'M112 16 C104 50 150 84 160 128 C170 172 140 205 100 205 C60 205 36 176 40 140 C44 104 76 88 86 66 C90 84 100 92 106 94 C100 70 100 40 112 16 Z',
+  ondas:'M100 205 C62 205 36 180 36 144 C36 116 48 100 56 86 C58 100 64 108 72 110 C66 88 74 62 92 44 C90 66 98 80 110 86 C112 66 122 50 138 40 C134 62 146 78 156 96 C162 108 164 124 164 144 C164 180 138 205 100 205 Z',
+  core:'M100 104 C112 122 134 136 134 160 C134 184 118 198 100 198 C82 198 66 184 66 160 C66 136 88 122 100 104 Z',
+  geo:'M100 25 L151.96 115 A60 60 0 1 1 48.04 115 Z'
+};
+const fill=(d,c)=>`<path d="${d}" fill="${c}"/>`;
+
+const V=[
+ {name:'Chispa',color:'#3D5CFF',
+  concept:'La llama clásica con un mechón que se escapa. Ojos grandes con brillo: el arquetipo más legible y amigable, reconocible al instante.',
+  risk:'Es la más genérica: vive cerca de mil emojis de fuego. Alta simpatía, distintividad baja.',
+  body:c=>fill(P.chispa,c)+stroke('M52 156 C48 134 56 118 64 106',7,'rgba(255,255,255,.35)'),
+  face:()=>eyes(dot(82,140,10)+dot(118,140,10)+dot(85.5,136,3.5,W)+dot(121.5,136,3.5,W))+stroke('M88 160 Q100 172 112 160')},
+ {name:'Gota',color:'#9B51E0',
+  concept:'La llama reducida a una gota simétrica, con ojos cerrados de felicidad y cachetes. Calma, cercana, casi un sticker.',
+  risk:'En azul puede leerse como gota de agua; en violeta o índigo se sostiene mejor como fuego.',
+  body:c=>fill(P.gota,c),
+  face:()=>eyes(stroke('M72 142 Q82 130 92 142',6)+stroke('M108 142 Q118 130 128 142',6))+`<path d="M86 156 Q100 180 114 156 Q100 162 86 156 Z" fill="${INK}"/>`+ell(64,156,9,5.5,W,.3)+ell(136,156,9,5.5,W,.3)},
+ {name:'Corona',color:'#0E8F8A',
+  concept:'Tres puntas: una pequeña corona, o las tres fases de Assambl — intención, cálculo, edificio. Ojos ovalados y sonrisa tímida.',
+  risk:'Las puntas laterales se empastan por debajo de 24 px; necesita una versión simplificada para ícono.',
+  body:c=>fill(P.corona,c),
+  face:()=>eyes(ell(84,142,7,10)+ell(116,142,7,10)+dot(86,137,2.6,W)+dot(118,137,2.6,W))+stroke('M90 164 Q100 172 110 164',4.5)+ell(68,160,8,5,W,.28)+ell(132,160,8,5,W,.28)},
+ {name:'Bloque',color:'#008F5D',
+  concept:'Llama pixelada en escalones, como bloques apilados, con una chispa-píxel suelta. Dialoga con el brutalismo y el costado "constructor" de la marca.',
+  risk:'Más frío y retro (vibe videojuego); menos tierno que las versiones curvas.',
+  body:c=>fill(P.bloque,c)+`<rect x="150" y="16" width="12" height="12" fill="${c}"/>`,
+  face:()=>eyes(`<rect x="72" y="128" width="14" height="14" fill="${INK}"/><rect x="114" y="128" width="14" height="14" fill="${INK}"/><rect x="75" y="131" width="4" height="4" fill="#fff"/><rect x="117" y="131" width="4" height="4" fill="#fff"/>`)+`<path d="M84 156 L84 162 L90 162 L90 168 L110 168 L110 162 L116 162 L116 156" fill="none" stroke="${INK}" stroke-width="5" stroke-linejoin="miter"/>`},
+ {name:'Ensamble',color:'#3D5CFF',
+  concept:'El mechón se curva como un paréntesis y los cachetes son ( ) en Signal: Lumo lleva la firma de función de la marca en la cara. Azul + naranja complementarios.',
+  risk:'Los cachetes-paréntesis desaparecen en tamaños chicos; el vínculo con el logo sólo se lee en grande.',
+  body:c=>fill(P.ensamble,c),
+  face:()=>eyes(dot(84,140,8)+dot(116,140,8)+dot(86.5,137,2.8,W)+dot(118.5,137,2.8,W))+stroke('M90 158 Q100 168 110 158',4.5)+stroke('M72 148 Q64 158 72 168',4.5,SIGNAL)+stroke('M128 148 Q136 158 128 168',4.5,SIGNAL)},
+ {name:'Brote',color:'#D63393',
+  concept:'Lumo con una chispita que lo acompaña. Sugiere que la IA genera ideas; la chispa puede animarse como estado "pensando".',
+  risk:'Dos figuras complican el ícono (conviene una versión sin chispa). El magenta es cálido y queda más cerca del Signal.',
+  body:c=>`<g transform="translate(-14 0)">${fill(P.gota,c)}</g>`+fill(P.wisp,c),
+  face:()=>eyes(dot(71,140,12)+dot(103,140,12)+dot(74.5,135,4,W)+dot(106.5,135,4,W)+dot(68.5,145,1.8,W)+dot(100.5,145,1.8,W))+stroke('M78 162 Q86 170 94 162')+eyes(dot(167,160,2.4)+dot(177,160,2.4))},
+ {name:'Prompt',color:'#6C4DFF',
+  concept:'La boca es un cursor que titila: Lumo "escucha" mientras escribís. Un estado de espera natural para el chat, muy nativo de la marca-código.',
+  risk:'Sin animación la boca-cursor puede leerse seria o inexpresiva.',
+  body:c=>fill(P.prompt,c),
+  face:()=>eyes(ell(86,136,7,10)+ell(120,136,7,10)+dot(88,131,2.6,W)+dot(122,131,2.6,W))+`<rect class="cursor" x="94" y="156" width="20" height="6" rx="1" fill="${INK}"/>`},
+ {name:'Ondas',color:'#0E8F8A',
+  concept:'Varias lenguas de fuego suaves y la mirada hacia arriba, con boquita en "o": curioso, atento, siempre mirando la próxima idea.',
+  risk:'Muchas ondas suman ruido visual; la boca en "o" puede leerse como sorpresa o alarma.',
+  body:c=>fill(P.ondas,c),
+  face:()=>eyes(dot(82,146,11)+dot(118,146,11)+dot(79,140,4,W)+dot(115,140,4,W))+ell(100,168,5,6)},
+ {name:'Núcleo',color:'#3D5CFF',
+  concept:'Llama bicolor: el núcleo claro es donde vive la cara. Da profundidad y un sistema natural para estados (el núcleo cambia de tono al pensar o responder).',
+  risk:'Dos tonos del mismo color: sobre Concrete el núcleo claro pierde algo de contraste.',
+  body:c=>fill(P.chispa,c)+fill(P.core,mix(c,W,.55)),
+  face:c=>eyes(dot(88,156,6)+dot(112,156,6)+dot(89.8,153.6,1.8,W)+dot(113.8,153.6,1.8,W))+stroke('M92 170 Q100 177 108 170',4)+ell(79,168,6,4,c,.45)+ell(121,168,6,4,c,.45)},
+ {name:'Geo',color:'#6C4DFF',
+  concept:'Círculo + triángulo tangente, geometría pura. El más escalable y el más fácil de construir, animar y mantener en código.',
+  risk:'Tan simple que puede leerse como pin de mapa o gota; depende del color y la cara para ser "fuego".',
+  body:c=>fill(P.geo,c)+stroke('M58 176 C50 160 52 142 60 132',6,'rgba(255,255,255,.3)'),
+  face:()=>eyes(dot(84,148,7)+dot(116,148,7)+dot(86,145.5,2.4,W)+dot(118,145.5,2.4,W))+stroke('M90 164 Q100 172 110 164',4.5)}
+];
+
+const state={sel:0,bg:'concrete',color:null,motion:true};
+const col=v=>state.color||v.color;
+const svg=(v,c,w,d=0)=>`<svg class="lumo" viewBox="0 0 200 220" width="${w}" height="${Math.round(w*1.1)}" style="--d:${d}s" aria-hidden="true"><g class="all">${v.body(c)}${v.face(c)}</g></svg>`;
+
+/* ---------- controls ---------- */
+const chips=document.getElementById('chips');
+function renderChips(){
+  chips.innerHTML=`<button class="chip auto ${!state.color?'on':''}" data-c="" title="Color propio de cada variante"></button>`+
+  PALETTE.map(p=>`<button class="chip ${state.color===p.h?'on':''}" data-c="${p.h}" title="${p.n} ${p.h}" style="background:${p.h}"></button>`).join('')+
+  `<label class="chip custom ${state.color&&!PALETTE.some(p=>p.h===state.color)?'on':''}" title="Color personalizado"><input type="color" id="custom" value="${state.color||'#3D5CFF'}"></label>`;
+}
+chips.addEventListener('click',e=>{const b=e.target.closest('button.chip');if(!b)return;state.color=b.dataset.c||null;renderAll()});
+chips.addEventListener('input',e=>{if(e.target.id==='custom'){state.color=e.target.value.toUpperCase();renderGrid();renderDetail()}});
+chips.addEventListener('change',e=>{if(e.target.id==='custom')renderChips()});
+
+document.getElementById('bgSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state.bg=b.dataset.bg;
+  document.querySelectorAll('#bgSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('left').classList.toggle('dark',state.bg==='ink')});
+document.getElementById('motSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state.motion=b.dataset.m==='1';
+  document.querySelectorAll('#motSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  document.body.classList.toggle('motion',state.motion)});
+
+/* ---------- grid ---------- */
+const grid=document.getElementById('grid');
+function renderGrid(){
+  grid.innerHTML=V.map((v,i)=>`<button class="card ${i===state.sel?'on':''}" data-i="${i}">
+    <div class="stage">${svg(v,col(v),150,-(i*0.41).toFixed(2))}</div>
+    <div class="meta"><span class="num">${String(i+1).padStart(2,'0')}</span><span class="nm">${v.name}</span><span class="sw" style="background:${col(v)}"></span></div>
+  </button>`).join('');
+}
+grid.addEventListener('click',e=>{const b=e.target.closest('.card');if(!b)return;state.sel=+b.dataset.i;renderGrid();renderDetail();
+  if(window.innerWidth<=980)document.getElementById('right').scrollIntoView({behavior:'smooth'})});
+
+/* ---------- detail ---------- */
+const flag=r=>r>=4.5?`<span class="ok">${r.toFixed(2)}:1 ✓</span>`:r>=3?`<span class="ok">${r.toFixed(2)}:1 ✓ gráfico</span>`:`<span class="bad">${r.toFixed(2)}:1 ✗</span>`;
+function renderDetail(){
+  const v=V[state.sel],c=col(v),i=state.sel;
+  const pname=(PALETTE.find(p=>p.h===c)||{n:'Personalizado'}).n;
+  const hd=hueDist(c,SIGNAL);
+  const hdTxt=hd>=90?`<span class="ok">${Math.round(hd)}° · se distingue</span>`:hd>=45?`<span class="warn">${Math.round(hd)}° · aceptable</span>`:`<span class="bad">${Math.round(hd)}° · se confunde</span>`;
+  const sizes=[96,48,24,16];
+  const scaleRow=cls=>`<div class="scale ${cls}">${sizes.map(s=>`<figure>${svg(v,c,s)}<figcaption>${s}px</figcaption></figure>`).join('')}</div>`;
+  document.getElementById('right').innerHTML=`
+    <div class="eyebrow">L${i+1} · ${String(i+1).padStart(2,'0')} / 10 · Familia Lumo</div>
+    <div class="r-title">${v.name}</div>
+    <p class="r-desc">${v.concept}</p>
+
+    <div class="sec"><div class="eyebrow">Sobre la paleta</div>
+      <div class="duo">
+        <div class="tile cc"><div class="eyebrow">Concrete · #E8E6E1</div><div class="c">${svg(v,c,140)}</div></div>
+        <div class="tile ik"><div class="eyebrow">Ink · #111111</div><div class="c">${svg(v,c,140,-.8)}</div></div>
+      </div>
+    </div>
+
+    <div class="sec"><div class="eyebrow">Escala (avatar → favicon)</div>
+      <div class="scales">${scaleRow('cc')}${scaleRow('ik')}</div>
+    </div>
+
+    <div class="sec"><div class="eyebrow">Color</div>
+      <div class="colorrow">
+        <div class="bigsw" style="background:${c}">${c}<br>${pname}</div>
+        <div class="metrics">
+          <div class="metric"><span>Contraste vs Ink</span><span class="v">${flag(cr(c,INK))}</span></div>
+          <div class="metric"><span>Contraste vs Concrete</span><span class="v">${flag(cr(c,CONCRETE))}</span></div>
+          <div class="metric"><span>Distancia de tono vs Signal</span><span class="v">${hdTxt}</span></div>
+          <div class="metric"><span>Ojos (Ink) sobre Lumo</span><span class="v">${flag(cr(c,INK))}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec"><div class="eyebrow">En contexto</div>
+      <div class="chat" style="--lc:${c}">
+        <div class="logo">ASSAMBL<span>()</span></div>
+        <div class="msg me"><div class="bub">assambl(<span class="arg">casa de 2 plantas</span>)</div></div>
+        <div class="msg lu">${svg(v,c,34,-1.2)}<div class="bub">¡Dale! Arranco por la planta baja. ¿Querés el living integrado con la cocina?</div></div>
+      </div>
+    </div>
+
+    <div class="sec"><div class="eyebrow">Riesgo</div>
+      <div class="risk">${v.risk}</div>
+    </div>`;
+}
+function renderAll(){renderChips();renderGrid();renderDetail()}
+renderAll();
+</script>
+</body>
+</html>

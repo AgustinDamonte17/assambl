@@ -1,7 +1,24 @@
 {
   "esquema": "assambl/catalogo@0.1",
   "mercado": "AR",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "nota": "Perfil Argentina. Se completa a partir de la capa 03 (MVP_01 §3.3). Los valores deben verificarse con al menos dos proveedores antes de usarse en un pedido real.",
-  "familias": {}
+  "familias": {
+    "aberturas": {
+      "nota": "Medidas nominales de hoja o marco (ancho × alto) de carpinterías estándar de corralón. El vano en bruto (rough opening) suma la holgura de la regla R03.06. Antepecho y dintel se miden desde el piso terminado.",
+      "items": [
+        { "codigo": "puerta_070", "tipo": "puerta", "nombre": "Puerta placa 70", "ancho_m": 0.70, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "interior", "sugerida_para": ["bano", "vestidor", "deposito"] },
+        { "codigo": "puerta_080", "tipo": "puerta", "nombre": "Puerta placa 80", "ancho_m": 0.80, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "interior", "sugerida_para": ["dormitorio", "oficina", "lavadero", "cocina"] },
+        { "codigo": "puerta_090", "tipo": "puerta", "nombre": "Puerta de acceso 90", "ancho_m": 0.90, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["social"] },
+        { "codigo": "paso_080", "tipo": "paso", "nombre": "Vano libre 80", "ancho_m": 0.80, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "interior", "sugerida_para": [] },
+        { "codigo": "ventiluz_060_040", "tipo": "ventana", "nombre": "Ventiluz 60 × 40", "ancho_m": 0.60, "alto_m": 0.40, "antepecho_m": 1.65, "uso": "exterior", "sugerida_para": ["bano"] },
+        { "codigo": "ventana_100_110", "tipo": "ventana", "nombre": "Ventana 100 × 110", "ancho_m": 1.00, "alto_m": 1.10, "antepecho_m": 1.00, "uso": "exterior", "sugerida_para": ["lavadero", "cocina", "vestidor"] },
+        { "codigo": "ventana_150_110", "tipo": "ventana", "nombre": "Ventana 150 × 110", "ancho_m": 1.50, "alto_m": 1.10, "antepecho_m": 1.00, "uso": "exterior", "sugerida_para": ["dormitorio", "oficina"] },
+        { "codigo": "ventana_200_110", "tipo": "ventana", "nombre": "Ventana 200 × 110", "ancho_m": 2.00, "alto_m": 1.10, "antepecho_m": 1.00, "uso": "exterior", "sugerida_para": ["social"] },
+        { "codigo": "corrediza_200_205", "tipo": "ventana_corrediza", "nombre": "Puerta-ventana corrediza 200 × 205", "ancho_m": 2.00, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["social", "dormitorio"] },
+        { "codigo": "porton_480_210", "tipo": "porton", "nombre": "Portón de garage 480 × 210", "ancho_m": 4.80, "alto_m": 2.10, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["garage"] },
+        { "codigo": "corrediza_240_205", "tipo": "ventana_corrediza", "nombre": "Puerta-ventana corrediza 240 × 205", "ancho_m": 2.40, "alto_m": 2.05, "antepecho_m": 0.0, "uso": "exterior", "sugerida_para": ["social"] }
+      ]
+    }
+  }
 }

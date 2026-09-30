@@ -1,3 +1,19 @@
+import type {
+  Alternativa,
+  AnalisisPlanta,
+  Casa,
+  EstadoIA,
+  Criterio,
+  Evaluacion,
+  Fundamento,
+  MensajeChat,
+  PlantaReferencia,
+  Rectangulo,
+  Programa,
+  RespuestaAsistente,
+  RespuestaImagen,
+  ItemCatalogo,
+} from "../modelo/casa";
 import type { AnalisisLote, Punto, RespuestaClima, RespuestaEscena, Trayectoria } from "../modelo/proyecto";
 
 async function pedir<T>(url: string, init?: RequestInit): Promise<T> {
@@ -66,4 +82,48 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ vertices, escena_ref, margen_m }),
     }),
+
+  /* Capa 03 · Casa */
+  estadoIA: () => pedir<EstadoIA>("/api/casa/ia"),
+
+  catalogo: () =>
+    pedir<{ familias: { aberturas: { items: ItemCatalogo[] } } }>("/api/casa/catalogo").then(
+      (c) => c.familias.aberturas.items,
+    ),
+
+  conversar: (modo: "libre" | "orientador", historial: MensajeChat[], programa: Programa | null, opciones: string[] = []) =>
+    pedir<RespuestaAsistente>("/api/casa/conversar", {
+      method: "POST",
+      body: JSON.stringify({ modo, historial, programa, opciones }),
+    }),
+
+  alternativas: (programa: Programa, lat: number | null) =>
+    pedir<{ alternativas: Alternativa[] }>("/api/casa/alternativas", {
+      method: "POST",
+      body: JSON.stringify({ programa, lat }),
+    }).then((r) => r.alternativas),
+
+  interpretarImagen: (imagen: string, notas: string, ancho_total_m: number | null, lat: number | null) =>
+    pedir<RespuestaImagen>("/api/casa/interpretar-imagen", {
+      method: "POST",
+      body: JSON.stringify({ imagen, notas, ancho_total_m, lat }),
+    }),
+
+  analizarPlanta: (casa: Casa, lat: number | null = null) =>
+    pedir<AnalisisPlanta>("/api/casa/analizar", { method: "POST", body: JSON.stringify({ casa, lat }) }),
+
+  fundamentos: () =>
+    pedir<{ criterios: Omit<Criterio, "puntaje">[]; fundamentos: Fundamento[] }>("/api/casa/fundamentos"),
+
+  referencias: () => pedir<{ plantas: PlantaReferencia[] }>("/api/casa/referencias").then((r) => r.plantas),
+
+  partirDeReferencia: (id: string, lat: number | null) =>
+    pedir<{
+      rectangulos: Rectangulo[];
+      casa: Casa;
+      advertencias: string[];
+      adaptacion: string[];
+      evaluacion: Evaluacion;
+      analisis: AnalisisPlanta;
+    }>(`/api/casa/referencias/${encodeURIComponent(id)}`, { method: "POST", body: JSON.stringify({ lat }) }),
 };

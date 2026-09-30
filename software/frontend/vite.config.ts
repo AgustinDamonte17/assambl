@@ -9,6 +9,8 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    // El caso Angus Ranch vive en software/casos y se importa como assambl-software/casos/…
+    fs: { allow: [".."] },
     proxy: {
       "/api": { target: `http://127.0.0.1:${apiPort}`, changeOrigin: true },
     },

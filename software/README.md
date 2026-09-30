@@ -14,6 +14,7 @@ software/
       componentes/   Shell, barra de pasos, controles reutilizables
       pasos/         Un directorio por capa del MVP; la interfaz es secuencial y guiada
         terreno/     Capa 01: ubicación, lote, visor 3D, clima
+        casa/        Capa 03: cómo empezar (IA, imagen, dibujo), alternativas y editor de planta 2D
   backend/
     api/             FastAPI: rutas HTTP finas que llaman al paquete assambl
     assambl/         Paquete Python del producto (estructura de MVP_01 §4.6)
@@ -22,9 +23,10 @@ software/
       fuentes/       Datos externos: nasadem.py, power.py (y nominatim.py solo para buscar)
       clima/         sol.py (posición solar) y resumen.py (temperaturas, vientos, radiación)
       generadores/   glb.py (escritor glTF) y blender.py (script .py de la escena)
-      capas/         Composición por capa (hoy: terreno)
-      reglas/        r01_terreno.py … r14_electrico.py, cada regla con ID, versión y origen
-      catalogo/      ar.json (perfil Argentina) — se completa a partir de la capa 03
+      capas/         Composición por capa: terreno.py, casa.py (plantas desde ambientes)
+      reglas/        r01_terreno.py … r14_electrico.py, cada regla con ID, versión y origen (hoy r01 y r03)
+      ia/            Asistente de diseño y proveedores de IA intercambiables (OpenAI, Anthropic, simulado)
+      catalogo/      ar.json (perfil Argentina): aberturas; se completa con el resto de la capa 03
     tests/           pytest (test_*.py) y sondas manuales (probar_*.py)
     cache/           Mosaicos, clima y salidas; regenerable, ignorada por git
   docs/              Decisiones técnicas y fuentes de datos
@@ -76,6 +78,22 @@ Se busca en `backend/.env`, `software/.env` y la raíz del repositorio, en ese o
 
 NASA POWER no necesita credencial, así que el clima funciona siempre.
 
+## Asistente de IA (capa 03)
+
+El paso Casa usa IA para conversar con el usuario y leer bosquejos. El prestador se elige en el mismo `.env`
+y se cambia sin tocar código:
+
+```
+IA_PROVEEDOR=openai          # openai | anthropic | simulado (vacío: el primero con clave)
+OPENAI_API_KEY=sk-...
+# IA_MODELO=gpt-5-mini       # opcional
+# ANTHROPIC_API_KEY=...      # para IA_PROVEEDOR=anthropic
+# IA_URL_BASE=...            # cualquier servicio compatible con Chat Completions (Ollama, OpenRouter, Groq…)
+```
+
+Sin clave funciona igual en **modo demostración** (guion fijo, avisado en la interfaz). `GET /api/casa/ia`
+dice qué proveedor está activo. El diseño completo del paso está en [`docs/paso_casa.md`](docs/paso_casa.md).
+
 ## Flujo actual (capa 01 · Terreno)
 
 1. **Ubicación y relieve.** Buscar una dirección, escribir coordenadas o hacer clic en el mapa. Elegir la extensión del entorno (100–2000 m, 500 por defecto) y generar la escena: se descarga el mosaico de NASADEM que cubre el área, se recorta a los posts nativos y se arma la malla. Cada capa informa su fuente, su resolución y su naturaleza (medición satelital, reanálisis regional o cálculo local).
@@ -84,6 +102,17 @@ NASA POWER no necesita credencial, así que el clima funciona siempre.
 4. **Clima.** Temperaturas por mes con grados-día, perfil horario, radiación mensual y rosa de vientos de 16 sectores, calculados sobre 5 años de series horarias de NASA POWER.
 
 El proyecto se guarda automáticamente en el navegador y se exporta/importa como `casa.assambl.json`.
+
+### Capa 03 · Casa (planta)
+
+1. **Cómo empezar.** Contarla con palabras (IA), armarla paso a paso con Monti (IA con preguntas y opciones),
+   subir un bosquejo o un plano (IA con visión), dibujar desde cero o abrir el ejemplo Angus Ranch.
+2. **Alternativas fundamentadas.** El programa armado en la charla se resuelve en tres partidos de planta que
+   parten de diez plantas de referencia y explican qué ganan y qué resignan según fundamentos de diseño
+   ([`docs/fundamentos_diseno.md`](docs/fundamentos_diseno.md)). También se puede partir directamente de una
+   de esas plantas.
+3. **Editor 2D.** Muros a 90° con imanes, puertas y ventanas del catálogo, ambientes con nombre, arrastre de
+   muros que arrastra lo conectado, deshacer, y el estado de cada pieza verificado en vivo con las reglas R03.
 
 ### Salida de la fase de terreno
 
@@ -123,7 +152,7 @@ La interfaz lo repite en cada panel, y vale repetirlo acá:
 ## Pruebas
 
 ```powershell
-cd backend; .venv\Scripts\python -m pytest -q         # 60 pruebas, sin red
+cd backend; .venv\Scripts\python -m pytest -q         # 73 pruebas, sin red
 .venv\Scripts\python tests\probar_nasa.py --cotas     # coteja NASADEM contra cotas conocidas
 cd ..; npm install --no-save puppeteer gltf-validator
 node scripts/probar_ui.cjs                            # recorrido en navegador headless con capturas
