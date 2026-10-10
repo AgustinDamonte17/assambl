@@ -14,9 +14,6 @@ export type Uso =
   | "vestidor"
   | "deposito"
   | "circulacion"
-  | "toilette"
-  | "garage"
-  | "galeria"
   | "otro";
 
 export const USOS: { id: Uso; nombre: string }[] = [
@@ -24,18 +21,15 @@ export const USOS: { id: Uso; nombre: string }[] = [
   { id: "cocina", nombre: "Cocina" },
   { id: "dormitorio", nombre: "Dormitorio" },
   { id: "bano", nombre: "Baño" },
-  { id: "toilette", nombre: "Toilette" },
   { id: "lavadero", nombre: "Lavadero" },
   { id: "oficina", nombre: "Oficina" },
   { id: "vestidor", nombre: "Vestidor" },
   { id: "deposito", nombre: "Depósito" },
   { id: "circulacion", nombre: "Pasillo / circulación" },
-  { id: "garage", nombre: "Garage" },
-  { id: "galeria", nombre: "Galería" },
   { id: "otro", nombre: "Otro" },
 ];
 
-export type TipoAbertura = "puerta" | "ventana" | "ventana_corrediza" | "paso" | "porton";
+export type TipoAbertura = "puerta" | "ventana" | "ventana_corrediza" | "paso";
 
 export interface Abertura {
   id: string;
@@ -127,9 +121,6 @@ export interface Programa {
   ambientes: AmbientePrograma[];
   cocina_integrada?: boolean | null;
   galeria?: boolean | null;
-  garage?: boolean | null;
-  dormitorios?: "juntos" | "divididos" | null;
-  entrada?: "recibidor" | "directa" | null;
   prioridades?: string[];
   notas?: string[];
   [extra: string]: unknown;
@@ -183,7 +174,6 @@ export interface VerificacionPlanta {
 }
 
 export interface AnalisisPlanta {
-  fundamentos?: Evaluacion | null;
   estado: Estado;
   verificaciones: VerificacionPlanta[];
   por_pieza: Record<string, Estado>;
@@ -199,59 +189,6 @@ export interface Rectangulo {
   y0: number;
   x1: number;
   y1: number;
-  grupo?: string | null;
-  abre_a?: string | null;
-}
-
-/* Fundamentos de diseño: conocimiento propio de Assambl (backend/assambl/fundamentos, docs/fundamentos_diseno.md) */
-
-export type NivelObservacion = "a_favor" | "neutral" | "a_considerar" | "info";
-
-export interface Observacion {
-  fundamento: string | null;
-  criterio: string | null;
-  titulo: string;
-  puntaje: number | null;
-  nivel: NivelObservacion;
-  texto: string;
-  piezas: string[];
-}
-
-export interface Criterio {
-  id: string;
-  nombre: string;
-  pregunta: string;
-  puntaje: number | null;
-}
-
-export interface Evaluacion {
-  criterios: Criterio[];
-  observaciones: Observacion[];
-  puntaje: number | null;
-}
-
-export interface Fundamento {
-  id: string;
-  criterio: string;
-  titulo: string;
-  principio: string;
-  por_que: string;
-  mide: string;
-  tension: string;
-}
-
-export interface PlantaReferencia {
-  id: string;
-  nombre: string;
-  archivo: string;
-  superficie_m2: number;
-  dormitorios: number;
-  banos: number;
-  garage: boolean;
-  forma: string;
-  rasgos: string[];
-  rasgos_texto: string[];
-  lectura: string;
 }
 
 export interface Alternativa {
@@ -262,10 +199,6 @@ export interface Alternativa {
   casa: Casa;
   advertencias: string[];
   analisis: AnalisisPlanta;
-  evaluacion?: Evaluacion;
-  origen?: { tipo: "referencia" | "generada"; id: string; archivo?: string; superficie_m2?: number; rasgos?: string[] };
-  adaptacion?: string[];
-  parecido?: number;
   resumen: {
     superficie_cubierta_m2: number;
     ancho_m: number;
@@ -288,7 +221,6 @@ export interface RespuestaImagen {
   casa: Casa;
   advertencias: string[];
   analisis: AnalisisPlanta;
-  evaluacion?: Evaluacion;
   simulado: boolean;
 }
 
