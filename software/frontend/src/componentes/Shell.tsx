@@ -3,25 +3,11 @@ import { api } from "../api/cliente";
 import { descargarProyecto, leerArchivoProyecto, useProyecto } from "../estado/ProyectoContext";
 import PasoCasa from "../pasos/casa/PasoCasa";
 import PasoTerreno from "../pasos/terreno/PasoTerreno";
+import { CAPAS } from "./capas";
+import Lumo from "./lumo/Lumo";
 import { Boton, Etiqueta } from "./ui";
 
-/** Las 14 capas del MVP_01. Están construidas la 01 (terreno) y la planta de la 03 (casa); el resto muestra la secuencia. */
-const CAPAS = [
-  { n: "01", nombre: "Terreno", nivel: "núcleo" },
-  { n: "02", nombre: "Cimientos", nivel: "núcleo" },
-  { n: "03", nombre: "Casa · planta y estructura", nivel: "núcleo" },
-  { n: "04", nombre: "OSB", nivel: "núcleo" },
-  { n: "05", nombre: "Membrana exterior", nivel: "núcleo" },
-  { n: "06", nombre: "Rastreles de siding", nivel: "hook" },
-  { n: "07", nombre: "Siding", nivel: "hook" },
-  { n: "08", nombre: "Aislante de paredes", nivel: "hook" },
-  { n: "09", nombre: "Roofing", nivel: "núcleo" },
-  { n: "10", nombre: "Canaletas", nivel: "hook" },
-  { n: "11", nombre: "Durlock", nivel: "hook" },
-  { n: "12", nombre: "Mobiliario y terminaciones", nivel: "hook" },
-  { n: "13", nombre: "Plomería", nivel: "hook" },
-  { n: "14", nombre: "Eléctrico", nivel: "hook" },
-] as const;
+type Paso = "terreno" | "casa";
 
 export default function Shell() {
   const { proyecto, despachar, setEscena, setTrayectoria, setClima } = useProyecto();
@@ -34,7 +20,7 @@ export default function Shell() {
   };
   const [apiOk, setApiOk] = useState<boolean | null>(null);
   const [editandoNombre, setEditandoNombre] = useState(false);
-  const [paso, setPaso] = useState<"01" | "03">(proyecto.casa ? "03" : "01");
+  const [paso, setPaso] = useState<Paso>(proyecto.casa ? "casa" : "terreno");
   const archivoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -71,7 +57,7 @@ export default function Shell() {
         <div className="flex items-center gap-6">
           <span className="font-display text-lg tracking-tight select-none">
             ASSAMBL<span className="text-signal">(</span>
-            <span className="font-label text-[0.7em] font-normal">{paso === "01" ? "terreno" : "casa"}</span>
+            <span className="font-label text-[0.7em] font-normal">{paso}</span>
             <span className="text-signal">)</span>
           </span>
           {editandoNombre ? (
@@ -97,9 +83,10 @@ export default function Shell() {
               {proyecto.nombre}
             </button>
           )}
-          {paso === "01" && <Etiqueta estado={proyecto.terreno.estado} />}
+          {paso === "terreno" && <Etiqueta estado={proyecto.terreno.estado} />}
         </div>
         <div className="flex items-center gap-2">
+          <Lumo state={apiOk === false ? "sleep" : "idle"} size={26} title={apiOk === false ? "Lumo, sin conexión" : "Lumo"} />
           <span className={`font-label text-[11px] uppercase tracking-wide ${apiOk ? "text-resolved" : apiOk === false ? "text-signal" : "text-rebar"}`}>
             api {apiOk ? "conectada" : apiOk === false ? "sin conexión" : "…"}
           </span>
@@ -124,14 +111,14 @@ export default function Shell() {
       <nav className="border-r border-line bg-concrete overflow-y-auto">
         <div className="px-4 pt-4 pb-2 font-label text-[11px] uppercase tracking-widest text-rebar">Secuencia</div>
         <ol>
-          {CAPAS.map((c) => {
-            const activa = c.n === paso;
-            const disponible = c.n === "01" || c.n === "03";
+          {CAPAS.map((c, i) => {
+            const activa = c.id === paso;
+            const disponible = c.id === "terreno" || c.id === "casa";
             return (
-              <li key={c.n}>
+              <li key={c.id}>
                 <button
                   disabled={!disponible}
-                  onClick={() => setPaso(c.n as "01" | "03")}
+                  onClick={() => setPaso(c.id as Paso)}
                   className={`w-full text-left flex items-baseline gap-3 px-4 py-1.5 border-l-2 ${
                     activa
                       ? "border-signal bg-concrete-2"
@@ -141,7 +128,7 @@ export default function Shell() {
                   }`}
                   title={disponible ? "" : "Se habilita cuando la capa anterior está resuelta"}
                 >
-                  <span className={`font-label text-xs ${activa || disponible ? "text-signal" : ""}`}>{c.n}</span>
+                  <span className={`font-label text-xs ${activa || disponible ? "text-signal" : ""}`}>{String(i + 1).padStart(2, "0")}</span>
                   <span className={`flex-1 text-xs leading-snug ${activa ? "font-medium" : ""}`}>{c.nombre}</span>
                   <span className="font-label text-[9px] uppercase tracking-wide opacity-60">{c.nivel}</span>
                 </button>
@@ -160,7 +147,7 @@ export default function Shell() {
       </nav>
 
       <main className="min-h-0 min-w-0 overflow-hidden">
-        {paso === "01" ? <PasoTerreno apiOk={apiOk} /> : <PasoCasa key={proyecto.id} apiOk={apiOk} />}
+        {paso === "terreno" ? <PasoTerreno apiOk={apiOk} /> : <PasoCasa key={proyecto.id} apiOk={apiOk} />}
       </main>
     </div>
   );

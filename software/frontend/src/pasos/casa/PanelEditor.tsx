@@ -7,6 +7,7 @@ import {
   buscarAbertura,
   largo,
   superficieCubierta,
+  superficieGaleria,
   USOS,
   type AnalisisPlanta,
   type Casa,
@@ -15,6 +16,8 @@ import {
   type Uso,
 } from "../../modelo/casa";
 import { Boton, Dato, Etiqueta, Seccion } from "../../componentes/ui";
+import { buscarPieza, piezasInterior } from "../../modelo/muebles";
+import { PropiedadesMueble } from "./PropiedadesMueble";
 import type { Herramienta } from "./EditorPlanta";
 import { ASPECTO, contarDeclaradas, contarEstados, estadoDe, ORDEN_ESTADOS } from "./estados";
 import {
@@ -72,6 +75,7 @@ export function piezaDeId(casa: Casa, id: string): Pieza | null {
   const a = buscarAbertura(casa, id);
   if (a) return { tipo: "abertura", id, muro: a.muro.id };
   if (casa.ambientes.some((x) => x.id === id)) return { tipo: "ambiente", id };
+  if (buscarPieza(casa, id)) return { tipo: "mueble", id };
   return null;
 }
 
@@ -149,7 +153,7 @@ export default function PanelEditor(p: Props) {
         {p.seleccion ? (
           <Propiedades {...p} />
         ) : (
-          <p className="text-xs text-rebar">Nada. Tocá un muro, una abertura o un ambiente para ver y cambiar sus datos.</p>
+          <p className="text-xs text-rebar">Nada. Tocá un muro, una abertura, un ambiente o un mueble para ver y cambiar sus datos.</p>
         )}
       </Seccion>
 
@@ -245,6 +249,8 @@ export default function PanelEditor(p: Props) {
           />
           <Dato etiqueta="Muros · aberturas" valor={`${casa.muros.length} · ${casa.muros.reduce((s, m) => s + m.aberturas.length, 0)}`} />
           <Dato etiqueta="Ambientes" valor={casa.ambientes.length} />
+          {superficieGaleria(casa) > 0 && <Dato etiqueta="Galería" valor={superficieGaleria(casa).toFixed(1)} sufijo="m²" />}
+          <Dato etiqueta="Muebles y artefactos" valor={piezasInterior(casa).length} />
         </div>
         <button className="text-[11px] text-rebar hover:text-signal mt-3 underline underline-offset-2" onClick={p.empezarDeNuevo}>
           Empezar la planta de nuevo
@@ -310,6 +316,7 @@ function Numero({ valor, onCambio, paso = 0.05, min, max }: { valor: number; onC
 function Propiedades(p: Props) {
   const { casa, analisis, seleccion } = p;
   if (!seleccion) return null;
+  if (seleccion.tipo === "mueble") return <PropiedadesMueble casa={casa} id={seleccion.id} analisis={analisis} aplicar={p.aplicar} />;
   const estado = estadoDe(casa, seleccion, analisis);
   const reglas = (analisis?.verificaciones ?? []).filter((v) => v.piezas.includes(seleccion.id) && v.estado !== "comprobado_por_reglas");
   const revisar = () => p.aplicar(marcarRevisado(casa, new Set([seleccion.id])), seleccion);

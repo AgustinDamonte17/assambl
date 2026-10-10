@@ -8,6 +8,7 @@ import type {
   RespuestaAsistente,
   RespuestaImagen,
   ItemCatalogo,
+  PiezaInterior,
 } from "../modelo/casa";
 import type { AnalisisLote, Punto, RespuestaClima, RespuestaEscena, Trayectoria } from "../modelo/proyecto";
 
@@ -106,4 +107,40 @@ export const api = {
 
   analizarPlanta: (casa: Casa) =>
     pedir<AnalisisPlanta>("/api/casa/analizar", { method: "POST", body: JSON.stringify({ casa }) }),
+
+  /* Interior: muebles, galería y Lumo en la vista 3D */
+  amoblar: (casa: Casa, ambientes: string[] | null = null, reemplazar = false) =>
+    pedir<{ casa: Casa; notas: string[]; analisis: AnalisisPlanta }>("/api/casa/amoblar", {
+      method: "POST",
+      body: JSON.stringify({ casa, ambientes, reemplazar }),
+    }),
+
+  colocar: (casa: Casa, codigo: string, ambiente: string) =>
+    pedir<{ casa: Casa; pieza: PiezaInterior | null; motivo: string }>("/api/casa/colocar", {
+      method: "POST",
+      body: JSON.stringify({ casa, codigo, ambiente }),
+    }),
+
+  galeria: (casa: Casa, lado: string | null, fondo_m: number, lat: number | null) =>
+    pedir<{ casa: Casa; galeria: string; notas: string[] }>("/api/casa/galeria", {
+      method: "POST",
+      body: JSON.stringify({ casa, lado, fondo_m, lat }),
+    }),
+
+  conversarInterior: (casa: Casa, historial: MensajeChat[], lat: number | null) =>
+    pedir<RespuestaInterior>("/api/casa/interior/conversar", {
+      method: "POST",
+      body: JSON.stringify({ casa, historial, lat }),
+    }),
 };
+
+export interface RespuestaInterior {
+  mensaje: string;
+  operaciones: { tipo: string; [k: string]: unknown }[];
+  casa: Casa;
+  /** Cambios de muros que la interfaz aplica con el editor de planta. */
+  pendientes: { tipo: "mover_muro"; muro: string; delta_m: number }[];
+  notas: string[];
+  simulado: boolean;
+  analisis: AnalisisPlanta;
+}

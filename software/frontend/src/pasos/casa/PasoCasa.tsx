@@ -1,13 +1,18 @@
-/** Capa 03 · Casa. Recorrido: elegir cómo empezar → (charla → alternativas | imagen | ejemplo | dibujo) → editor.
- *  El editor siempre trabaja sobre `proyecto.casa`; lo anterior son maneras de llegar a una primera planta. */
+/** Capa Casa. Recorrido: elegir cómo empezar → (charla → alternativas | imagen | ejemplo | dibujo) → editor.
+ *  El editor siempre trabaja sobre `proyecto.casa`; lo anterior son maneras de llegar a una primera planta.
+ *  El editor tiene dos vistas de la misma casa: la planta 2D y la vista 3D amoblada. Comparten la selección,
+ *  el deshacer y las reglas; muros y aberturas se dibujan en la planta, los muebles se acomodan en las dos. */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../api/cliente";
 import { useProyecto } from "../../estado/ProyectoContext";
 import type { Proyecto, Punto } from "../../modelo/proyecto";
 import {
+  alturaMuros,
   casaVacia,
   extension,
+  superficieCubierta,
+  superficieGaleria,
   type Alternativa,
   type AnalisisPlanta,
   type Casa,
@@ -27,7 +32,11 @@ import ImportarImagen, { type Calco } from "./ImportarImagen";
 import Inicio, { EstadoAsistente } from "./Inicio";
 import PanelEditor, { piezaDeId } from "./PanelEditor";
 import { contarEstados, ORDEN_ESTADOS } from "./estados";
-import { borrarAbertura, borrarAmbiente, borrarMuro } from "./operaciones";
+import { borrarAbertura, borrarAmbiente, borrarMuro, borrarPieza, duplicarPieza, girarPieza } from "./operaciones";
+import { piezasInterior } from "../../modelo/muebles";
+import Lumo from "../../componentes/lumo/Lumo";
+import PanelInterior, { type Propuesta } from "./PanelInterior";
+import VistaCasa3D, { type Camara3D, type VistaCasa3DRef } from "./VistaCasa3D";
 
 type Pantalla = "inicio" | "charla" | "alternativas" | "imagen" | "editor";
 
@@ -73,6 +82,17 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
   const [encuadre, setEncuadre] = useState(0);
   const [aviso, setAviso] = useState<string | null>(null);
   const avisoTimer = useRef<number>(0);
+
+  // Vista 3D
+  const [vista, setVista] = useState<"planta" | "3d">("planta");
+  const [camara, setCamara] = useState<Camara3D>("suroeste");
+  const [encuadre3d, setEncuadre3d] = useState(0);
+  const [corte, setCorte] = useState<number | null>(null);
+  const [verMuebles, setVerMuebles] = useState(true);
+  const [propuesta, setPropuesta] = useState<Propuesta | null>(null);
+  const [historialInterior, setHistorialInterior] = useState<MensajeChat[]>([]);
+  const [amoblando, setAmoblando] = useState(false);
+  const vista3d = useRef<VistaCasa3DRef>(null);
 
   useEffect(() => {
     if (!apiOk) return;
@@ -132,6 +152,24 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
     const h = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
       const k = e.key.toLowerCase();
+      // Muebles: girar, duplicar y borrar, en las dos vistas.
+      if (seleccion?.tipo === "mueble" && casa && !propuesta) {
+        if (k === "r" && !e.ctrlKey && !e.metaKey) {
+          aplicar(girarPieza(casa, seleccion.id, e.shiftKey ? -1 : 1), seleccion);
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && k === "d") {
+          e.preventDefault();
+          const r = duplicarPieza(casa, seleccion.id);
+          if (r) aplicar(r.casa, { tipo: "mueble", id: r.id });
+          return;
+        }
+        if (k === "delete" || k === "backspace") {
+          e.preventDefault();
+          aplicar(borrarPieza(casa, seleccion.id), null);
+          return;
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && k === "z") {
         e.preventDefault();
         (e.shiftKey ? rehacer : deshacer)?.();
@@ -143,6 +181,10 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
         return;
       }
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (vista === "3d") {
+        if (k === "escape") setSeleccion(null);
+        return;
+      }
       if (k === "v") setHerramienta("seleccionar");
       else if (k === "m") setHerramienta("muro");
       else if (k === "a") setHerramienta("abertura");
@@ -159,7 +201,7 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [pantalla, seleccion, casa, aplicar, deshacer, rehacer]);
+  }, [pantalla, seleccion, casa, aplicar, deshacer, rehacer, vista, propuesta]);
 
   useEffect(() => {
     if (herramienta === "abertura" && !item) setItem(catalogo.find((i) => i.codigo === "ventana_150_110") ?? catalogo[0] ?? null);
@@ -245,6 +287,100 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
 
   const aceptarImagen = (r: RespuestaImagen, c: Calco) => abrirEnEditor(r.casa, c);
 
+  /* ------------------------------------------------ vista 3D */
+
+  /** Al entrar a la vista 3D por primera vez, la casa aparece amoblada (se puede deshacer). */
+  const verEn3D = async () => {
+    setVista("3d");
+    setEncuadre3d((n) => n + 1);
+    if (!casa || !apiOk || amoblando) return;
+    const marca = (casa.interior as { amoblado_automatico?: string } | undefined)?.amoblado_automatico;
+    if (marca || piezasInterior(casa).length) return;
+    setAmoblando(true);
+    try {
+      const r = await api.amoblar(casa);
+      aplicar({ ...r.casa, interior: { amoblado_automatico: new Date().toISOString().slice(0, 10) } }, null);
+      setHistorialInterior((h) => [
+        ...h,
+        {
+          rol: "asistente",
+          texto:
+            "Te propuse un amoblado para ver la casa habitada. Movelo, cambialo o pedime ajustes; si no te gusta, Ctrl+Z lo deshace." +
+            (r.notas.length ? ` ${r.notas.join(" ")}` : ""),
+        },
+      ]);
+    } catch (e) {
+      avisar(`No pude amoblar: ${(e as Error).message}`);
+    } finally {
+      setAmoblando(false);
+    }
+  };
+
+  const irAPlanta = (p: Pieza | null) => {
+    setVista("planta");
+    setPropuesta(null);
+    if (p) setSeleccion(p);
+    setHerramienta("seleccionar");
+  };
+
+  /** Lámina con la vista actual: título, la imagen y los datos de superficie. */
+  const exportarImagen = async () => {
+    if (!casa || !vista3d.current) return;
+    // La lámina sale sin selección ni resaltados.
+    setSeleccion(null);
+    setResaltadas(new Set());
+    await new Promise((ok) => setTimeout(ok, 150));
+    if (!vista3d.current) return;
+    const [W, H, img] = [1800, 1300, 1100];
+    const url = vista3d.current.capturar(W, img);
+    const lienzo = document.createElement("canvas");
+    lienzo.width = W;
+    lienzo.height = H;
+    const g = lienzo.getContext("2d")!;
+    await document.fonts.ready;
+    g.fillStyle = "#f3f2ef";
+    g.fillRect(0, 0, W, H);
+    const imagen = new Image();
+    await new Promise((ok) => {
+      imagen.onload = ok;
+      imagen.src = url;
+    });
+    g.drawImage(imagen, 0, 110, W, img);
+    g.fillStyle = "#7a7a78";
+    g.font = '500 22px "Chivo Mono", monospace';
+    g.fillText(proyecto.nombre.toUpperCase(), 64, 58);
+    g.fillStyle = "#111111";
+    g.font = '800 40px "Chivo", sans-serif';
+    g.fillText("Vista seccionada", 64, 100);
+    g.fillStyle = "#7a7a78";
+    g.font = '500 22px "Chivo Mono", monospace';
+    const fecha = new Date().toISOString().slice(0, 10);
+    g.textAlign = "right";
+    g.fillText(`ASSAMBL · ${fecha}`, W - 64, 58);
+    g.textAlign = "left";
+    g.strokeStyle = "rgba(17,17,17,0.2)";
+    g.beginPath();
+    g.moveTo(64, H - 80);
+    g.lineTo(W - 64, H - 80);
+    g.stroke();
+    const sup = superficieCubierta(casa);
+    const gal = superficieGaleria(casa);
+    g.fillStyle = "#111111";
+    g.font = '400 24px "Chivo", sans-serif';
+    g.fillText(
+      `${sup ? `${sup.toFixed(1)} m² cubiertos` : "Superficie a definir"}${gal ? ` + ${gal.toFixed(1)} m² de galería` : ""} · ${piezasInterior(casa).length} muebles y artefactos`,
+      64,
+      H - 44,
+    );
+    g.fillStyle = "#7a7a78";
+    g.font = '400 18px "Chivo", sans-serif';
+    g.fillText("Vista calculada desde la planta. Muros recortados para ver adentro; muebles en medidas reales.", 64, H - 16);
+    const a = document.createElement("a");
+    a.href = lienzo.toDataURL("image/png");
+    a.download = `${proyecto.nombre.replace(/[^\w-]+/g, "_")}_vista.png`;
+    a.click();
+  };
+
   /* ------------------------------------------------ pantallas */
 
   if (pantalla === "inicio")
@@ -313,12 +449,91 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
             Ver otras alternativas
           </button>
         )}
-        <span className="font-label text-[11px] uppercase tracking-widest text-rebar">Planta 2D</span>
+        <div className="flex border border-line">
+          {(["planta", "3d"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => (v === "3d" ? verEn3D() : irAPlanta(null))}
+              className={`font-label text-[11px] uppercase tracking-widest px-2.5 py-1 ${
+                vista === v ? "bg-ink text-concrete" : "text-rebar hover:text-ink"
+              }`}
+            >
+              {v === "planta" ? "Planta 2D" : "Vista 3D"}
+            </button>
+          ))}
+        </div>
         {analisis && <Etiqueta estado={estadoGlobal(casa, analisis)} />}
         <div className="flex-1" />
         {origenTexto(casa) && <span className="text-xs text-rebar truncate min-w-0">{origenTexto(casa)}</span>}
         <EstadoAsistente ia={ia} apiOk={apiOk} compacto />
       </div>
+      {vista === "3d" ? (
+        <div className="grid grid-cols-[1fr_360px] min-h-0">
+          <div className="relative min-h-0">
+            <VistaCasa3D
+              ref={vista3d}
+              casa={propuesta?.casa ?? casa}
+              analisis={propuesta ? null : analisis}
+              seleccion={seleccion}
+              setSeleccion={setSeleccion}
+              aplicar={aplicar}
+              corte={corte ?? Math.min(CORTE_INICIAL, alturaMuros(casa))}
+              camara={camara}
+              encuadre={encuadre3d}
+              resaltadas={resaltadas}
+              nuevas={propuesta?.nuevas ?? VACIO}
+              verEstados={verEstados}
+              verMuebles={verMuebles}
+              soloLectura={!!propuesta}
+            />
+            {propuesta && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-concrete-2 border border-[#6c4dff] px-3 py-1.5 text-xs shadow">
+                <Lumo state="success" size={26} />
+                <span>Propuesta de Lumo: {propuesta.mensaje}</span>
+              </div>
+            )}
+            {amoblando && (
+              <div className="absolute inset-0 grid place-items-center bg-concrete/60">
+                <div className="flex flex-col items-center gap-2">
+                  <Lumo state="build" size={72} />
+                  <span className="text-sm">Amoblando la casa…</span>
+                </div>
+              </div>
+            )}
+            {aviso && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-6 bg-ink text-concrete text-xs px-3 py-2 shadow">{aviso}</div>
+            )}
+          </div>
+          <aside className="border-l border-line bg-concrete min-h-0">
+            <PanelInterior
+              casa={propuesta?.casa ?? casa}
+              analisis={propuesta ? null : analisis}
+              aplicar={aplicar}
+              seleccion={seleccion}
+              setSeleccion={setSeleccion}
+              apiOk={apiOk}
+              lat={lat}
+              camara={camara}
+              setCamara={(c) => {
+                setCamara(c);
+                setEncuadre3d((n) => n + 1);
+              }}
+              corte={corte ?? Math.min(CORTE_INICIAL, alturaMuros(casa))}
+              setCorte={setCorte}
+              verMuebles={verMuebles}
+              setVerMuebles={setVerMuebles}
+              exportar={exportarImagen}
+              irAPlanta={irAPlanta}
+              resaltar={(ids) => setResaltadas(new Set(ids))}
+              avisar={avisar}
+              propuesta={propuesta}
+              setPropuesta={setPropuesta}
+              historial={historialInterior}
+              setHistorial={setHistorialInterior}
+            />
+          </aside>
+        </div>
+      ) : (
       <div className="grid grid-cols-[1fr_340px] min-h-0">
         <div className="relative min-h-0">
           <EditorPlanta
@@ -377,9 +592,15 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
           />
         </aside>
       </div>
+      )}
     </div>
   );
 }
+
+const VACIO = new Set<string>();
+
+/** Los muros arrancan cortados a la altura de una mesada alta: se ve adentro sin perder los vanos. */
+const CORTE_INICIAL = 1.35;
 
 /** El estado de la planta es el más grave de los que se ven en sus piezas. */
 function estadoGlobal(casa: Casa, analisis: AnalisisPlanta) {

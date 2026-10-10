@@ -4,7 +4,7 @@ import type { Alternativa, AnalisisPlanta, Casa } from "../../modelo/casa";
 import { extension } from "../../modelo/casa";
 import { Aviso, Boton, Etiqueta } from "../../componentes/ui";
 import DibujoPlanta, { encuadrar, Tramas } from "./DibujoPlanta";
-import Monti from "./Monti";
+import Lumo from "../../componentes/lumo/Lumo";
 
 export function MiniPlanta({ casa, analisis, ancho = 340, alto = 220 }: { casa: Casa; analisis: AnalisisPlanta | null; ancho?: number; alto?: number }) {
   const ext = extension(casa);
@@ -34,7 +34,7 @@ export default function Alternativas({ alternativas, cargando, error, elegir, vo
           ← Volver a la charla
         </button>
         <div className="flex items-center gap-4 mt-3 mb-5">
-          <Monti animo={cargando ? "pensando" : "contento"} tamano={52} />
+          <Lumo state={cargando ? "build" : error ? "oops" : "success"} size={64} />
           <div>
             <h1 className="font-head font-extrabold text-2xl tracking-tight">Elegí un punto de partida</h1>
             <p className="text-rebar text-sm mt-1 max-w-2xl">

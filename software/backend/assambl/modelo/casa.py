@@ -24,15 +24,19 @@ ESQUEMA_CASA = "assambl/casa@0.1"
 
 Uso = Literal[
     "social", "cocina", "dormitorio", "bano", "lavadero", "oficina",
-    "vestidor", "deposito", "circulacion", "otro",
+    "vestidor", "deposito", "circulacion", "galeria", "otro",
 ]
 USOS: tuple[str, ...] = Uso.__args__  # type: ignore[attr-defined]
+
+# La galería es un ambiente exterior: piso propio y techo, sin muros. No suma a la
+# superficie cubierta cerrada (la huella) ni necesita puerta ni ventana.
+USOS_EXTERIORES: tuple[str, ...] = ("galeria",)
 
 # Superficie orientativa por uso (m²) cuando el usuario no la dice. Son valores
 # de partida para una vivienda de una planta, no mínimos normativos.
 AREA_TIPICA_M2: dict[str, float] = {
     "social": 30.0, "cocina": 9.0, "dormitorio": 11.0, "bano": 4.5, "lavadero": 4.0,
-    "oficina": 8.0, "vestidor": 4.0, "deposito": 3.0, "circulacion": 6.0, "otro": 8.0,
+    "oficina": 8.0, "vestidor": 4.0, "deposito": 3.0, "circulacion": 6.0, "galeria": 15.0, "otro": 8.0,
 }
 
 
@@ -132,3 +136,21 @@ class Rectangulo(BaseModel):
     y0: float
     x1: float
     y1: float
+
+
+# ---------------------------------------------------------------- interior
+
+class PiezaInterior(_Abierto):
+    """Mueble o artefacto ubicado en la planta (`casa.mobiliario` o `casa.artefactos`).
+
+    `tipo` es el código del catálogo. `medidas_m` = [ancho, fondo, alto] en el sistema de
+    la pieza; con `giro_deg` = 0 la espalda mira al sur (−Y) y el frente al norte (+Y).
+    """
+
+    id: str
+    tipo: str
+    ambiente: str | None = None
+    centro_m: tuple[float, float]
+    medidas_m: list[float] | None = None
+    giro_deg: float = 0.0
+    estado: Estado | None = None

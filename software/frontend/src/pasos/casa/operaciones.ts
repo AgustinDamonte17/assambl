@@ -7,6 +7,7 @@
 
 import type { Estado, Punto } from "../../modelo/proyecto";
 import {
+  contiene,
   espesor,
   esHorizontal,
   largo,
@@ -16,8 +17,10 @@ import {
   type Casa,
   type ItemCatalogo,
   type Muro,
+  type PiezaInterior,
   type Uso,
 } from "../../modelo/casa";
+import { huella, itemMueble, listaDe, medidas, piezasInterior } from "../../modelo/muebles";
 
 const EPS = 0.02;
 
@@ -140,7 +143,21 @@ export function moverMuro(casa: Casa, id: string, delta: number): Casa {
     });
     return cambio ? { ...a, contorno_m: contorno, estado: tocado(a.estado) } : a;
   });
-  return recalcularHuella({ ...casa, muros, ambientes });
+  // Los muebles con la espalda (o un costado) contra el muro lo acompañan.
+  const pegada = (pz: PiezaInterior) => {
+    const r = huella(pz);
+    const bordes = eje === 0 ? [r[0], r[2]] : [r[1], r[3]];
+    const [lo2, hi2] = eje === 0 ? [r[1], r[3]] : [r[0], r[2]];
+    return bordes.some((b) => Math.abs(Math.abs(b - fijo) - t) < 0.06) && hi2 > lo && lo2 < hi;
+  };
+  const arrastrar = (lista?: PiezaInterior[]) =>
+    lista?.map((pz) => {
+      if (!pegada(pz)) return pz;
+      const c: Punto = [pz.centro_m[0], pz.centro_m[1]];
+      c[eje] = redondear(c[eje] + delta, 0.005);
+      return { ...pz, centro_m: c };
+    });
+  return recalcularHuella({ ...casa, muros, ambientes, mobiliario: arrastrar(casa.mobiliario), artefactos: arrastrar(casa.artefactos) });
 }
 
 /* ---------------------------------------------------------------- aberturas */
@@ -238,6 +255,8 @@ export function marcarRevisado(casa: Casa, ids?: Set<string>): Casa {
     ...casa,
     muros: casa.muros.map((m) => ({ ...marcar(m), aberturas: m.aberturas.map(marcar) })),
     ambientes: casa.ambientes.map(marcar),
+    mobiliario: casa.mobiliario?.map(marcar),
+    artefactos: casa.artefactos?.map(marcar),
   };
 }
 
@@ -298,4 +317,97 @@ export function recalcularHuella(casa: Casa): Casa {
     return [redondear(b[0] + d * (n1[0] + n2[0]), 0.005), redondear(b[1] + d * (n1[1] + n2[1]), 0.005)] as Punto;
   });
   return { ...casa, huella_m: huella };
+}
+
+/* ---------------------------------------------------------------- muebles y artefactos */
+
+function conPiezas(casa: Casa, f: (p: PiezaInterior) => PiezaInterior | null): Casa {
+  const aplicarA = (lista?: PiezaInterior[]) => lista?.map(f).filter((p): p is PiezaInterior => !!p);
+  return { ...casa, mobiliario: aplicarA(casa.mobiliario), artefactos: aplicarA(casa.artefactos) };
+}
+
+/** Ambiente que contiene un punto (el de menor superficie si se superponen). */
+export function ambienteEn(casa: Casa, q: Punto): string | null {
+  const dentro = casa.ambientes.filter((a) => a.contorno_m && a.contorno_m.length >= 3 && contiene(a.contorno_m, q[0], q[1]));
+  return dentro[0]?.id ?? null;
+}
+
+export function agregarPieza(casa: Casa, codigo: string, centro: Punto, giro = 0, ambiente?: string | null): { casa: Casa; id: string } {
+  const it = itemMueble(codigo);
+  const id = idUnico(slug(it?.nombre ?? codigo), new Set(piezasInterior(casa).map((p) => p.id)));
+  const pieza: PiezaInterior = {
+    id,
+    tipo: codigo,
+    ambiente: ambiente ?? ambienteEn(casa, centro),
+    centro_m: [redondear(centro[0], 0.005), redondear(centro[1], 0.005)],
+    medidas_m: it ? [...it.medidas_m] : [0.6, 0.6, 0.9],
+    giro_deg: giro,
+    origen: "usuario",
+    estado: "propuesto",
+  };
+  const lista = listaDe(codigo);
+  return { casa: { ...casa, [lista]: [...(casa[lista] ?? []), pieza] }, id };
+}
+
+export function moverPieza(casa: Casa, id: string, centro: Punto): Casa {
+  return conPiezas(casa, (p) =>
+    p.id === id
+      ? { ...p, centro_m: [redondear(centro[0], 0.005), redondear(centro[1], 0.005)], ambiente: ambienteEn(casa, centro) ?? p.ambiente, estado: tocado(p.estado) }
+      : p,
+  );
+}
+
+/** Gira 90° (antihorario con sentido 1) alrededor del centro. */
+export function girarPieza(casa: Casa, id: string, sentido: 1 | -1 = 1): Casa {
+  return conPiezas(casa, (p) => (p.id === id ? { ...p, giro_deg: (((p.giro_deg ?? 0) + 90 * sentido) % 360 + 360) % 360, estado: tocado(p.estado) } : p));
+}
+
+export function borrarPieza(casa: Casa, id: string): Casa {
+  return conPiezas(casa, (p) => (p.id === id ? null : p));
+}
+
+export function duplicarPieza(casa: Casa, id: string): { casa: Casa; id: string } | null {
+  const p = piezasInterior(casa).find((x) => x.id === id);
+  if (!p) return null;
+  const [a] = medidas(p);
+  const g = ((p.giro_deg ?? 0) * Math.PI) / 180;
+  const r = agregarPieza(casa, p.tipo, [p.centro_m[0] + Math.cos(g) * (a + 0.1), p.centro_m[1] + Math.sin(g) * (a + 0.1)], p.giro_deg, p.ambiente);
+  return { casa: conPiezas(r.casa, (x) => (x.id === r.id ? { ...x, medidas_m: p.medidas_m } : x)), id: r.id };
+}
+
+/** Cambia el modelo (otra cama, otro sofá) dejando la espalda contra el mismo lugar. */
+export function cambiarModelo(casa: Casa, id: string, codigo: string): Casa {
+  const nuevo = itemMueble(codigo);
+  const p = piezasInterior(casa).find((x) => x.id === id);
+  if (!nuevo || !p) return casa;
+  const [, fViejo] = medidas(p);
+  const [a, f, h] = nuevo.medidas_m;
+  const g = ((p.giro_deg ?? 0) * Math.PI) / 180;
+  const d = (f - fViejo) / 2;
+  const centro: Punto = [redondear(p.centro_m[0] - Math.sin(g) * d, 0.005), redondear(p.centro_m[1] + Math.cos(g) * d, 0.005)];
+  const sin = borrarPieza(casa, id);
+  const actualizado: PiezaInterior = { ...p, tipo: codigo, medidas_m: [a, f, h], centro_m: centro, estado: tocado(p.estado) };
+  const lista = listaDe(codigo);
+  return { ...sin, [lista]: [...(sin[lista] ?? []), actualizado] };
+}
+
+/** Acerca la pieza a los bordes de su ambiente: si un lado de la huella queda a menos de `iman` de una
+ *  cara de muro, se pega. Así arrastrar un placard o una cama los deja contra la pared. */
+export function imantarPieza(casa: Casa, p: PiezaInterior, centro: Punto, iman = 0.12): Punto {
+  const prueba = { ...p, centro_m: centro };
+  const [x0, y0, x1, y1] = huella(prueba);
+  const amb = casa.ambientes.find((a) => a.id === (ambienteEn(casa, centro) ?? p.ambiente));
+  if (!amb?.contorno_m) return centro;
+  const xs = amb.contorno_m.map((q) => q[0]);
+  const ys = amb.contorno_m.map((q) => q[1]);
+  let [cx, cy] = centro;
+  let mejorX = iman;
+  let mejorY = iman;
+  for (const x of xs) {
+    for (const borde of [x0, x1]) if (Math.abs(x - borde) < mejorX) { mejorX = Math.abs(x - borde); cx = centro[0] + (x - borde); }
+  }
+  for (const y of ys) {
+    for (const borde of [y0, y1]) if (Math.abs(y - borde) < mejorY) { mejorY = Math.abs(y - borde); cy = centro[1] + (y - borde); }
+  }
+  return [cx, cy];
 }

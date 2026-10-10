@@ -18,7 +18,18 @@ import {
 } from "../../modelo/casa";
 import DibujoPlanta, { aMetros, aPantalla, encuadrar, Tramas, type Vista } from "./DibujoPlanta";
 import type { Calco } from "./ImportarImagen";
-import { agregarAbertura, agregarAmbiente, agregarMuro, entraAbertura, modificarAbertura, moverMuro, redondear } from "./operaciones";
+import { buscarPieza } from "../../modelo/muebles";
+import {
+  agregarAbertura,
+  agregarAmbiente,
+  agregarMuro,
+  entraAbertura,
+  imantarPieza,
+  modificarAbertura,
+  moverMuro,
+  moverPieza,
+  redondear,
+} from "./operaciones";
 
 export type Herramienta = "seleccionar" | "muro" | "abertura" | "ambiente";
 
@@ -45,7 +56,8 @@ type Arrastre =
   | { tipo: "pan"; x: number; y: number; ox: number; oy: number }
   | { tipo: "muro"; id: string; desde: Punto; original: Casa; delta: number }
   | { tipo: "abertura"; id: string; muro: string; agarre: number; original: Casa; pos: number }
-  | { tipo: "ambiente"; desde: Punto; hasta: Punto };
+  | { tipo: "ambiente"; desde: Punto; hasta: Punto }
+  | { tipo: "mueble"; id: string; agarre: Punto; original: Casa; centro: Punto };
 
 const IMAN_PX = 10;
 
@@ -216,7 +228,7 @@ export default function EditorPlanta(p: Props) {
 
   const alTocarPieza = (pieza: Pieza, e: ReactPointerEvent) => {
     if (e.button !== 0 || espacio.current) return;
-    if (p.herramienta === "abertura" && pieza.tipo !== "ambiente") {
+    if (p.herramienta === "abertura" && pieza.tipo !== "ambiente" && pieza.tipo !== "mueble") {
       e.stopPropagation();
       colocarAbertura(metrosDe(e));
       return;
@@ -233,6 +245,10 @@ export default function EditorPlanta(p: Props) {
       if (!hallada) return;
       const t = proyectar(hallada.muro, q).t;
       setArrastre({ tipo: "abertura", id: pieza.id, muro: pieza.muro, agarre: t - hallada.abertura.posicion_m, original: p.casa, pos: hallada.abertura.posicion_m });
+    } else if (pieza.tipo === "mueble") {
+      const pz = buscarPieza(p.casa, pieza.id);
+      if (!pz) return;
+      setArrastre({ tipo: "mueble", id: pieza.id, agarre: [pz.centro_m[0] - q[0], pz.centro_m[1] - q[1]], original: p.casa, centro: pz.centro_m });
     }
   };
 
@@ -265,11 +281,20 @@ export default function EditorPlanta(p: Props) {
       }
     } else if (arrastre.tipo === "ambiente") {
       setArrastre({ ...arrastre, hasta: imantar(q, null).p });
+    } else if (arrastre.tipo === "mueble") {
+      const pz = buscarPieza(arrastre.original, arrastre.id);
+      if (!pz) return;
+      const bruto: Punto = [redondear(q[0] + arrastre.agarre[0], paso), redondear(q[1] + arrastre.agarre[1], paso)];
+      const c = imantarPieza(arrastre.original, pz, bruto, 10 / vista.escala);
+      if (c[0] !== arrastre.centro[0] || c[1] !== arrastre.centro[1]) {
+        setArrastre({ ...arrastre, centro: c });
+        setTemporal(moverPieza(arrastre.original, arrastre.id, c));
+      }
     }
   };
 
   const alSoltar = () => {
-    if (arrastre?.tipo === "muro" || arrastre?.tipo === "abertura") {
+    if (arrastre?.tipo === "muro" || arrastre?.tipo === "abertura" || arrastre?.tipo === "mueble") {
       if (temporal) p.aplicar(temporal);
     } else if (arrastre?.tipo === "ambiente") {
       const [a, b] = [arrastre.desde, arrastre.hasta];

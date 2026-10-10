@@ -14,7 +14,7 @@ software/
       componentes/   Shell, barra de pasos, controles reutilizables
       pasos/         Un directorio por capa del MVP; la interfaz es secuencial y guiada
         terreno/     Capa 01: ubicación, lote, visor 3D, clima
-        casa/        Capa 03: cómo empezar (IA, imagen, dibujo), alternativas y editor de planta 2D
+        casa/        Capa Casa: cómo empezar, alternativas, editor de planta 2D y vista 3D amoblada
   backend/
     api/             FastAPI: rutas HTTP finas que llaman al paquete assambl
     assambl/         Paquete Python del producto (estructura de MVP_01 §4.6)
@@ -26,7 +26,7 @@ software/
       capas/         Composición por capa: terreno.py, casa.py (plantas desde ambientes)
       reglas/        r01_terreno.py … r14_electrico.py, cada regla con ID, versión y origen (hoy r01 y r03)
       ia/            Asistente de diseño y proveedores de IA intercambiables (OpenAI, Anthropic, simulado)
-      catalogo/      ar.json (perfil Argentina): aberturas; se completa con el resto de la capa 03
+      catalogo/      ar.json (perfil Argentina): aberturas y mobiliario (muebles y artefactos)
     tests/           pytest (test_*.py) y sondas manuales (probar_*.py)
     cache/           Mosaicos, clima y salidas; regenerable, ignorada por git
   docs/              Decisiones técnicas y fuentes de datos
@@ -78,10 +78,11 @@ Se busca en `backend/.env`, `software/.env` y la raíz del repositorio, en ese o
 
 NASA POWER no necesita credencial, así que el clima funciona siempre.
 
-## Asistente de IA (capa 03)
+## Asistente de IA: Lumo
 
-El paso Casa usa IA para conversar con el usuario y leer bosquejos. El prestador se elige en el mismo `.env`
-y se cambia sin tocar código:
+Lumo es el asistente de Assambl en toda la aplicación. En el paso Casa conversa con el usuario para armar el
+programa, lee bosquejos y, en la vista 3D, propone muebles y cambios de los espacios. El prestador de IA se
+elige en el mismo `.env` y se cambia sin tocar código:
 
 ```
 IA_PROVEEDOR=openai          # openai | anthropic | simulado (vacío: el primero con clave)
@@ -103,13 +104,20 @@ dice qué proveedor está activo. El diseño completo del paso está en [`docs/p
 
 El proyecto se guarda automáticamente en el navegador y se exporta/importa como `casa.assambl.json`.
 
-### Capa 03 · Casa (planta)
+### Capa 02 · Casa (planta, volumen e interior)
 
-1. **Cómo empezar.** Contarla con palabras (IA), armarla paso a paso con Monti (IA con preguntas y opciones),
+1. **Cómo empezar.** Contarla con palabras (IA), armarla paso a paso con Lumo (IA con preguntas y opciones),
    subir un bosquejo o un plano (IA con visión), dibujar desde cero o abrir el ejemplo Angus Ranch.
 2. **Alternativas.** El programa armado en la charla se resuelve en tres partidos de planta para elegir.
 3. **Editor 2D.** Muros a 90° con imanes, puertas y ventanas del catálogo, ambientes con nombre, arrastre de
    muros que arrastra lo conectado, deshacer, y el estado de cada pieza verificado en vivo con las reglas R03.
+4. **Vista 3D.** La misma casa levantada, con los muros cortados para ver adentro y amoblada con un catálogo
+   de 55 muebles y artefactos en medidas reales. Se mueven y giran en 3D o en la planta, se suma una galería
+   y se le piden cambios a Lumo, que los muestra como vista previa. Las reglas RI verifican espacios de uso,
+   puertas y pasillos.
+
+El orden de las capas se ajusta a medida que se construye: instalaciones y cimientos van al final, porque
+resultan de las decisiones de la casa.
 
 ### Salida de la fase de terreno
 
