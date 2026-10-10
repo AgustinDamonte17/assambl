@@ -26,11 +26,10 @@ import EditorPlanta, { type Herramienta } from "./EditorPlanta";
 import ImportarImagen, { type Calco } from "./ImportarImagen";
 import Inicio, { EstadoAsistente } from "./Inicio";
 import PanelEditor, { piezaDeId } from "./PanelEditor";
-import Referencias from "./Referencias";
 import { contarEstados, ORDEN_ESTADOS } from "./estados";
 import { borrarAbertura, borrarAmbiente, borrarMuro } from "./operaciones";
 
-type Pantalla = "inicio" | "charla" | "alternativas" | "imagen" | "referencias" | "editor";
+type Pantalla = "inicio" | "charla" | "alternativas" | "imagen" | "editor";
 
 /** Catálogo mínimo para dibujar sin API; el completo viene de backend/assambl/catalogo/ar.json. */
 const CATALOGO_LOCAL: ItemCatalogo[] = [
@@ -59,15 +58,6 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
 
   // Imagen
   const [archivo, setArchivo] = useState<File | null>(null);
-
-  // Plantas de referencia y fundamentos
-  const [pestanaRef, setPestanaRef] = useState<"plantas" | "teoria">("plantas");
-  const [volverDeRef, setVolverDeRef] = useState<Pantalla>("inicio");
-  const verReferencias = (p: "plantas" | "teoria", desde: Pantalla) => {
-    setPestanaRef(p);
-    setVolverDeRef(desde);
-    setPantalla("referencias");
-  };
   const [calco, setCalco] = useState<Calco | null>(null);
 
   // Editor
@@ -97,10 +87,10 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
       return;
     }
     const t = setTimeout(() => {
-      api.analizarPlanta(casa, lat).then(setAnalisis).catch(() => setAnalisis(null));
+      api.analizarPlanta(casa).then(setAnalisis).catch(() => setAnalisis(null));
     }, 250);
     return () => clearTimeout(t);
-  }, [casa, apiOk, lat]);
+  }, [casa, apiOk]);
 
   const avisar = useCallback((texto: string) => {
     setAviso(texto);
@@ -271,7 +261,6 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
         }}
         empezarDibujo={() => abrirEnEditor(casaVacia(proyecto.nombre))}
         abrirEjemplo={abrirEjemplo}
-        verReferencias={() => verReferencias("plantas", "inicio")}
         volverAlEditor={() => setPantalla("editor")}
       />
     );
@@ -298,18 +287,6 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
         error={error}
         elegir={(a) => abrirEnEditor(a.casa)}
         volver={() => setPantalla("charla")}
-        verReferencias={() => verReferencias("teoria", "alternativas")}
-      />
-    );
-
-  if (pantalla === "referencias")
-    return (
-      <Referencias
-        lat={lat}
-        pestana={pestanaRef}
-        setPestana={setPestanaRef}
-        elegir={(c) => abrirEnEditor(c)}
-        volver={() => setPantalla(volverDeRef === "editor" && !casa ? "inicio" : volverDeRef)}
       />
     );
 
@@ -397,7 +374,6 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
             rehacer={rehacer}
             resaltar={(ids) => setResaltadas(new Set(ids))}
             empezarDeNuevo={() => setPantalla("inicio")}
-            verTeoria={() => verReferencias("teoria", "editor")}
           />
         </aside>
       </div>
@@ -416,7 +392,6 @@ function origenTexto(casa: Casa): string {
   if (!o) return "";
   if (o.fuente === "imagen") return "Planta leída de una imagen";
   if (typeof o.partido === "string") return `Alternativa «${o.partido.replace("_", " ")}»`;
-  if (typeof o.referencia === "string") return String(o.nota ?? "Planta de referencia");
   if (typeof o.fuente === "string" && o.fuente.endsWith(".py")) return `Transcripción de ${o.fuente}`;
   return "";
 }
