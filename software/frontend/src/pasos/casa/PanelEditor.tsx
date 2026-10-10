@@ -108,18 +108,18 @@ export default function PanelEditor(p: Props) {
               }`}
             >
               {h.nombre}
-              <kbd className="text-[10px] text-rebar">{h.tecla}</kbd>
+              <kbd className="font-label text-[10px] text-rebar">{h.tecla}</kbd>
             </button>
           ))}
         </div>
-        {ayuda && <p className="text-[10px] text-rebar leading-snug mt-2">{ayuda}</p>}
+        {ayuda && <p className="text-[11px] text-rebar leading-snug mt-2">{ayuda}</p>}
         {p.herramienta === "muro" && (
           <div className="flex gap-1 mt-2">
             {SISTEMAS.map((s) => (
               <button
                 key={s.id}
                 onClick={() => p.setSistemaMuro(s.id)}
-                className={`flex-1 border px-1 py-1 text-[10px] ${p.sistemaMuro === s.id ? "border-signal bg-signal/10" : "border-line"}`}
+                className={`flex-1 border px-1 py-1 text-[11px] ${p.sistemaMuro === s.id ? "border-signal bg-signal/10" : "border-line"}`}
               >
                 {s.nombre}
               </button>
@@ -137,7 +137,7 @@ export default function PanelEditor(p: Props) {
                   }`}
                 >
                   <span>{it.nombre}</span>
-                  <span className="text-rebar text-[10px]">{it.uso}</span>
+                  <span className="font-label text-rebar text-[10px]">{it.uso}</span>
                 </button>
               </li>
             ))}
@@ -184,13 +184,13 @@ export default function PanelEditor(p: Props) {
                   }}
                 >
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-[11px]" style={{ color: ASPECTO[v.estado].acento }}>
+                    <span className="font-label font-medium text-[11px]" style={{ color: ASPECTO[v.estado].acento }}>
                       {ASPECTO[v.estado].glifo}
                     </span>
-                    <span className="text-[11px]">{v.detalle || v.descripcion}</span>
+                    <span className="text-xs leading-snug">{v.detalle || v.descripcion}</span>
                   </div>
-                  <div className="text-[9px] text-rebar">
-                    {v.id} · {v.descripcion}
+                  <div className="text-[10px] text-rebar leading-snug">
+                    <span className="font-label">{v.id}</span> · {v.descripcion}
                   </div>
                 </button>
               </li>
@@ -202,7 +202,7 @@ export default function PanelEditor(p: Props) {
       <Seccion
         titulo="Estados"
         accion={
-          <label className="text-[10px] flex items-center gap-1 text-rebar">
+          <label className="text-[11px] flex items-center gap-1 text-rebar">
             <input type="checkbox" checked={p.verEstados} onChange={(e) => p.setVerEstados(e.target.checked)} />
             ver sobre la planta
           </label>
@@ -212,11 +212,11 @@ export default function PanelEditor(p: Props) {
           {ORDEN_ESTADOS.map((e) => (
             <li key={e} className="flex items-start gap-2" title={ASPECTO[e].explicacion}>
               <Muestra estado={e} />
-              <span className="flex-1 text-[11px] leading-tight">
+              <span className="flex-1 text-xs leading-tight">
                 {ASPECTO[e].nombre}
-                <span className="block text-[9px] text-rebar">{ASPECTO[e].explicacion}</span>
+                <span className="block text-[10px] text-rebar leading-snug mt-px">{ASPECTO[e].explicacion}</span>
               </span>
-              <span className="text-[11px] text-rebar">{cuenta[e] ?? 0}</span>
+              <span className="font-label text-[11px] text-rebar">{cuenta[e] ?? 0}</span>
             </li>
           ))}
         </ul>
@@ -268,7 +268,7 @@ function Muestra({ estado }: { estado: Estado }) {
         strokeDasharray={a.borde ? "3 2" : undefined}
       />
       {a.glifo && (
-        <text x={26} y={11} fontSize={10} fontWeight={700} textAnchor="middle" fill={a.acento}>
+        <text x={26} y={11} fontSize={10} fontWeight={500} textAnchor="middle" fill={a.acento} className="font-label">
           {a.glifo}
         </text>
       )}
@@ -279,7 +279,7 @@ function Muestra({ estado }: { estado: Estado }) {
 function Fila({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
   return (
     <label className="grid grid-cols-[92px_1fr] items-center gap-2 py-0.5">
-      <span className="text-[11px] text-rebar">{etiqueta}</span>
+      <span className="text-xs text-rebar">{etiqueta}</span>
       {children}
     </label>
   );
@@ -302,7 +302,7 @@ function Numero({ valor, onCambio, paso = 0.05, min, max }: { valor: number; onC
         onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
         className="w-full bg-concrete-2 border border-line px-1.5 py-0.5 text-xs focus:outline-none focus:border-signal"
       />
-      <span className="text-[10px] text-rebar">m</span>
+      <span className="font-label text-[10px] text-rebar">m</span>
     </span>
   );
 }
@@ -316,8 +316,8 @@ function Propiedades(p: Props) {
   const encabezado = (titulo: string) => (
     <div className="flex items-start justify-between gap-2 mb-1.5">
       <div>
-        <div className="text-sm font-semibold">{titulo}</div>
-        <div className="text-[10px] text-rebar">{seleccion.id}</div>
+        <div className="font-head text-sm font-bold leading-snug">{titulo}</div>
+        <div className="font-label text-[10px] text-rebar">{seleccion.id}</div>
       </div>
       <Etiqueta estado={estado} />
     </div>
@@ -325,7 +325,7 @@ function Propiedades(p: Props) {
   const pie = (borrar: () => void) => (
     <>
       {reglas.map((v, i) => (
-        <p key={i} className="text-[10px] leading-snug border-l-2 pl-2 mt-1" style={{ borderColor: ASPECTO[v.estado].acento }}>
+        <p key={i} className="text-[11px] leading-snug border-l-2 pl-2 mt-1" style={{ borderColor: ASPECTO[v.estado].acento }}>
           {v.detalle || v.descripcion}
         </p>
       ))}
@@ -370,7 +370,7 @@ function Propiedades(p: Props) {
             }}
           />
         </Fila>
-        <div className="text-[10px] text-rebar">
+        <div className="font-label text-[10px] text-rebar">
           eje ({m.eje.desde_m.map((v) => v.toFixed(2)).join(", ")}) → ({m.eje.hasta_m.map((v) => v.toFixed(2)).join(", ")}) ·{" "}
           {m.aberturas.length} abertura{m.aberturas.length === 1 ? "" : "s"}
         </div>
@@ -439,7 +439,7 @@ function Propiedades(p: Props) {
             </Boton>
           </div>
         )}
-        <div className="text-[10px] text-rebar mt-1">en {muro.id} ({largo(muro).toFixed(2)} m)</div>
+        <div className="font-label text-[10px] text-rebar mt-1">en {muro.id} ({largo(muro).toFixed(2)} m)</div>
         {pie(() => p.aplicar(borrarAbertura(casa, muro.id, o.id), null))}
       </div>
     );

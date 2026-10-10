@@ -71,7 +71,7 @@ export default function Shell() {
         <div className="flex items-center gap-6">
           <span className="font-display text-lg tracking-tight select-none">
             ASSAMBL<span className="text-signal">(</span>
-            <span className="font-mono text-[0.7em] font-normal">{paso === "01" ? "terreno" : "casa"}</span>
+            <span className="font-label text-[0.7em] font-normal">{paso === "01" ? "terreno" : "casa"}</span>
             <span className="text-signal">)</span>
           </span>
           {editandoNombre ? (
@@ -100,7 +100,7 @@ export default function Shell() {
           {paso === "01" && <Etiqueta estado={proyecto.terreno.estado} />}
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-[11px] uppercase tracking-wide ${apiOk ? "text-resolved" : apiOk === false ? "text-signal" : "text-rebar"}`}>
+          <span className={`font-label text-[11px] uppercase tracking-wide ${apiOk ? "text-resolved" : apiOk === false ? "text-signal" : "text-rebar"}`}>
             api {apiOk ? "conectada" : apiOk === false ? "sin conexión" : "…"}
           </span>
           <Boton onClick={nuevo}>Nuevo</Boton>
@@ -122,7 +122,7 @@ export default function Shell() {
       </header>
 
       <nav className="border-r border-line bg-concrete overflow-y-auto">
-        <div className="px-4 pt-4 pb-2 text-[11px] uppercase tracking-widest text-rebar">Secuencia</div>
+        <div className="px-4 pt-4 pb-2 font-label text-[11px] uppercase tracking-widest text-rebar">Secuencia</div>
         <ol>
           {CAPAS.map((c) => {
             const activa = c.n === paso;
@@ -132,7 +132,7 @@ export default function Shell() {
                 <button
                   disabled={!disponible}
                   onClick={() => setPaso(c.n as "01" | "03")}
-                  className={`w-full text-left flex items-baseline gap-3 px-4 py-2 border-l-2 ${
+                  className={`w-full text-left flex items-baseline gap-3 px-4 py-1.5 border-l-2 ${
                     activa
                       ? "border-signal bg-concrete-2"
                       : disponible
@@ -141,20 +141,21 @@ export default function Shell() {
                   }`}
                   title={disponible ? "" : "Se habilita cuando la capa anterior está resuelta"}
                 >
-                  <span className={`text-xs ${activa || disponible ? "text-signal" : ""}`}>{c.n}</span>
-                  <span className="flex-1 text-xs leading-tight">{c.nombre}</span>
-                  <span className="text-[9px] uppercase tracking-wide opacity-60">{c.nivel}</span>
+                  <span className={`font-label text-xs ${activa || disponible ? "text-signal" : ""}`}>{c.n}</span>
+                  <span className={`flex-1 text-xs leading-snug ${activa ? "font-medium" : ""}`}>{c.nombre}</span>
+                  <span className="font-label text-[9px] uppercase tracking-wide opacity-60">{c.nivel}</span>
                 </button>
               </li>
             );
           })}
         </ol>
-        <div className="px-4 py-4 text-[10px] text-rebar leading-relaxed border-t border-line mt-2">
-          Proyecto <span className="text-ink">{proyecto.id.slice(0, 8)}</span>
-          <br />
-          modificado {proyecto.modificado.replace("T", " ").slice(0, 16)}
-          <br />
-          se guarda solo en este navegador; usá «Guardar .json» para llevarlo.
+        <div className="px-4 py-4 text-[11px] text-rebar leading-relaxed border-t border-line mt-2">
+          <div className="font-label text-[10px]">
+            Proyecto <span className="text-ink">{proyecto.id.slice(0, 8)}</span>
+            <br />
+            modificado {proyecto.modificado.replace("T", " ").slice(0, 16)}
+          </div>
+          <p className="mt-1">Se guarda solo en este navegador; usá «Guardar .json» para llevarlo.</p>
         </div>
       </nav>
 

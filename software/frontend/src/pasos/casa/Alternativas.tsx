@@ -36,7 +36,7 @@ export default function Alternativas({ alternativas, cargando, error, elegir, vo
         <div className="flex items-center gap-4 mt-3 mb-5">
           <Monti animo={cargando ? "pensando" : "contento"} tamano={52} />
           <div>
-            <h1 className="font-display text-2xl">Elegí un punto de partida</h1>
+            <h1 className="font-head font-extrabold text-2xl tracking-tight">Elegí un punto de partida</h1>
             <p className="text-rebar text-sm mt-1 max-w-2xl">
               Son el mismo pedido resuelto de distintas maneras. No busques la perfecta: elegí la que más se parece a lo
               que imaginás y la ajustás en el editor (mover muros, cambiar ventanas, renombrar ambientes).
@@ -53,21 +53,21 @@ export default function Alternativas({ alternativas, cargando, error, elegir, vo
               </div>
               <div className="p-4 flex flex-col gap-2 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-semibold">{a.nombre}</h2>
+                  <h2 className="font-head font-bold">{a.nombre}</h2>
                   <Etiqueta estado={a.analisis.estado} />
                 </div>
-                <p className="text-xs text-rebar leading-relaxed">{a.descripcion}</p>
+                <p className="text-[13px] text-rebar leading-relaxed">{a.descripcion}</p>
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs mt-1">
                   <dt className="text-rebar">Superficie cubierta</dt>
-                  <dd className="text-right">{a.resumen.superficie_cubierta_m2.toFixed(0)} m²</dd>
+                  <dd className="font-label text-right">{a.resumen.superficie_cubierta_m2.toFixed(0)} m²</dd>
                   <dt className="text-rebar">Frente × fondo</dt>
-                  <dd className="text-right">
+                  <dd className="font-label text-right">
                     {a.resumen.ancho_m.toFixed(1)} × {a.resumen.profundidad_m.toFixed(1)} m
                   </dd>
                   <dt className="text-rebar" title="Más muro exterior es más material y más superficie que pierde calor">
                     Muro exterior
                   </dt>
-                  <dd className="text-right">{a.resumen.muro_exterior_m.toFixed(0)} m</dd>
+                  <dd className="font-label text-right">{a.resumen.muro_exterior_m.toFixed(0)} m</dd>
                 </dl>
                 {a.advertencias.map((w, i) => (
                   <Aviso key={i}>{w}</Aviso>

@@ -170,13 +170,13 @@ export default function Mapa({ modo }: { modo: Modo }) {
   return (
     <div className="absolute inset-0">
       <div ref={contenedor} className="absolute inset-0" />
-      <div className="absolute left-3 bottom-6 z-[500] bg-concrete/90 border border-line px-2 py-1 text-[11px] text-rebar pointer-events-none max-w-md">
+      <div className="absolute left-3 bottom-6 z-[500] bg-concrete/90 border border-line px-2 py-1 text-xs text-rebar pointer-events-none max-w-md">
         <div>
           {modo === "ubicacion"
             ? "Clic en el mapa para fijar el origen del proyecto; arrastrá el marcador para ajustarlo."
             : "Clic para agregar vértices del lote · arrastrá para mover · clic derecho sobre un vértice para quitarlo."}
         </div>
-        <div className="text-[10px] mt-0.5">
+        <div className="text-[11px] mt-0.5">
           La imagen es solo un fondo para dibujar. No entra al modelo 3D: el relieve viene de NASADEM.
         </div>
       </div>

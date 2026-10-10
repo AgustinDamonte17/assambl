@@ -60,7 +60,7 @@ export default function PanelClima({ apiOk }: { apiOk: boolean | null }) {
 
       <Seccion titulo="Temperatura por mes">
         <TablaMeses clima={c} mesElegido={mesElegido} onMes={setMesElegido} />
-        <p className="text-[10px] text-rebar mt-2 leading-snug">
+        <p className="text-[11px] text-rebar mt-2 leading-snug">
           Media del período de climatología; máxima y mínima son los extremos registrados, no promedios de máximas.
         </p>
       </Seccion>
@@ -71,7 +71,7 @@ export default function PanelClima({ apiOk }: { apiOk: boolean | null }) {
         ) : (
           <p className="text-rebar">Sin series horarias para este mes.</p>
         )}
-        <p className="text-[10px] text-rebar mt-1">
+        <p className="text-[11px] text-rebar mt-1">
           Media de cada hora solar local en las series horarias. Amplitud diaria de{" "}
           {(Math.max(...mes.perfil_horario_c) - Math.min(...mes.perfil_horario_c)).toFixed(1)} °C.
         </p>
@@ -79,7 +79,7 @@ export default function PanelClima({ apiOk }: { apiOk: boolean | null }) {
 
       <Seccion titulo="Radiación solar por mes">
         <BarrasRadiacion clima={c} />
-        <p className="text-[10px] text-rebar mt-1">
+        <p className="text-[11px] text-rebar mt-1">
           Irradiancia global horizontal media diaria, en kWh/m² por día. Es radiación histórica medida por satélite: no
           es lo mismo que la posición del sol ni que la sombra del modelo 3D.
         </p>
@@ -126,13 +126,13 @@ export default function PanelClima({ apiOk }: { apiOk: boolean | null }) {
               ] as const
             ).map(([titulo, bloque]) => (
               <div key={titulo}>
-                <div className="text-[10px] uppercase tracking-widest text-rebar">{titulo}</div>
-                <ul className="text-[10px] text-rebar">
+                <div className="font-label text-[10px] uppercase tracking-widest text-rebar">{titulo}</div>
+                <ul className="text-[11px] text-rebar">
                   {Object.entries(bloque).map(([clave, info]) => (
                     <li key={clave} className="flex justify-between gap-2">
-                      <span className="font-mono">{clave}</span>
+                      <span className="font-label">{clave}</span>
                       <span className="text-right flex-1">{info.nombre}</span>
-                      <span>{info.unidad}</span>
+                      <span className="font-label">{info.unidad}</span>
                     </li>
                   ))}
                 </ul>
@@ -163,7 +163,7 @@ function TablaMeses({ clima, mesElegido, onMes }: { clima: Clima; mesElegido: nu
   const escala = (v: number) => ((v - min) / (max - min || 1)) * 100;
 
   return (
-    <table className="w-full tabular-nums">
+    <table className="w-full font-label">
       <thead>
         <tr className="text-[10px] uppercase tracking-wide text-rebar">
           <th className="text-left font-normal">mes</th>
@@ -209,7 +209,7 @@ function PerfilHorario({ valores }: { valores: number[] }) {
       <svg viewBox="0 0 100 44" className="w-full h-16" preserveAspectRatio="none">
         <path d={d} fill="none" stroke="#ff4f1f" strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
       </svg>
-      <div className="flex justify-between text-[10px] text-rebar">
+      <div className="flex justify-between font-label text-[10px] text-rebar">
         <span>00 h</span>
         <span>{max.toFixed(1)} °C máx</span>
         <span>{min.toFixed(1)} °C mín</span>
@@ -231,14 +231,14 @@ function BarrasRadiacion({ clima }: { clima: Clima }) {
           </div>
         ))}
       </div>
-      <div className="flex gap-0.5 text-[9px] text-rebar">
+      <div className="flex gap-0.5 font-label text-[9px] text-rebar">
         {MESES_CORTOS.map((m, i) => (
           <span key={i} className="flex-1 text-center">
             {m[0]}
           </span>
         ))}
       </div>
-      <div className="flex justify-between text-[10px] text-rebar mt-1">
+      <div className="flex justify-between font-label text-[10px] text-rebar mt-1">
         <span>mín {Math.min(...valores).toFixed(1)}</span>
         <span>máx {max.toFixed(1)} kWh/m²/día</span>
       </div>
@@ -290,12 +290,12 @@ function RosaDeVientos({ rosa, bins }: { rosa: SectorViento[]; bins: number[] })
             );
           });
         })}
-        <text x={centro} y={7} textAnchor="middle" fontSize={6} fill="#111111">N</text>
-        <text x={97} y={centro + 2} textAnchor="end" fontSize={6} fill="#8a857a">E</text>
-        <text x={centro} y={98} textAnchor="middle" fontSize={6} fill="#8a857a">S</text>
-        <text x={3} y={centro + 2} fontSize={6} fill="#8a857a">O</text>
+        <text x={centro} y={7} textAnchor="middle" fontSize={6} className="font-label" fill="#111111">N</text>
+        <text x={97} y={centro + 2} textAnchor="end" fontSize={6} className="font-label" fill="#8a857a">E</text>
+        <text x={centro} y={98} textAnchor="middle" fontSize={6} className="font-label" fill="#8a857a">S</text>
+        <text x={3} y={centro + 2} fontSize={6} className="font-label" fill="#8a857a">O</text>
       </svg>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-rebar justify-center mt-1">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 font-label text-[10px] text-rebar justify-center mt-1">
         {bins.map((b, k) => (
           <span key={k} className="flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5" style={{ background: GRISES[k] ?? GRISES[GRISES.length - 1] }} />
@@ -303,7 +303,7 @@ function RosaDeVientos({ rosa, bins }: { rosa: SectorViento[]; bins: number[] })
           </span>
         ))}
       </div>
-      <p className="text-[10px] text-rebar text-center mt-1">
+      <p className="text-[11px] text-rebar text-center mt-1">
         Frecuencia por dirección de procedencia; el círculo exterior es {maximo.toFixed(1)} %.
       </p>
     </div>

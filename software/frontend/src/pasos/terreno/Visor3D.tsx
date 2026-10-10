@@ -342,7 +342,7 @@ export default function Visor3D() {
       </div>
 
       {datos?.relieve.provisional && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-3 z-10 bg-signal text-concrete text-[11px] px-3 py-1 uppercase tracking-widest">
+        <div className="absolute left-1/2 -translate-x-1/2 top-3 z-10 bg-signal text-concrete font-label text-[11px] px-3 py-1 uppercase tracking-widest">
           Escena provisional · sin datos de relieve
         </div>
       )}
@@ -396,8 +396,8 @@ function ControlHorario(props: {
   return (
     <div className="absolute left-3 right-3 bottom-3 z-10 bg-concrete/95 border border-line px-3 py-2">
       <div className="flex items-center gap-3 text-[11px]">
-        <span className="uppercase tracking-widest text-rebar">{props.fecha}</span>
-        <span className="font-mono text-base text-ink tabular-nums">{horaTexto(props.hora)}</span>
+        <span className="font-label uppercase tracking-widest text-rebar">{props.fecha}</span>
+        <span className="font-label text-base text-ink">{horaTexto(props.hora)}</span>
         <input
           type="range"
           min={0}
@@ -407,13 +407,13 @@ function ControlHorario(props: {
           onChange={(e) => props.onHora(Number(e.target.value))}
           className="flex-1 accent-signal"
         />
-        <span className={bajoHorizonte ? "text-rebar" : "text-ink"}>
+        <span className={`font-label ${bajoHorizonte ? "text-rebar" : "text-ink"}`}>
           {bajoHorizonte ? "sol bajo el horizonte" : `azimut ${props.azimut.toFixed(0)}° · altura ${props.elevacion.toFixed(0)}°`}
         </span>
       </div>
-      <div className="flex gap-4 text-[10px] text-rebar mt-1">
-        <span>amanece {props.amanecer ?? "—"}</span>
-        <span>atardece {props.atardecer ?? "—"}</span>
+      <div className="flex gap-4 text-[11px] text-rebar mt-1">
+        <span className="font-label text-[10px]">amanece {props.amanecer ?? "—"}</span>
+        <span className="font-label text-[10px]">atardece {props.atardecer ?? "—"}</span>
         <span className="ml-auto">
           Posición astronómica calculada localmente. La sombra sale del modelo 3D, con la resolución del relieve.
         </span>

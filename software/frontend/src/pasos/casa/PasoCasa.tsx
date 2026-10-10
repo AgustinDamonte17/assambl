@@ -313,10 +313,10 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
             Ver otras alternativas
           </button>
         )}
-        <span className="text-[11px] uppercase tracking-widest text-rebar">Planta 2D</span>
+        <span className="font-label text-[11px] uppercase tracking-widest text-rebar">Planta 2D</span>
         {analisis && <Etiqueta estado={estadoGlobal(casa, analisis)} />}
         <div className="flex-1" />
-        {origenTexto(casa) && <span className="text-[11px] text-rebar">{origenTexto(casa)}</span>}
+        {origenTexto(casa) && <span className="text-xs text-rebar truncate min-w-0">{origenTexto(casa)}</span>}
         <EstadoAsistente ia={ia} apiOk={apiOk} compacto />
       </div>
       <div className="grid grid-cols-[1fr_340px] min-h-0">

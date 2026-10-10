@@ -33,9 +33,9 @@ export default function Inicio(p: Props) {
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-start justify-between gap-6 mb-6">
           <div>
-            <div className="text-[11px] uppercase tracking-widest text-rebar mb-2">Capa 03 · Casa</div>
-            <h1 className="font-display text-3xl leading-tight">¿Cómo querés empezar tu casa?</h1>
-            <p className="text-rebar mt-2 max-w-xl leading-relaxed">
+            <div className="font-label text-[11px] uppercase tracking-widest text-rebar mb-2">Capa 03 · Casa</div>
+            <h1 className="font-head font-extrabold text-3xl leading-tight tracking-tight">¿Cómo querés empezar tu casa?</h1>
+            <p className="text-rebar text-[15px] mt-2 max-w-xl leading-relaxed">
               No hace falta saber dibujar planos. Elegí una manera de arrancar: lo que salga es un punto de partida, y
               después lo ajustás en el editor. Assambl verifica cada muro y cada abertura a medida que avanzás.
             </p>
@@ -54,7 +54,7 @@ export default function Inicio(p: Props) {
           {/* 1a · Prompt libre */}
           <section className="border border-line bg-concrete-2 p-5 flex flex-col">
             <Encabezado n="1" titulo="Contala con tus palabras" etiqueta="IA · texto libre" />
-            <p className="text-rebar text-xs mb-3">
+            <p className="text-rebar text-[13px] leading-snug mb-3">
               Escribí cómo la imaginás. Si falta algo importante, te preguntamos; si no, te mostramos plantas posibles.
             </p>
             <textarea
@@ -72,9 +72,10 @@ export default function Inicio(p: Props) {
                 <button
                   key={e}
                   onClick={() => setTexto(e)}
-                  className="text-[10px] text-left border border-line px-2 py-1 hover:border-ink text-rebar hover:text-ink"
+                  title={e}
+                  className="max-w-full truncate text-xs text-left border border-line px-2 py-1 hover:border-ink text-rebar hover:text-ink"
                 >
-                  {e.length > 52 ? e.slice(0, 50) + "…" : e}
+                  {e}
                 </button>
               ))}
             </div>
@@ -119,7 +120,7 @@ export default function Inicio(p: Props) {
           >
             <Encabezado n="3" titulo="Subí un bosquejo o un plano" etiqueta="IA · imagen" />
             <div className="grid grid-cols-[1fr_auto] gap-6 items-center">
-              <p className="text-rebar text-xs leading-relaxed">
+              <p className="text-rebar text-[13px] leading-relaxed">
                 Arrastrá acá una foto de un dibujo a mano, una captura o un plano en PNG o JPG. La IA reconoce los
                 ambientes y sus medidas, y reconstruye la planta sobre tu dibujo para que la compares. Todo lo que
                 interpreta queda marcado <b className="text-warn">para revisar</b> hasta que lo confirmes.
@@ -131,7 +132,7 @@ export default function Inicio(p: Props) {
           </section>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-rebar">
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-rebar">
           <button className="hover:text-ink underline underline-offset-2" onClick={p.empezarDibujo}>
             Dibujar desde cero (editor libre, básico)
           </button>
@@ -147,11 +148,11 @@ export default function Inicio(p: Props) {
 function Encabezado({ n, titulo, etiqueta }: { n: string; titulo: string; etiqueta: string }) {
   return (
     <div className="flex items-baseline justify-between mb-3">
-      <h2 className="text-base font-semibold">
-        <span className="text-signal mr-2">{n}</span>
+      <h2 className="font-head text-base font-bold">
+        <span className="font-label font-medium text-signal mr-2">{n}</span>
         {titulo}
       </h2>
-      <span className="text-[10px] uppercase tracking-wide text-rebar">{etiqueta}</span>
+      <span className="font-label text-[10px] uppercase tracking-wide text-rebar whitespace-nowrap">{etiqueta}</span>
     </div>
   );
 }
@@ -160,7 +161,7 @@ export function EstadoAsistente({ ia, apiOk, compacto }: { ia: EstadoIA | null; 
   if (compacto) {
     if (apiOk === false || !ia) return null;
     return (
-      <span className={`text-[10px] uppercase tracking-wide ${ia.simulado ? "text-warn" : "text-rebar"}`} title={ia.motivo ?? `${ia.proveedor} · ${ia.modelo}`}>
+      <span className={`font-label text-[10px] uppercase tracking-wide ${ia.simulado ? "text-warn" : "text-rebar"}`} title={ia.motivo ?? `${ia.proveedor} · ${ia.modelo}`}>
         {ia.simulado ? "IA en demostración" : `IA · ${ia.modelo}`}
       </span>
     );
@@ -182,9 +183,9 @@ export function EstadoAsistente({ ia, apiOk, compacto }: { ia: EstadoIA | null; 
           <b>IA en modo demostración.</b> {ia.motivo}. Las respuestas siguen un guion fijo.
         </>
       ) : (
-        <>
+        <span className="font-label">
           IA: {ia.proveedor} · {ia.modelo}
-        </>
+        </span>
       )}
     </div>
   );

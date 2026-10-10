@@ -72,13 +72,13 @@ export default function PasoTerreno({ apiOk }: { apiOk: boolean | null }) {
                 activo ? "border-signal text-ink" : "border-transparent text-rebar hover:text-ink"
               }`}
             >
-              <span className="text-signal mr-2">{s.n}</span>
+              <span className="font-label text-signal mr-2">{s.n}</span>
               {s.nombre}
             </button>
           );
         })}
         <div className="flex-1" />
-        <div className="px-4 self-center text-[11px] text-rebar">
+        <div className="px-4 self-center font-label text-[11px] text-rebar">
           {t.ubicacion
             ? `${t.ubicacion.lat.toFixed(5)}, ${t.ubicacion.lon.toFixed(5)} · margen ${t.margen_m} m · +Y norte`
             : "Sin ubicación"}

@@ -28,13 +28,13 @@ export function Campo({
 }: InputHTMLAttributes<HTMLInputElement> & { etiqueta?: string; sufijo?: string }) {
   return (
     <label className={`flex flex-col gap-1 ${className}`}>
-      {etiqueta && <span className="text-[11px] uppercase tracking-wide text-rebar">{etiqueta}</span>}
+      {etiqueta && <span className="font-label text-[11px] uppercase tracking-wide text-rebar">{etiqueta}</span>}
       <span className="flex items-baseline gap-1">
         <input
           className="w-full bg-concrete-2 border border-line px-2 py-1 text-ink focus:outline-none focus:border-signal"
           {...props}
         />
-        {sufijo && <span className="text-rebar text-xs">{sufijo}</span>}
+        {sufijo && <span className="font-label text-rebar text-xs">{sufijo}</span>}
       </span>
     </label>
   );
@@ -44,7 +44,7 @@ export function Seccion({ titulo, children, accion }: { titulo: string; children
   return (
     <section className="border-t border-line pt-3 mt-3 first:border-t-0 first:pt-0 first:mt-0">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-[11px] uppercase tracking-widest text-rebar">{titulo}</h3>
+        <h3 className="font-label text-[11px] uppercase tracking-widest text-rebar">{titulo}</h3>
         {accion}
       </div>
       {children}
@@ -64,7 +64,7 @@ const COLOR_ESTADO: Record<Estado, string> = {
 
 export function Etiqueta({ estado }: { estado: Estado }) {
   return (
-    <span className={`inline-block border px-1.5 py-px text-[10px] uppercase tracking-wide ${COLOR_ESTADO[estado]}`}>
+    <span className={`inline-block font-label border px-1.5 py-px text-[10px] uppercase tracking-wide whitespace-nowrap ${COLOR_ESTADO[estado]}`}>
       {ETIQUETA_ESTADO[estado]}
     </span>
   );
@@ -78,7 +78,7 @@ const COLOR_FUENTE: Record<EstadoFuente, string> = {
 
 export function EtiquetaFuente({ estado }: { estado: EstadoFuente }) {
   return (
-    <span className={`inline-block border px-1.5 py-px text-[10px] uppercase tracking-wide ${COLOR_FUENTE[estado]}`}>
+    <span className={`inline-block font-label border px-1.5 py-px text-[10px] uppercase tracking-wide whitespace-nowrap ${COLOR_FUENTE[estado]}`}>
       {estado === "pendiente_datos" ? "sin datos" : estado}
     </span>
   );
@@ -88,7 +88,7 @@ export function Dato({ etiqueta, valor, sufijo }: { etiqueta: string; valor: Rea
   return (
     <div className="flex justify-between gap-2 py-0.5">
       <span className="text-rebar">{etiqueta}</span>
-      <span className="text-right">
+      <span className="font-label text-right">
         {valor}
         {sufijo && <span className="text-rebar ml-1">{sufijo}</span>}
       </span>
@@ -107,7 +107,7 @@ const COLOR_NATURALEZA: Record<Naturaleza, string> = {
 
 export function EtiquetaNaturaleza({ naturaleza }: { naturaleza: Naturaleza }) {
   return (
-    <span className={`inline-block border px-1.5 py-px text-[10px] uppercase tracking-wide ${COLOR_NATURALEZA[naturaleza]}`}>
+    <span className={`inline-block font-label border px-1.5 py-px text-[10px] uppercase tracking-wide whitespace-nowrap ${COLOR_NATURALEZA[naturaleza]}`}>
       {ETIQUETA_NATURALEZA[naturaleza]}
     </span>
   );
@@ -116,7 +116,7 @@ export function EtiquetaNaturaleza({ naturaleza }: { naturaleza: Naturaleza }) {
 export function Aviso({ children, fuerte }: { children: ReactNode; fuerte?: boolean }) {
   return (
     <p
-      className={`text-[10px] leading-snug border-l-2 pl-2 py-0.5 ${
+      className={`text-[11px] leading-snug border-l-2 pl-2 py-0.5 ${
         fuerte ? "border-signal text-signal" : "border-warn text-rebar"
       }`}
     >
@@ -133,9 +133,9 @@ export function FichaFuente({ fuente }: { fuente: Fuente }) {
         <span className="flex-1">{fuente.nombre}</span>
         <EtiquetaNaturaleza naturaleza={fuente.naturaleza} />
       </div>
-      <div className="text-[10px] text-rebar mt-0.5">Resolución: {fuente.resolucion}</div>
-      {fuente.detalle && <div className="text-[10px] text-rebar">{fuente.detalle}</div>}
-      <div className="text-[10px] text-rebar">{fuente.licencia}</div>
+      <div className="text-[11px] text-rebar mt-0.5">Resolución: {fuente.resolucion}</div>
+      {fuente.detalle && <div className="text-[11px] text-rebar">{fuente.detalle}</div>}
+      <div className="text-[11px] text-rebar">{fuente.licencia}</div>
     </li>
   );
 }
