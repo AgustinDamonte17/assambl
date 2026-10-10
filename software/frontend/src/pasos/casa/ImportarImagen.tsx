@@ -6,7 +6,7 @@ import { api } from "../../api/cliente";
 import type { RespuestaImagen } from "../../modelo/casa";
 import { Aviso, Boton, Campo, Etiqueta } from "../../componentes/ui";
 import DibujoPlanta, { aPantalla, encuadrar, Tramas } from "./DibujoPlanta";
-import Monti from "./Monti";
+import Lumo from "../../componentes/lumo/Lumo";
 
 export interface Calco {
   url: string;
@@ -134,7 +134,7 @@ export default function ImportarImagen({ archivoInicial, lat, aceptar, volver }:
         {imagen && resultado && <Superpuesto resultado={resultado} imagen={imagen} />}
         {cargando && (
           <div className="absolute inset-0 bg-concrete/70 flex flex-col items-center justify-center gap-2">
-            <Monti animo="pensando" tamano={64} />
+            <Lumo state="think" size={72} />
             <span className="text-sm">Leyendo el dibujo… puede tardar hasta un minuto.</span>
           </div>
         )}

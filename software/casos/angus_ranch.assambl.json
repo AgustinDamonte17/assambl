@@ -810,10 +810,18 @@
         "id": "estar_comedor_cocina",
         "nombre": "Estar, comedor y cocina",
         "uso": "social",
-        "contorno_m": null,
+        "contorno_m": [[2.9, 0.2], [14.8, 0.2], [14.8, 1.35], [17.8, 1.35], [17.8, 3.05], [14.8, 3.05], [14.8, 7.8], [5.8, 7.8], [5.8, 3.3], [0.2, 3.3], [0.2, 2.25], [2.9, 2.25]],
         "solado": "piso_piedra",
-        "estado": "pendiente_datos",
-        "nota": "V11 no delimita el espacio social: es el resto de la planta principal (incluye el acceso y la circulación del ala este). Falta dibujar su contorno."
+        "estado": "propuesto",
+        "nota": "Incluye el acceso y la circulación del ala este."
+      },
+      {
+        "id": "galeria",
+        "nombre": "Galería",
+        "uso": "galeria",
+        "contorno_m": [[5.0, 8.0], [15.0, 8.0], [15.0, 11.0], [5.0, 11.0]],
+        "solado": "madera_exterior",
+        "estado": "propuesto"
       }
     ],
     "cubiertas": [
@@ -1009,52 +1017,7 @@
           "medidas_m": [4.0, 0.45, 0.13],
           "material": "piso_piedra"
         },
-        "equipamiento": [
-          {
-            "id": "Banco_galeria",
-            "tipo": "banco",
-            "centro_m": [6.7, 10.5],
-            "medidas_m": [2.3, 0.6, 0.525],
-            "giro_deg": 0
-          },
-          {
-            "id": "Mesa_galeria",
-            "tipo": "mesa",
-            "centro_m": [9.2, 10.0],
-            "medidas_m": [1.2, 0.7, 0.46],
-            "giro_deg": 0
-          },
-          {
-            "id": "Silla_galeria_1",
-            "tipo": "silla",
-            "centro_m": [8.85, 10.65],
-            "medidas_m": [0.46, 0.43, 0.925],
-            "giro_deg": 0
-          },
-          {
-            "id": "Silla_galeria_2",
-            "tipo": "silla",
-            "centro_m": [9.55, 10.65],
-            "medidas_m": [0.46, 0.43, 0.925],
-            "giro_deg": 0
-          },
-          {
-            "id": "Parrilla",
-            "tipo": "parrilla",
-            "centro_m": [14.4, 9.5],
-            "medidas_m": [0.8, 1.4, 3.48],
-            "giro_deg": 0,
-            "estado": "pendiente_revision",
-            "nota": "Volumetría. Resolver aislación, distancias y salida de humos."
-          },
-          {
-            "id": "Maceta_galeria",
-            "tipo": "planta",
-            "centro_m": [5.5, 8.7],
-            "medidas_m": [0.46, 0.46, 1.0],
-            "giro_deg": 0
-          }
-        ]
+        "ambiente": "galeria"
       },
       "sendero_entrada": {
         "centro_m": [19.0, 2.1],
@@ -1068,6 +1031,7 @@
         "tipo": "inodoro",
         "ambiente": "bano_suite",
         "centro_m": [4.24, 4.96],
+        "medidas_m": [0.4, 0.68, 0.8],
         "giro_deg": 0,
         "desague": {
           "salida_m": [4.24, 4.99, 0.05],
@@ -1084,6 +1048,7 @@
         "tipo": "bidet",
         "ambiente": "bano_suite",
         "centro_m": [5.14, 4.96],
+        "medidas_m": [0.38, 0.55, 0.4],
         "giro_deg": 0,
         "desague": {
           "salida_m": [5.14, 5.0, 0.28],
@@ -1097,11 +1062,11 @@
       },
       {
         "id": "Suite_ducha",
-        "tipo": "ducha",
+        "tipo": "ducha_120",
         "ambiente": "bano_suite",
         "centro_m": [4.27, 7.15],
-        "giro_deg": 0,
-        "medidas_m": [0.95, 1.15],
+        "medidas_m": [0.95, 1.15, 2.0],
+        "giro_deg": 180,
         "desague": {
           "salida_m": [4.27, 7.15, 0.035],
           "dn_mm": 50,
@@ -1114,11 +1079,11 @@
       },
       {
         "id": "Suite_lavatorio",
-        "tipo": "vanitory",
+        "tipo": "vanitory_60",
         "ambiente": "bano_suite",
         "centro_m": [5.19, 7.33],
-        "giro_deg": 0,
-        "medidas_m": [0.62, 0.54],
+        "medidas_m": [0.62, 0.54, 0.85],
+        "giro_deg": 180,
         "desague": {
           "salida_m": [5.19, 7.33, 0.9],
           "dn_mm": 50,
@@ -1131,11 +1096,11 @@
       },
       {
         "id": "Cocina_bacha",
-        "tipo": "bacha_cocina",
+        "tipo": "mesada_bacha",
         "ambiente": "estar_comedor_cocina",
-        "centro_m": [8.33, 0.54],
+        "centro_m": [8.2, 0.5],
+        "medidas_m": [1.2, 0.6, 0.9],
         "giro_deg": 0,
-        "medidas_m": [0.53, 0.4],
         "desague": {
           "salida_m": [8.33, 0.54, 0.85],
           "dn_mm": 50,
@@ -1150,7 +1115,8 @@
         "id": "Bano_WC",
         "tipo": "inodoro",
         "ambiente": "bano",
-        "centro_m": [11.54, -1.89],
+        "centro_m": [11.54, -1.85],
+        "medidas_m": [0.4, 0.68, 0.8],
         "giro_deg": 0,
         "desague": {
           "salida_m": [11.54, -1.86, 0.05],
@@ -1166,7 +1132,8 @@
         "id": "Bano_bidet",
         "tipo": "bidet",
         "ambiente": "bano",
-        "centro_m": [12.36, -1.89],
+        "centro_m": [12.36, -1.9],
+        "medidas_m": [0.38, 0.55, 0.4],
         "giro_deg": 0,
         "desague": {
           "salida_m": [12.36, -1.85, 0.28],
@@ -1180,11 +1147,11 @@
       },
       {
         "id": "Bano_ducha",
-        "tipo": "ducha",
+        "tipo": "ducha_120",
         "ambiente": "bano",
         "centro_m": [10.35, -1.39],
-        "giro_deg": 0,
-        "medidas_m": [0.97, 1.52],
+        "medidas_m": [1.52, 0.97, 2.0],
+        "giro_deg": 270,
         "desague": {
           "salida_m": [10.35, -1.39, 0.035],
           "dn_mm": 50,
@@ -1197,11 +1164,11 @@
       },
       {
         "id": "Bano_lavatorio",
-        "tipo": "vanitory",
+        "tipo": "vanitory_60",
         "ambiente": "bano",
         "centro_m": [11.29, -0.39],
-        "giro_deg": 0,
-        "medidas_m": [0.62, 0.54],
+        "medidas_m": [0.62, 0.54, 0.85],
+        "giro_deg": 180,
         "desague": {
           "salida_m": [11.29, -0.39, 0.9],
           "dn_mm": 50,
@@ -1217,8 +1184,8 @@
         "tipo": "pileta_lavadero",
         "ambiente": "lavadero",
         "centro_m": [13.52, -1.84],
+        "medidas_m": [0.62, 0.54, 0.9],
         "giro_deg": 0,
-        "medidas_m": [0.62, 0.54],
         "desague": {
           "salida_m": [13.52, -1.84, 0.9],
           "dn_mm": 50,
@@ -1234,8 +1201,8 @@
         "tipo": "lavarropas",
         "ambiente": "lavadero",
         "centro_m": [14.34, -1.87],
+        "medidas_m": [0.64, 0.62, 0.85],
         "giro_deg": 0,
-        "medidas_m": [0.64, 0.62],
         "desague": {
           "salida_m": [14.34, -1.87, 0.7],
           "dn_mm": 50,
@@ -1249,43 +1216,43 @@
     ],
     "mobiliario": [
       {
-        "id": "Cocina_bajo_mesada",
-        "tipo": "bajo_mesada",
+        "id": "Cocina_bajo_mesada_O",
+        "tipo": "bajo_mesada_60",
         "ambiente": "estar_comedor_cocina",
-        "centro_m": [7.9, 0.54],
-        "medidas_m": [4.2, 0.6, 0.88],
-        "giro_deg": 0
-      },
-      {
-        "id": "Cocina_mesada",
-        "tipo": "mesada",
-        "ambiente": "estar_comedor_cocina",
-        "centro_m": [7.9, 0.54],
-        "medidas_m": [4.2, 0.69, 0.9475],
+        "centro_m": [6.1, 0.5],
+        "medidas_m": [0.6, 0.6, 0.9],
         "giro_deg": 0
       },
       {
         "id": "Cocina_anafe",
-        "tipo": "anafe_induccion",
+        "tipo": "cocina_anafe",
         "ambiente": "estar_comedor_cocina",
-        "centro_m": [6.55, 0.54],
-        "medidas_m": [0.6, 0.52, 0.015],
+        "centro_m": [6.7, 0.5],
+        "medidas_m": [0.6, 0.6, 0.9],
         "giro_deg": 0
       },
       {
-        "id": "Cocina_horno",
-        "tipo": "horno_empotrado",
+        "id": "Cocina_bajo_mesada_C",
+        "tipo": "bajo_mesada_60",
         "ambiente": "estar_comedor_cocina",
-        "centro_m": [6.55, 0.856],
-        "medidas_m": [0.52, 0.025, 0.49],
+        "centro_m": [7.3, 0.5],
+        "medidas_m": [0.6, 0.6, 0.9],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cocina_bajo_mesada_E",
+        "tipo": "bajo_mesada_120",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [9.4, 0.5],
+        "medidas_m": [1.2, 0.6, 0.9],
         "giro_deg": 0
       },
       {
         "id": "Heladera",
         "tipo": "heladera",
         "ambiente": "estar_comedor_cocina",
-        "centro_m": [10.38, 0.56],
-        "medidas_m": [0.72, 0.72, 2.1],
+        "centro_m": [10.35, 0.55],
+        "medidas_m": [0.7, 0.7, 1.8],
         "giro_deg": 0
       },
       {
@@ -1293,278 +1260,304 @@
         "tipo": "isla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [8.15, 2.7],
-        "medidas_m": [2.3, 1.02, 0.9575],
+        "medidas_m": [2.3, 1.02, 0.96],
         "giro_deg": 0
       },
       {
         "id": "Taburete_1",
-        "tipo": "taburete",
+        "tipo": "banqueta",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [7.45, 3.4],
-        "medidas_m": [0.4, 0.4, 0.7],
-        "giro_deg": 0
+        "medidas_m": [0.4, 0.4, 0.75],
+        "giro_deg": 180
       },
       {
         "id": "Taburete_2",
-        "tipo": "taburete",
+        "tipo": "banqueta",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [8.15, 3.4],
-        "medidas_m": [0.4, 0.4, 0.7],
-        "giro_deg": 0
+        "medidas_m": [0.4, 0.4, 0.75],
+        "giro_deg": 180
       },
       {
         "id": "Taburete_3",
-        "tipo": "taburete",
+        "tipo": "banqueta",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [8.85, 3.4],
-        "medidas_m": [0.4, 0.4, 0.7],
-        "giro_deg": 0
+        "medidas_m": [0.4, 0.4, 0.75],
+        "giro_deg": 180
       },
       {
         "id": "Mesa_comedor",
-        "tipo": "mesa",
+        "tipo": "mesa_8",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [8.2, 5.65],
-        "medidas_m": [1.05, 2.8, 0.7975],
-        "giro_deg": 0
+        "medidas_m": [2.8, 1.05, 0.8],
+        "giro_deg": 90
       },
       {
         "id": "Silla_comedor_O1",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [7.35, 4.6],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 270
       },
       {
         "id": "Silla_comedor_O2",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [7.35, 5.3],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 270
       },
       {
         "id": "Silla_comedor_O3",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [7.35, 6.0],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 270
       },
       {
         "id": "Silla_comedor_O4",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [7.35, 6.7],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 270
       },
       {
         "id": "Silla_comedor_E1",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [9.05, 4.6],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": -90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 90
       },
       {
         "id": "Silla_comedor_E2",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [9.05, 5.3],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": -90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 90
       },
       {
         "id": "Silla_comedor_E3",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [9.05, 6.0],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": -90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 90
       },
       {
         "id": "Silla_comedor_E4",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [9.05, 6.7],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": -90
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 90
       },
       {
         "id": "Silla_cabecera_S",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [8.2, 3.96],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 180
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 0
       },
       {
         "id": "Silla_cabecera_N",
         "tipo": "silla",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [8.2, 7.34],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 0
+        "medidas_m": [0.45, 0.5, 0.9],
+        "giro_deg": 180
       },
       {
         "id": "Sofa",
-        "tipo": "sofa",
+        "tipo": "sofa_3",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [11.13, 5.95],
-        "medidas_m": [0.92, 2.75, 0.985],
-        "giro_deg": 0
-      },
-      {
-        "id": "Sofa_chaise",
-        "tipo": "sofa_chaise",
-        "ambiente": "estar_comedor_cocina",
-        "centro_m": [11.85, 6.83],
-        "medidas_m": [0.7, 0.82, 0.64],
-        "giro_deg": 0
+        "medidas_m": [2.75, 0.92, 0.82],
+        "giro_deg": 270
       },
       {
         "id": "Alfombra_living",
         "tipo": "alfombra",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [12.1, 5.75],
-        "medidas_m": [3.4, 3.1, 0.018],
+        "medidas_m": [3.4, 3.1, 0.02],
         "giro_deg": 0
       },
       {
         "id": "Mesa_living",
-        "tipo": "mesa_baja",
+        "tipo": "mesa_ratona",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [12.55, 5.85],
-        "medidas_m": [0.65, 1.15, 0.4275],
-        "giro_deg": 0
-      },
-      {
-        "id": "Mueble_TV",
-        "tipo": "mueble_bajo",
-        "ambiente": "estar_comedor_cocina",
-        "centro_m": [14.53, 5.8],
-        "medidas_m": [0.46, 2.8, 0.65],
-        "giro_deg": 0
-      },
-      {
-        "id": "TV",
-        "tipo": "televisor",
-        "ambiente": "estar_comedor_cocina",
-        "centro_m": [14.45, 5.8],
-        "medidas_m": [0.075, 1.36, 0.79],
-        "giro_deg": 0
-      },
-      {
-        "id": "Biblioteca_estar_S",
-        "tipo": "estanteria",
-        "ambiente": "estar_comedor_cocina",
-        "centro_m": [14.6, 4.6],
-        "medidas_m": [0.32, 0.52, 2.2175],
-        "giro_deg": 0
-      },
-      {
-        "id": "Biblioteca_estar_N",
-        "tipo": "estanteria",
-        "ambiente": "estar_comedor_cocina",
-        "centro_m": [14.6, 7.0],
-        "medidas_m": [0.32, 0.52, 2.2175],
-        "giro_deg": 0
-      },
-      {
-        "id": "Cama_principal",
-        "tipo": "cama",
-        "ambiente": "dorm_principal",
-        "centro_m": [1.85, 6.6],
-        "medidas_m": [1.68, 2.05, 1.22],
-        "giro_deg": 0
-      },
-      {
-        "id": "Mesa_luz_O",
-        "tipo": "mesa_luz",
-        "ambiente": "dorm_principal",
-        "centro_m": [0.69, 7.22],
-        "medidas_m": [0.44, 0.44, 0.65],
-        "giro_deg": 0
-      },
-      {
-        "id": "Mesa_luz_E",
-        "tipo": "mesa_luz",
-        "ambiente": "dorm_principal",
-        "centro_m": [3.0, 7.22],
-        "medidas_m": [0.44, 0.44, 0.65],
-        "giro_deg": 0
-      },
-      {
-        "id": "Cama_dorm2",
-        "tipo": "cama",
-        "ambiente": "dorm_2",
-        "centro_m": [1.47, 0.92],
-        "medidas_m": [0.98, 2.05, 1.22],
+        "medidas_m": [1.15, 0.65, 0.43],
         "giro_deg": 90
       },
       {
-        "id": "Estante_dorm2",
-        "tipo": "estante_mural",
-        "ambiente": "dorm_2",
-        "centro_m": [1.2, 0.25],
-        "medidas_m": [1.3, 0.16, 0.03],
-        "giro_deg": 0
+        "id": "Mueble_TV",
+        "tipo": "mueble_tv",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.57, 5.8],
+        "medidas_m": [1.8, 0.46, 1.3],
+        "giro_deg": 90
       },
       {
-        "id": "Cama_dorm3",
-        "tipo": "cama",
-        "ambiente": "dorm_3",
-        "centro_m": [16.7, -0.72],
-        "medidas_m": [1.08, 2.05, 1.22],
-        "giro_deg": 0
+        "id": "Biblioteca_estar_S",
+        "tipo": "biblioteca",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.6, 4.6],
+        "medidas_m": [0.52, 0.32, 2.2],
+        "giro_deg": 90
       },
       {
-        "id": "Placard_dorm3",
-        "tipo": "placard",
-        "ambiente": "dorm_3",
-        "centro_m": [15.3, -1.325],
-        "medidas_m": [0.55, 1.55, 2.3],
-        "giro_deg": 0
-      },
-      {
-        "id": "Vestidor_mueble",
-        "tipo": "estanteria",
-        "ambiente": "vestidor",
-        "centro_m": [5.33, 3.92],
-        "medidas_m": [0.53, 0.9, 2.25],
-        "giro_deg": 0
-      },
-      {
-        "id": "Escritorio",
-        "tipo": "escritorio",
-        "ambiente": "oficina",
-        "centro_m": [16.35, 6.64],
-        "medidas_m": [1.75, 0.75, 0.7825],
-        "giro_deg": 0
-      },
-      {
-        "id": "Silla_oficina",
-        "tipo": "silla",
-        "ambiente": "oficina",
-        "centro_m": [16.35, 5.92],
-        "medidas_m": [0.46, 0.43, 0.925],
-        "giro_deg": 180
-      },
-      {
-        "id": "Biblioteca_oficina",
-        "tipo": "estanteria",
-        "ambiente": "oficina",
-        "centro_m": [16.95, 3.4],
-        "medidas_m": [1.4, 0.36, 2.2675],
-        "giro_deg": 0
+        "id": "Biblioteca_estar_N",
+        "tipo": "biblioteca",
+        "ambiente": "estar_comedor_cocina",
+        "centro_m": [14.6, 7.0],
+        "medidas_m": [0.52, 0.32, 2.2],
+        "giro_deg": 90
       },
       {
         "id": "Maceta_living",
         "tipo": "planta",
         "ambiente": "estar_comedor_cocina",
         "centro_m": [14.0, 3.8],
+        "medidas_m": [0.46, 0.46, 1.0],
+        "giro_deg": 0
+      },
+      {
+        "id": "Cama_principal",
+        "tipo": "cama_queen",
+        "ambiente": "dorm_principal",
+        "centro_m": [1.85, 6.6],
+        "medidas_m": [1.68, 2.05, 1.05],
+        "giro_deg": 180
+      },
+      {
+        "id": "Mesa_luz_O",
+        "tipo": "mesa_luz",
+        "ambiente": "dorm_principal",
+        "centro_m": [0.69, 7.22],
+        "medidas_m": [0.44, 0.44, 0.6],
+        "giro_deg": 180
+      },
+      {
+        "id": "Mesa_luz_E",
+        "tipo": "mesa_luz",
+        "ambiente": "dorm_principal",
+        "centro_m": [3.0, 7.22],
+        "medidas_m": [0.44, 0.44, 0.6],
+        "giro_deg": 180
+      },
+      {
+        "id": "Cama_dorm2",
+        "tipo": "cama_1",
+        "ambiente": "dorm_2",
+        "centro_m": [1.47, 0.92],
+        "medidas_m": [0.98, 2.05, 1.0],
+        "giro_deg": 270
+      },
+      {
+        "id": "Cama_dorm3",
+        "tipo": "cama_1_5",
+        "ambiente": "dorm_3",
+        "centro_m": [16.7, -0.72],
+        "medidas_m": [1.08, 2.05, 1.0],
+        "giro_deg": 0
+      },
+      {
+        "id": "Placard_dorm3",
+        "tipo": "placard_180",
+        "ambiente": "dorm_3",
+        "centro_m": [15.3, -1.325],
+        "medidas_m": [1.55, 0.55, 2.3],
+        "giro_deg": 270
+      },
+      {
+        "id": "Vestidor_mueble",
+        "tipo": "estanteria",
+        "ambiente": "vestidor",
+        "centro_m": [5.33, 3.92],
+        "medidas_m": [0.9, 0.53, 2.25],
+        "giro_deg": 90
+      },
+      {
+        "id": "Escritorio",
+        "tipo": "escritorio",
+        "ambiente": "oficina",
+        "centro_m": [16.35, 6.64],
+        "medidas_m": [1.75, 0.75, 0.78],
+        "giro_deg": 180
+      },
+      {
+        "id": "Silla_oficina",
+        "tipo": "silla_escritorio",
+        "ambiente": "oficina",
+        "centro_m": [16.35, 5.92],
+        "medidas_m": [0.6, 0.6, 1.0],
+        "giro_deg": 0
+      },
+      {
+        "id": "Biblioteca_oficina",
+        "tipo": "estanteria",
+        "ambiente": "oficina",
+        "centro_m": [16.95, 3.4],
+        "medidas_m": [1.4, 0.36, 2.27],
+        "giro_deg": 0
+      },
+      {
+        "id": "Banco_galeria",
+        "tipo": "banco_exterior",
+        "ambiente": "galeria",
+        "centro_m": [6.7, 10.5],
+        "medidas_m": [2.3, 0.6, 0.53],
+        "giro_deg": 180
+      },
+      {
+        "id": "Mesa_galeria",
+        "tipo": "mesa_exterior",
+        "ambiente": "galeria",
+        "centro_m": [9.2, 10.0],
+        "medidas_m": [1.2, 0.7, 0.46],
+        "giro_deg": 0
+      },
+      {
+        "id": "Silla_galeria_1",
+        "tipo": "silla_exterior",
+        "ambiente": "galeria",
+        "centro_m": [8.85, 10.65],
+        "medidas_m": [0.5, 0.55, 0.85],
+        "giro_deg": 180
+      },
+      {
+        "id": "Silla_galeria_2",
+        "tipo": "silla_exterior",
+        "ambiente": "galeria",
+        "centro_m": [9.55, 10.65],
+        "medidas_m": [0.5, 0.55, 0.85],
+        "giro_deg": 180
+      },
+      {
+        "id": "Parrilla",
+        "tipo": "parrilla",
+        "ambiente": "galeria",
+        "centro_m": [14.4, 9.5],
+        "medidas_m": [1.4, 0.8, 2.4],
+        "giro_deg": 90,
+        "estado": "pendiente_revision",
+        "nota": "Volumetría. Resolver aislación, distancias y salida de humos."
+      },
+      {
+        "id": "Maceta_galeria",
+        "tipo": "planta",
+        "ambiente": "galeria",
+        "centro_m": [5.5, 8.7],
         "medidas_m": [0.46, 0.46, 1.0],
         "giro_deg": 0
       }

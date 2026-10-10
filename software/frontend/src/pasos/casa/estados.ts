@@ -5,6 +5,7 @@
  *  lo que pide atención se destaca, y lo que no se sabe todavía se ve hueco. */
 
 import type { Estado } from "../../modelo/proyecto";
+import { buscarPieza, piezasInterior } from "../../modelo/muebles";
 import type { AnalisisPlanta, Casa, Pieza } from "../../modelo/casa";
 
 export interface Aspecto {
@@ -116,6 +117,7 @@ export function estadoDe(casa: Casa, pieza: Pieza, analisis: AnalisisPlanta | nu
     const a = m?.aberturas.find((x) => x.id === pieza.id);
     return estadoPieza(a?.estado, pieza.id, analisis);
   }
+  if (pieza.tipo === "mueble") return estadoPieza(buscarPieza(casa, pieza.id)?.estado, pieza.id, analisis);
   const a = casa.ambientes.find((x) => x.id === pieza.id);
   return estadoPieza(a?.estado, pieza.id, analisis);
 }
@@ -129,6 +131,7 @@ export function contarEstados(casa: Casa, analisis: AnalisisPlanta | null): Part
     for (const a of m.aberturas) sumar(estadoPieza(a.estado, a.id, analisis));
   }
   for (const a of casa.ambientes) sumar(estadoPieza(a.estado, a.id, analisis));
+  for (const p of piezasInterior(casa)) sumar(estadoPieza(p.estado, p.id, analisis));
   return c;
 }
 
@@ -141,5 +144,6 @@ export function contarDeclaradas(casa: Casa): number {
     for (const a of m.aberturas) n += d(a.estado);
   }
   for (const a of casa.ambientes) n += d(a.estado);
+  for (const p of piezasInterior(casa)) n += d(p.estado);
   return n;
 }

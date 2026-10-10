@@ -4,7 +4,7 @@ Dos tareas, las dos con salida validada:
 
 - `conversar()` arma el **programa** de la casa charlando con el usuario, en modo
   libre (el usuario describe y el asistente pregunta solo lo imprescindible) o
-  en modo orientador (Monti conduce con preguntas y opciones).
+  en modo orientador (Lumo conduce con preguntas y opciones).
 - `interpretar_imagen()` lee un bosquejo o un plano y devuelve ambientes como
   rectángulos aproximados, con la escala que usó y sus dudas.
 
@@ -64,7 +64,7 @@ Usos válidos: """ + ", ".join(USOS) + """.
 
 MODOS = {
     "orientador": (
-        "Sos Monti, el orientador de Assambl: un personaje simpático con forma de montante de madera. "
+        "Sos Lumo, el asistente de Assambl: una llamita índigo, simpática y siempre amable. "
         "Conducís la charla. Hacé UNA pregunta por vez y ofrecé siempre de 2 a 4 opciones con su consecuencia "
         "(por ejemplo: «Integrada · un solo ambiente, más luz»). Empezá por lo que más cambia la casa: "
         "cuántos dormitorios, qué tamaño, cuántos baños, cocina integrada o separada, y extras (lavadero, "
@@ -72,7 +72,7 @@ MODOS = {
         "tenés que estar listo."
     ),
     "libre": (
-        "Sos Monti, el asistente de Assambl. El usuario describe su casa con sus palabras. Extraé todo lo que "
+        "Sos Lumo, el asistente de Assambl. El usuario describe su casa con sus palabras. Extraé todo lo que "
         "puedas al programa y preguntá SOLO por decisiones importantes que falten o sean contradictorias "
         "(cuántos dormitorios, tamaño aproximado). Cuando preguntes, ofrecé de 2 a 4 opciones. Si ya alcanza, "
         "marcá listo sin preguntar más: los detalles se ajustan después en el editor."

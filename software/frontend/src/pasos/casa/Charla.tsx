@@ -1,10 +1,10 @@
-/** Charla con Monti: arma el programa de la casa (qué ambientes, qué tamaño) antes de proponer plantas.
+/** Charla con Lumo: arma el programa de la casa (qué ambientes, qué tamaño) antes de proponer plantas.
  *  Las decisiones importantes llegan como opciones con su consecuencia; siempre se puede escribir. */
 
 import { useEffect, useRef, useState } from "react";
 import { USOS, type MensajeChat, type Programa, type RespuestaAsistente } from "../../modelo/casa";
 import { Aviso, Boton } from "../../componentes/ui";
-import Monti from "./Monti";
+import Lumo from "../../componentes/lumo/Lumo";
 
 interface Props {
   modo: "libre" | "orientador";
@@ -42,7 +42,7 @@ export default function Charla({ modo, historial, respuesta, cargando, error, en
             ← Otras formas de empezar
           </button>
           <span className="font-label text-[11px] uppercase tracking-widest text-rebar">
-            {modo === "orientador" ? "Paso a paso con Monti" : "Contala con tus palabras"}
+            {modo === "orientador" ? "Paso a paso con Lumo" : "Contala con tus palabras"}
           </span>
         </div>
 
@@ -52,7 +52,7 @@ export default function Charla({ modo, historial, respuesta, cargando, error, en
               m.rol === "asistente" ? (
                 <div key={i} className="flex gap-3 items-end">
                   <div className="shrink-0 w-10">
-                    <Monti animo={i === historial.length - 1 && !cargando ? "hablando" : "quieto"} tamano={38} />
+                    <Lumo state={i === historial.length - 1 && !cargando ? (texto ? "listen" : "reply") : "idle"} size={40} />
                   </div>
                   <div className="bg-concrete-2 border border-line px-4 py-2.5 leading-relaxed max-w-[85%]">{m.texto}</div>
                 </div>
@@ -65,9 +65,9 @@ export default function Charla({ modo, historial, respuesta, cargando, error, en
             {cargando && (
               <div className="flex gap-3 items-end">
                 <div className="shrink-0 w-10">
-                  <Monti animo="pensando" tamano={38} />
+                  <Lumo state="think" size={40} />
                 </div>
-                <div className="text-rebar text-xs pb-2">Monti está pensando…</div>
+                <div className="text-rebar text-xs pb-2">Lumo está pensando…</div>
               </div>
             )}
 
@@ -156,7 +156,7 @@ export function ResumenPrograma({ programa }: { programa: Programa | null }) {
   const total = ambs.reduce((s, a) => s + (a.area_m2 ?? 0), 0);
   return (
     <div>
-      <h3 className="font-label text-[11px] uppercase tracking-widest text-rebar mb-2">Lo que va anotando Monti</h3>
+      <h3 className="font-label text-[11px] uppercase tracking-widest text-rebar mb-2">Lo que va anotando Lumo</h3>
       {!ambs.length ? (
         <p className="text-xs text-rebar leading-relaxed">
           Acá aparece el programa de tu casa: los ambientes que necesitás y su tamaño aproximado. Es lo que después

@@ -232,7 +232,7 @@ def responder(modo: str, historial: list, programa: Programa | None, opciones: l
         if not entendido:
             mensaje = "No te entendí bien. Elegí una opción o escribilo con un número."
         elif not historial or not ultima:
-            mensaje = ("¡Hola! Soy Monti. Te hago unas pocas preguntas y te muestro plantas posibles para tu casa. "
+            mensaje = ("¡Hola! Soy Lumo. Te hago unas pocas preguntas y te muestro plantas posibles para tu casa. "
                        "Siempre vas a poder cambiar todo después.") if modo == "orientador" else \
                       "Contame cómo imaginás tu casa: cuántos dormitorios, qué tamaño, qué no puede faltar."
         else:

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import type { EstadoIA } from "../../modelo/casa";
 import { Boton } from "../../componentes/ui";
-import Monti from "./Monti";
+import { numeroCapa } from "../../componentes/capas";
+import Lumo from "../../componentes/lumo/Lumo";
 
 const EJEMPLOS = [
   "Una casa de 90 m² con dos dormitorios, un baño y la cocina integrada al living.",
@@ -33,7 +34,7 @@ export default function Inicio(p: Props) {
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-start justify-between gap-6 mb-6">
           <div>
-            <div className="font-label text-[11px] uppercase tracking-widest text-rebar mb-2">Capa 03 · Casa</div>
+            <div className="font-label text-[11px] uppercase tracking-widest text-rebar mb-2">Capa {numeroCapa("casa")} · Casa</div>
             <h1 className="font-head font-extrabold text-3xl leading-tight tracking-tight">¿Cómo querés empezar tu casa?</h1>
             <p className="text-rebar text-[15px] mt-2 max-w-xl leading-relaxed">
               No hace falta saber dibujar planos. Elegí una manera de arrancar: lo que salga es un punto de partida, y
@@ -88,17 +89,17 @@ export default function Inicio(p: Props) {
 
           {/* 1b · Orientador */}
           <section className="border border-line bg-concrete-2 p-5 flex flex-col">
-            <Encabezado n="2" titulo="Armala con Monti" etiqueta="IA · paso a paso" />
+            <Encabezado n="2" titulo="Armala con Lumo" etiqueta="IA · paso a paso" />
             <div className="flex gap-4 items-center">
-              <Monti animo="contento" tamano={80} />
+              <Lumo state={sinApi ? "sleep" : "wave"} size={84} />
               <p className="text-sm leading-relaxed">
-                «Hola, soy Monti. Te hago unas pocas preguntas —dormitorios, tamaño, cocina— con opciones para elegir, y
+                «Hola, soy Lumo. Te hago unas pocas preguntas —dormitorios, tamaño, cocina— con opciones para elegir, y
                 te explico qué cambia con cada una. <span className="text-rebar">Ideal si no sabés por dónde empezar.</span>»
               </p>
             </div>
             <div className="mt-auto pt-4 flex justify-end">
               <Boton primario disabled={sinApi} onClick={p.empezarOrientador}>
-                Empezar con Monti →
+                Empezar con Lumo →
               </Boton>
             </div>
           </section>

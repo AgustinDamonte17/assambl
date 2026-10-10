@@ -93,8 +93,10 @@ def test_reglas_sobre_angus_ranch():
     # Las corredizas de 4 m del estar piden cálculo de header; la ventana de 1 m no.
     assert r["por_pieza"]["Norte/O2"] == "pendiente_calculo"
     assert r["por_pieza"]["Norte/O1"] == "comprobado_por_reglas"
-    # El espacio social de V11 no tiene contorno: faltan datos.
-    assert r["por_pieza"]["estar_comedor_cocina"] == "pendiente_datos"
+    # El estar en L tiene contorno y ventanas al exterior.
+    assert r["por_pieza"]["estar_comedor_cocina"] == "comprobado_por_reglas"
+    # La galería es exterior: no le piden puerta ni ventana, y tiene fondo para una mesa.
+    assert r["por_pieza"]["galeria"] == "comprobado_por_reglas"
     assert r["por_pieza"]["Norte"] == "comprobado_por_reglas"
 
 

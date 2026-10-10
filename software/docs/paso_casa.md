@@ -1,19 +1,27 @@
-# Capa 03 · Casa — diseño del paso y del editor de planta
+# Capa 02 · Casa — planta, volumen e interior
 
-**Versión 0.1 · 30 de septiembre de 2026 · Documento de trabajo**
+**Versión 0.2 · 10 de octubre de 2026 · Documento de trabajo**
 
-Este documento fija cómo el usuario llega a la planta de su casa y cómo la edita. El código vive en
-`frontend/src/pasos/casa/` (interfaz), `backend/assambl/capas/casa.py` (generador de plantas),
-`backend/assambl/reglas/r03_planta.py` (reglas) y `backend/assambl/ia/` (asistente y proveedores de IA).
+Este documento fija cómo el usuario llega a la planta de su casa, cómo la edita y cómo la ve levantada y
+amoblada antes de pasar a la estructura. El código vive en `frontend/src/pasos/casa/` (interfaz),
+`backend/assambl/capas/casa.py` (generador de plantas), `backend/assambl/capas/interior.py` (muebles y
+galería), `backend/assambl/reglas/` (reglas R03 y RI) y `backend/assambl/ia/` (Lumo y proveedores de IA).
+
+**Orden de las capas.** La secuencia no sigue al pie de la letra la numeración del MVP_01: se ajusta a medida
+que se construye. Hoy va Terreno → Casa (planta, volumen e interior) → Estructura → … → Plomería → Eléctrico →
+Cimientos. Las instalaciones y los cimientos van al final porque resultan de las decisiones de la casa. Los ids
+de las capas son estables (`frontend/src/componentes/capas.ts`); el número que se ve es la posición. Las reglas
+de la planta conservan su prefijo R03 porque verifican lo que después levanta la estructura woodframe.
 Las capturas de `docs/paso_casa/` son el boceto: se decidió prototipar directamente en la aplicación, con
 datos reales (Angus Ranch), en lugar de hacerlo en Figma. Así el prototipo que se prueba con usuarios es el
 producto mismo.
 
 | | |
 | --- | --- |
-| ![Inicio](paso_casa/1_inicio.png) Cómo empezar | ![Monti](paso_casa/2_monti.png) Charla con Monti |
+| ![Inicio](paso_casa/1_inicio.png) Cómo empezar | ![Lumo](paso_casa/2_lumo.png) Charla con Lumo |
 | ![Alternativas](paso_casa/3_alternativas.png) Elegir un partido | ![Editor](paso_casa/4_editor.png) Editor de planta |
 | ![Estados](paso_casa/5_estados_angus.png) Estados en Angus Ranch | ![Imagen](paso_casa/6_imagen_revisar.png) Planta leída de un bosquejo, a revisar |
+| ![Vista 3D](paso_casa/7_vista3d.png) Vista 3D amoblada, muros cortados | ![Propuesta](paso_casa/8_lumo_propuesta.png) Propuesta de Lumo en vista previa |
 
 ## 1. Para quién
 
@@ -38,7 +46,7 @@ que nunca usó un programa de dibujo. De ahí salen cinco principios que atravie
       ┌──────────────┬─────────────┼───────────────┬─────────────────┐
       ▼              ▼             ▼               ▼                 ▼
  1 Contala con   2 Armala con   3 Subí un       Dibujar desde     Ver un ejemplo
- tus palabras    Monti          bosquejo        cero (básico)     (Angus Ranch)
+ tus palabras    Lumo           bosquejo        cero (básico)     (Angus Ranch)
  (IA, texto)     (IA, guiado)   (IA, imagen)
       │              │             │               │                 │
       └──────┬───────┘             │               │                 │
@@ -57,6 +65,11 @@ que nunca usó un programa de dibujo. De ahí salen cinco principios que atravie
                                            ▼
                               Editor de planta 2D (EditorPlanta + PanelEditor)
                               verificación en vivo con R03 · deshacer · estados
+                                           ▲
+                                           │  misma casa, misma selección, mismo deshacer
+                                           ▼
+                              Vista 3D (VistaCasa3D + PanelInterior)
+                              casa levantada y amoblada · galería · Lumo
 ```
 
 **Prioridades** (como se acordó): las entradas 1 y 2 están completas; la 3 (dibujo libre) existe en su
@@ -69,12 +82,26 @@ versión básica —el mismo editor con la planta vacía— y no tiene asistenci
   (cantidad de dormitorios, tamaño aproximado). Si alcanza, salta directo a las alternativas.
 - Siempre se puede seguir charlando para ajustar («sumá un lavadero», «que el baño sea más grande»).
 
-### 2.2 Entrada 1b · «Armala con Monti» (orientador)
+### 2.2 Entrada 1b · «Armala con Lumo» (orientador)
 
-**Monti** es un montante de madera con casco de obra (`Monti.tsx`). Es un personaje simple —pocas formas, dos
-colores de marca— para que se lea a 38 px en la charla. Tiene cuatro ánimos: quieto (respira y parpadea),
-pensando (mira arriba, puntos suspensivos), hablando (boca y brazo) y contento. Respeta
-`prefers-reduced-motion`.
+**Lumo** es el asistente de Assambl en toda la aplicación: una llama índigo con ojos ovalados y sonrisa fija.
+Su definición de diseño es `software/lumo/lumo-final.html` (forma, paleta, los diez estados y cuándo se usa
+cada uno); el componente es `frontend/src/componentes/lumo/Lumo.tsx` con `lumo.css`. El estado es un atributo
+del mismo dibujo, así que nunca cambia la forma:
+
+| Estado | Cuándo aparece en la app |
+| --- | --- |
+| `idle` | En la barra superior y en la charla sin actividad |
+| `wave` | Tarjeta «Armala con Lumo» del inicio |
+| `listen` | Mientras el usuario escribe |
+| `think` | Entre el envío y la respuesta; leyendo un bosquejo |
+| `build` | Armando plantas o amoblando la casa |
+| `reply` | Último mensaje de la charla |
+| `success` | Alternativas listas, propuesta de muebles lista para aplicar |
+| `oops` | Error recuperable |
+| `sleep` | Sin conexión con la API |
+
+Respeta `prefers-reduced-motion`.
 
 Reglas de conversación (están en el prompt de sistema, `ia/asistente.py`):
 
@@ -83,7 +110,8 @@ Reglas de conversación (están en el prompt de sistema, `ia/asistente.py`):
 - Primero lo que más cambia la casa: dormitorios → tamaño → baños → cocina integrada o separada → extras.
 - Si el usuario no sabe, se sugiere la opción más común y se sigue. En 5 a 7 preguntas debe estar listo.
 - Fuera del dominio (dos plantas, curvas, más de 200 m²) se explica por qué y se ofrece lo más parecido.
-- A la derecha, «Lo que va anotando Monti» muestra el programa en vivo: ambientes, superficies y total.
+- A la derecha, «Lo que va anotando Lumo» muestra el programa en vivo: ambientes, superficies y total.
+- Si el programa pide galería, las tres alternativas la traen dibujada del lado del sol (§4.4).
 
 ### 2.3 Momento de decisión · alternativas
 
@@ -147,17 +175,87 @@ Todas las ediciones son operaciones puras en `operaciones.ts` (`agregarMuro`, `m
 La huella se recalcula encadenando los muros exteriores. Lo que la casa trae de otras capas (cubiertas,
 instalaciones, mobiliario) se conserva sin tocar.
 
-## 4. Formato
+## 4. La vista 3D y el interior
+
+Con la planta resuelta, el usuario necesita ver la casa antes de pasar a la estructura: si el living entra, si
+el dormitorio queda chico con la cama, si la galería mira al sol. La vista 3D es **la misma casa** que la
+planta, no un paso aparte: un selector «Planta 2D | Vista 3D» en la barra del editor cambia de vista y
+conserva la selección, el deshacer y las reglas. Se puede abrir en cualquier momento; lo que falte resolver
+sigue en la lista.
+
+### 4.1 Lo que se ve
+
+`escena3d.ts` levanta la casa en el navegador a partir de la planta, sin backend:
+
+- **Muros** con su espesor, cortados a la altura elegida (por defecto 1,35 m, como una maqueta seccionada;
+  el control «Muros» llega hasta la altura completa). La cara exterior de los muros exteriores va oscura, la
+  interior en revoque y el corte en tono madera. Ventanas con antepecho, dintel y vidrio; puertas con la hoja
+  abierta como en la planta.
+- **Pisos** por ambiente según su solado o su uso (madera en dormitorios, porcelanato en baños), sobre la platea.
+- **Galería** con deck de tablas y postes en las esquinas libres.
+- **Muebles y artefactos** del catálogo, con medidas reales y las mismas formas que se ven en la planta.
+
+Cámara isométrica desde las cuatro esquinas, vista desde arriba y «Recorrer» a la altura de los ojos dentro
+del ambiente elegido. «Exportar imagen» arma una lámina PNG con título, la vista y las superficies.
+
+### 4.2 Muebles
+
+El catálogo es la familia `mobiliario` de `catalogo/ar.json` (55 piezas: estar, comedor, cocina, dormitorio,
+baño, lavadero, oficina, galería y deco). El frontend lo importa del mismo archivo que usan las reglas y el
+amoblado, así no hay dos listas. Cada ítem trae medidas, apoyo (muro, esquina o libre), espacio de uso
+delante, ambientes donde puede ir y, en los artefactos, agua y desagüe para la plomería. Las variantes de un
+mismo mueble (camas de 1 plaza a king, placards, duchas) comparten `grupo` y se cambian desde el panel.
+
+Convención de las piezas: `centro_m`, `medidas_m` = [ancho, fondo, alto] y `giro_deg` antihorario, con la
+espalda al sur y el frente al norte en 0°. La planta 2D dibuja las piezas desde arriba con las mismas cajas y
+cilindros que la vista 3D (`modelo/muebles.ts → primitivas`).
+
+- **Al entrar a la vista 3D por primera vez la casa aparece amoblada** (`capas/interior.py → amoblar`), con
+  reglas por uso: la cama contra el muro sin ventana con paso a los costados, mesas de luz y placard en otro
+  muro; en el baño la ducha en la esquina lejos de la puerta, inodoro, bidet y vanitory; la cocina como mesada
+  corrida con heladera, anafe, bacha y alacenas; el estar con sofá y tele enfrentados, mesa ratona y alfombra, y
+  el comedor con su mesa y sillas. Se deshace con Ctrl+Z.
+- En 3D se toca un mueble para elegirlo y se arrastra sobre el piso; se pega a los muros cercanos. En la planta
+  también se arrastra. **R** gira 90° (Mayúsculas + R al revés), **Ctrl+D** duplica, **Supr** borra.
+- «Agregar» ubica la pieza en el ambiente elegido (o en el que le corresponde) contra un muro y con su
+  espacio de uso libre (`POST /api/casa/colocar`).
+- Mover un muro en la planta arrastra los muebles que tienen la espalda contra él.
+
+### 4.3 Lumo en la vista 3D
+
+Lumo atiende pedidos de muebles y de espacios: «sumá un escritorio en la oficina», «cambiá la cama por una
+queen», «sacá la alfombra», «amoblá el dormitorio 2», «armá una galería al norte», «agrandá el baño». Responde
+con **operaciones** validadas (`ia/interior.py`): agregar, quitar, cambiar, mover, amoblar, galería, mover un
+muro o cambiar el uso de un ambiente. La IA no da coordenadas: elige qué hacer y dónde, y las reglas buscan el
+lugar. El resultado se muestra como **vista previa** con las piezas nuevas marcadas en índigo; el usuario la
+aplica o la descarta. Los cambios de muros los ejecuta la interfaz con la misma operación del editor, así
+arrastran lo conectado igual que a mano. Sin proveedor de IA, un guion por palabras clave resuelve los pedidos
+más comunes.
+
+### 4.4 Galería
+
+La galería es un ambiente de uso `galeria`: exterior, techado y sin muros. No suma a la superficie cubierta
+cerrada (la huella) y se informa aparte. Se agrega desde el panel eligiendo lado y fondo (2 a 4 m); por defecto
+va del lado del sol de invierno (norte en el hemisferio sur), sobre el muro del estar y centrada en él. Si ese
+muro no tiene salida, se propone una puerta-ventana corrediza. También se puede dibujar a mano con la
+herramienta Ambiente y uso «Galería».
+
+## 5. Formato
 
 La planta se guarda en `proyecto.casa` con el esquema `assambl/casa@0.1` de Angus Ranch: muros por eje con sus
 aberturas (`posicion_m` desde el inicio del eje), ambientes con contorno en la cara interior del muro,
 sistemas constructivos y huella. Se agregan tres campos opcionales por pieza:
 
-- `estado`: el declarado (ver §5).
+- `estado`: el declarado (ver §6).
 - `revision: {fecha}`: cuándo lo aprobó el usuario.
 - `catalogo`: código del ítem de catálogo de una abertura.
 
-## 5. Estados sobre cada pieza
+El interior usa las secciones que ya traía Angus Ranch: `mobiliario` (muebles) y `artefactos` (lo que lleva
+agua o desagüe), con `id`, `tipo` (código del catálogo), `ambiente`, `centro_m`, `medidas_m`, `giro_deg` y
+`estado`. La galería es un ambiente más, con `uso: "galeria"`. `interior.amoblado_automatico` recuerda que ya
+se propuso un amoblado, para no repetirlo.
+
+## 6. Estados sobre cada pieza
 
 Cada muro, abertura y ambiente muestra un estado de MVP_01 §4.4 con **tres canales redundantes** (relleno,
 trama, insignia con glifo), para que se lea sin depender del color. La idea visual: lo resuelto se ve «como un
@@ -187,7 +285,7 @@ grave de los que se ven. «Ver sobre la planta» apaga los colores y deja el pla
 `pendiente_revision` suele abarcar toda una planta leída por IA; por eso en muros y aberturas lo dice la trama
 y la insignia «!» queda solo en los ambientes, para no llenar el plano de signos.
 
-## 6. Reglas R03 de la planta
+## 7. Reglas de la planta y del interior
 
 `reglas/r03_planta.py` (versión 0.1). Cada verificación nombra las piezas a las que se aplica y el estado de la
 pieza es el peor que recibe. Se ejecutan en el backend a cada cambio (250 ms de espera).
@@ -208,9 +306,21 @@ pieza es el peor que recibe. Se ejecutan en el backend a cada cambio (250 ms de 
 Los umbrales son de partida (MVP_01 §3.3: deben ratificarse con el especialista). Nota: medida en vano bruto,
 una corrediza de 2,40 m ya pide cálculo; por eso el generador propone corredizas de 2,00 m.
 
-## 7. Inteligencia artificial
+`reglas/r_interior.py` (versión 0.1) se ejecuta junto con las R03 y nombra el mueble que tiene el problema.
 
-### 7.1 Proveedor intercambiable
+| ID | Verifica | Si falla |
+| --- | --- | --- |
+| RI.01 | Cada pieza queda dentro de su ambiente (no atraviesa muros) | `pendiente_revision` |
+| RI.02 | Las piezas no se superponen (salvo alfombra, sillas bajo la mesa, piezas colgadas) | `pendiente_revision` |
+| RI.03 | Cada pieza contra muro tiene libre su espacio de uso (70 cm delante del inodoro, 60 cm de los demás artefactos, 1 m de la mesada) | `pendiente_revision` |
+| RI.04 | Ninguna pieza queda en el barrido de una puerta o en un paso | `pendiente_revision` |
+| RI.05 | Cada pieza va en un ambiente adecuado (sanitarios en baños, muebles de galería afuera) | `pendiente_revision` |
+| RI.06 | Los pasillos dejan 90 cm de paso | `pendiente_revision` |
+| RI.07 | La galería tiene al menos 1,8 m de fondo y está junto a la casa | `pendiente_revision` |
+
+## 8. Inteligencia artificial
+
+### 8.1 Proveedor intercambiable
 
 Todo el producto habla con la IA por una sola operación, `completar_json(sistema, mensajes, imagenes)`
 (`ia/proveedores.py`). Los prompts y la validación viven en `ia/asistente.py` y no dependen del prestador.
@@ -235,12 +345,12 @@ Se cambia de prestador **solo desde el `.env`**:
 Agregar otro prestador es escribir una subclase de `Proveedor` con `completar_json` y sumarla en
 `obtener()`.
 
-### 7.2 Privacidad
+### 8.2 Privacidad
 
 Las imágenes y el texto que el usuario escribe se envían al prestador configurado. Conviene decirlo en la
 interfaz antes de la prueba con usuarios y revisar la política de retención del prestador elegido.
 
-## 8. Rutas nuevas
+## 9. Rutas
 
 ```
 GET  /api/casa/ia                    proveedor de IA activo
@@ -248,17 +358,24 @@ GET  /api/casa/catalogo              catálogo del mercado (aberturas)
 POST /api/casa/conversar             un turno de charla → mensaje, pregunta con opciones, programa, listo
 POST /api/casa/alternativas          programa → 3 partidos con su casa y su análisis R03
 POST /api/casa/interpretar-imagen    imagen (data URL) → lectura, planta a revisar, análisis
-POST /api/casa/analizar              casa → estado por pieza y verificaciones R03
+POST /api/casa/analizar              casa → estado por pieza y verificaciones R03 y RI
+POST /api/casa/amoblar               casa (+ ambientes, reemplazar) → casa amoblada y notas
+POST /api/casa/colocar               casa + código + ambiente → la pieza ubicada o el motivo
+POST /api/casa/galeria               casa + lado + fondo → galería amoblada (y su salida si falta)
+POST /api/casa/interior/conversar    pedido a Lumo → mensaje, operaciones, casa propuesta, muros a mover
 ```
 
-## 9. Pendientes
+## 10. Pendientes
 
 - **Probar con la clave real de OpenAI** el orientador, el texto libre y la lectura de bosquejos (hasta ahora
   se probó el recorrido completo con el proveedor simulado y el contrato con un proveedor falso en las pruebas).
   Armar un set de 10–15 bosquejos reales para medir la lectura de imágenes.
-- **Monti en el editor:** pedir cambios en lenguaje natural sobre la planta ya elegida («agrandá el
-  dormitorio principal») traducidos a operaciones.
+- **Lumo en la planta 2D:** hoy Lumo cambia muebles y mueve muros desde la vista 3D; falta llevar la misma
+  charla al editor de planta (abrir vanos, partir ambientes).
+- **Amoblado:** afinar las plantas chicas con cocina integrada (a veces no entran a la vez estar y comedor) y
+  sumar más variantes de distribución por ambiente.
+- **Techo y alturas en 3D:** cubierta y cielorraso cuando se construya la estructura.
 - **Implantación:** mover y girar la casa sobre el lote, con retiros dibujados (hoy se centra en el lote).
 - **Dibujo libre asistido:** detectar ambientes cerrados por muros y proponer nombres.
-- Partidos en L y en U; galería como volumen.
+- Partidos en L y en U.
 - Prueba de usabilidad con 5 entusiastas: ¿entienden los estados sin la leyenda? ¿qué entrada eligen?

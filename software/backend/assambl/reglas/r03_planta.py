@@ -16,7 +16,7 @@ import math
 
 from ..geometria import poligono
 from ..modelo.estados import Estado
-from . import Verificacion
+from . import Verificacion, r_interior
 
 VERSION = "0.1"
 ORIGEN = "MVP_01 §2 (dominio) y §3.3 (aberturas y headers)"
@@ -184,7 +184,7 @@ def analizar_planta(casa: dict, parametros: dict | None = None) -> dict:
             vs.append(_v("R03.09", "Los ambientes habitables tienen ventana al exterior",
                          Estado.COMPROBADO_POR_REGLAS if con_ventana else Estado.PENDIENTE_DATOS,
                          "" if con_ventana else f"«{amb['nombre']}» no tiene ventana en un muro exterior.", [amb["id"]]))
-        if uso not in ("social", "circulacion"):
+        if uso not in ("social", "circulacion", "galeria"):
             con_puerta = any(o.get("tipo") in ("puerta", "paso", "ventana_corrediza")
                              for m in vecinos for o in m.get("aberturas") or [])
             # Un ambiente que no está cerrado por muros en todo su perímetro se abre a otro.
@@ -193,6 +193,9 @@ def analizar_planta(casa: dict, parametros: dict | None = None) -> dict:
             vs.append(_v("R03.10", "Cada ambiente tiene por dónde entrar",
                          Estado.COMPROBADO_POR_REGLAS if con_puerta or abierto else Estado.PENDIENTE_DATOS,
                          "" if con_puerta or abierto else f"«{amb['nombre']}» no tiene puerta ni paso.", [amb["id"]]))
+
+    # Muebles, artefactos y galería.
+    vs.extend(r_interior.verificar(casa))
 
     # Estado por pieza: el peor de los que recibe; sin verificaciones, propuesto.
     por_pieza: dict[str, str] = {}
@@ -206,6 +209,8 @@ def analizar_planta(casa: dict, parametros: dict | None = None) -> dict:
     for amb in ambientes:
         if amb["id"] not in por_pieza and amb.get("contorno_m"):
             por_pieza[amb["id"]] = Estado.COMPROBADO_POR_REGLAS.value
+    for pieza in r_interior.ci.piezas(casa):
+        por_pieza.setdefault(pieza["id"], Estado.COMPROBADO_POR_REGLAS.value)
     for m in muros:
         if m["id"] not in por_pieza:
             por_pieza[m["id"]] = Estado.COMPROBADO_POR_REGLAS.value if not oblicuos or m["id"] not in oblicuos else Estado.PENDIENTE_REVISION.value

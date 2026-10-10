@@ -15,7 +15,10 @@ import {
   type Casa,
   type Muro,
   type Pieza,
+  type PiezaInterior,
+  USOS_EXTERIORES,
 } from "../../modelo/casa";
+import { aPlanta, COLORES, huella, piezasInterior, primitivas } from "../../modelo/muebles";
 import { ASPECTO, estadoPieza } from "./estados";
 
 export interface Vista {
@@ -54,6 +57,10 @@ export function Tramas() {
       <pattern id="trama-ambiente-datos" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
         <rect width="8" height="8" fill="var(--concrete-3)" />
         <line x1="0" y1="0" x2="0" y2="8" stroke="var(--concrete-2)" strokeWidth="3" />
+      </pattern>
+      <pattern id="trama-deck" width="6" height="6" patternUnits="userSpaceOnUse">
+        <rect width="6" height="6" fill="#cdb79b" />
+        <line x1="0" y1="5.5" x2="6" y2="5.5" stroke="#a88b69" strokeWidth="0.8" />
       </pattern>
     </defs>
   );
@@ -100,6 +107,8 @@ interface Props {
   interactivo?: boolean;
   /** Ambientes translúcidos, para ver un dibujo de fondo. */
   translucido?: boolean;
+  /** Muebles y artefactos. */
+  verMuebles?: boolean;
 }
 
 export default function DibujoPlanta({
@@ -113,6 +122,7 @@ export default function DibujoPlanta({
   onPieza,
   interactivo = false,
   translucido = false,
+  verMuebles = true,
 }: Props) {
   const cursor = interactivo ? "pointer" : undefined;
   const seleccionado = (id: string) => seleccion?.id === id;
@@ -124,6 +134,8 @@ export default function DibujoPlanta({
     // «Revisar» suele abarcar toda una planta leída por IA: en muros y aberturas lo dice la trama,
     // y la insignia queda solo en los ambientes para no llenar el plano de signos.
     if (e === "pendiente_revision" && !esAmbiente) return;
+    // Las aberturas piden su insignia al dibujarse; si se dibujan de nuevo, no se repite.
+    if (insignias.some((n) => (n as { key?: string } | null)?.key === `i-${id}`)) return;
     insignias.push(
       <g key={`i-${id}`} transform={`translate(${p[0]},${p[1]})`} pointerEvents="none">
         <circle r={7} fill="var(--concrete-2)" stroke={a.acento} strokeWidth={1.5} />
@@ -141,11 +153,14 @@ export default function DibujoPlanta({
         if (!amb.contorno_m || amb.contorno_m.length < 3) return null;
         const e = estadoPieza(amb.estado, amb.id, analisis);
         const pts = amb.contorno_m.map((p) => aPantalla(v, p).join(",")).join(" ");
-        const relleno = !verEstados
-          ? "var(--concrete-2)"
-          : e === "pendiente_datos"
-            ? "url(#trama-ambiente-datos)"
-            : ASPECTO[e].ambiente;
+        const exterior = USOS_EXTERIORES.includes(amb.uso);
+        const relleno = exterior
+          ? "url(#trama-deck)"
+          : !verEstados
+            ? "var(--concrete-2)"
+            : e === "pendiente_datos"
+              ? "url(#trama-ambiente-datos)"
+              : ASPECTO[e].ambiente;
         return (
           <polygon
             key={amb.id}
@@ -221,6 +236,24 @@ export default function DibujoPlanta({
           </g>
         );
       })}
+
+      {/* Muebles y artefactos, vistos desde arriba */}
+      {verMuebles &&
+        piezasInterior(casa).map((pz) => (
+          <PiezaEnPlanta
+            key={pz.id}
+            v={v}
+            pieza={pz}
+            estado={estadoPieza(pz.estado, pz.id, analisis)}
+            verEstados={verEstados}
+            seleccionada={seleccionado(pz.id) || !!resaltadas?.has(pz.id)}
+            cursor={cursor}
+            onPointerDown={onPieza ? (ev) => {
+              ev.stopPropagation();
+              onPieza({ tipo: "mueble", id: pz.id }, ev);
+            } : undefined}
+          />
+        ))}
 
       {/* Nombres y superficies */}
       {etiquetas &&
@@ -325,6 +358,69 @@ function SimboloAbertura({
   return (
     <g data-pieza={o.id} style={{ cursor }} onPointerDown={onPointerDown}>
       {partes}
+    </g>
+  );
+}
+
+function PiezaEnPlanta({
+  v,
+  pieza,
+  estado,
+  verEstados,
+  seleccionada,
+  cursor,
+  onPointerDown,
+}: {
+  v: Vista;
+  pieza: PiezaInterior;
+  estado: Estado;
+  verEstados: boolean;
+  seleccionada: boolean;
+  cursor?: string;
+  onPointerDown?: (e: ReactPointerEvent) => void;
+}) {
+  const prims = [...primitivas(pieza)].sort((a, b) => a.z + a.h - (b.z + b.h));
+  const P = (x: number, y: number) => aPantalla(v, aPlanta(pieza, x, y)).join(",");
+  const [x0, y0, x1, y1] = huella(pieza);
+  const contorno = [aPantalla(v, [x0, y0]), aPantalla(v, [x1, y0]), aPantalla(v, [x1, y1]), aPantalla(v, [x0, y1])]
+    .map((q) => q.join(","))
+    .join(" ");
+  const aviso = verEstados && (estado === "pendiente_revision" || estado === "desactualizado");
+  return (
+    <g data-pieza={pieza.id} style={{ cursor }} onPointerDown={onPointerDown}>
+      <polygon points={contorno} fill="transparent" />
+      {prims.map((q, i) =>
+        q.f === "caja" ? (
+          <polygon
+            key={i}
+            points={[P(q.x - q.a / 2, q.y - q.p / 2), P(q.x + q.a / 2, q.y - q.p / 2), P(q.x + q.a / 2, q.y + q.p / 2), P(q.x - q.a / 2, q.y + q.p / 2)].join(" ")}
+            fill={q.transparente ? "none" : COLORES[q.c]}
+            stroke="var(--ink)"
+            strokeOpacity={0.55}
+            strokeWidth={0.6}
+          />
+        ) : (
+          <circle
+            key={i}
+            cx={aPantalla(v, aPlanta(pieza, q.x, q.y))[0]}
+            cy={aPantalla(v, aPlanta(pieza, q.x, q.y))[1]}
+            r={q.r * v.escala}
+            fill={COLORES[q.c]}
+            stroke="var(--ink)"
+            strokeOpacity={0.55}
+            strokeWidth={0.6}
+          />
+        ),
+      )}
+      {(seleccionada || aviso) && (
+        <polygon
+          points={contorno}
+          fill="none"
+          stroke={seleccionada ? "var(--signal)" : ASPECTO[estado].acento}
+          strokeWidth={seleccionada ? 2 : 1.5}
+          strokeDasharray={seleccionada ? undefined : "4 3"}
+        />
+      )}
     </g>
   );
 }

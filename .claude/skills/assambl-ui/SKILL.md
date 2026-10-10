@@ -1,6 +1,6 @@
 ---
 name: assambl-ui
-description: Reglas de interfaz de la app de Assambl (software/frontend, el configurador de casas por capas en localhost:5173) — tipografía en tres roles (head, body, label), cuándo va mono y cuándo no, tokens, pesos y componentes base. Usala antes de crear o modificar cualquier pantalla, panel, componente, texto SVG o estilo de la app, y siempre que haya que decidir en qué fuente va un texto.
+description: Reglas de interfaz de la app de Assambl (software/frontend, el configurador de casas por capas en localhost:5173) — tipografía en tres roles (head, body, label), cuándo va mono y cuándo no, tokens, pesos, componentes base, Lumo como asistente y convenciones de la vista 3D. Usala antes de crear o modificar cualquier pantalla, panel, componente, texto SVG o estilo de la app, y siempre que haya que decidir en qué fuente va un texto.
 ---
 
 # Interfaz de Assambl
@@ -101,3 +101,27 @@ Ningún párrafo, botón ni texto de más de una línea se renderiza en mono.
 Tokens en `:root` de `estilos.css`: `--ink`, `--concrete`, `--concrete-2`, `--concrete-3`, `--signal` (acento),
 `--rebar` (texto secundario), `--resolved`, `--warn`, `--line`. Se usan con las clases `text-ink`, `bg-concrete`,
 `border-line`, etc. Sin bordes redondeados.
+
+## Lumo, el asistente
+
+Lumo es el **único** asistente y personaje de la app. No se crean otros personajes ni mascotas.
+
+- Diseño de referencia: `software/lumo/lumo-final.html` (forma, paleta índigo `#6C4DFF`, los diez estados y
+  cuándo se usa cada uno). Componente: `componentes/lumo/Lumo.tsx` con `lumo.css`.
+- Se cambia el estado, nunca el dibujo: `<Lumo state="think" size={40} />`.
+- Estados en la app: `idle` en reposo y en la barra superior; `wave` para dar la bienvenida; `listen` mientras
+  el usuario escribe; `think` entre el envío y la respuesta; `build` mientras se generan plantas o se amobla;
+  `reply` en el último mensaje; `success` cuando hay un resultado listo; `oops` ante un error recuperable;
+  `sleep` sin conexión con la API.
+- Lo que Lumo propone sobre la casa se muestra como **vista previa** (piezas nuevas en índigo) con «Aplicar» y
+  «Descartar». Nunca cambia la casa sin que el usuario lo acepte.
+- En los textos habla en primera persona y en rioplatense («Te propuse un amoblado…»).
+
+## Vista 3D
+
+- La planta 2D y la vista 3D son la misma casa: comparten selección, deshacer y reglas. Lo que se agregue a
+  una vista tiene que verse en la otra (los muebles se dibujan en las dos desde `modelo/muebles.ts`).
+- Colores de la escena en `pasos/casa/escena3d.ts` (`COLOR_ESCENA`): fondo concrete, cara exterior oscura,
+  revoque interior claro, corte del muro en tono madera, selección en signal, propuestas de Lumo en índigo.
+- La selección en 3D se marca con un contorno; lo que falta resolver se lista en el panel y se resalta al pasar
+  el mouse, no se pinta permanentemente sobre la escena.

@@ -14,6 +14,7 @@ export type Uso =
   | "vestidor"
   | "deposito"
   | "circulacion"
+  | "galeria"
   | "otro";
 
 export const USOS: { id: Uso; nombre: string }[] = [
@@ -26,8 +27,12 @@ export const USOS: { id: Uso; nombre: string }[] = [
   { id: "vestidor", nombre: "Vestidor" },
   { id: "deposito", nombre: "Depósito" },
   { id: "circulacion", nombre: "Pasillo / circulación" },
+  { id: "galeria", nombre: "Galería (exterior)" },
   { id: "otro", nombre: "Otro" },
 ];
+
+/** Ambientes exteriores: piso y techo sin muros. No suman a la superficie cubierta cerrada. */
+export const USOS_EXTERIORES: Uso[] = ["galeria"];
 
 export type TipoAbertura = "puerta" | "ventana" | "ventana_corrediza" | "paso";
 
@@ -74,6 +79,22 @@ export interface Sistema {
   [extra: string]: unknown;
 }
 
+/** Mueble o artefacto ubicado (`casa.mobiliario` o `casa.artefactos`). `tipo` es el código del catálogo.
+ *  `medidas_m` = [ancho, fondo, alto] en el sistema de la pieza; con `giro_deg` = 0 la espalda mira al sur
+ *  (−Y) y el frente al norte (+Y); el giro es antihorario. */
+export interface PiezaInterior {
+  id: string;
+  tipo: string;
+  ambiente?: string | null;
+  centro_m: Punto;
+  medidas_m?: number[] | null;
+  giro_deg: number;
+  estado?: Estado | null;
+  origen?: string;
+  revision?: { fecha: string } | null;
+  [extra: string]: unknown;
+}
+
 export interface Casa {
   esquema: string;
   nombre: string;
@@ -84,13 +105,17 @@ export interface Casa {
   sistemas: Record<string, Sistema>;
   muros: Muro[];
   ambientes: Ambiente[];
+  mobiliario?: PiezaInterior[];
+  artefactos?: PiezaInterior[];
+  parametros?: { altura_tabiques_m?: number; [extra: string]: unknown };
   [extra: string]: unknown;
 }
 
 export type Pieza =
   | { tipo: "muro"; id: string }
   | { tipo: "abertura"; id: string; muro: string }
-  | { tipo: "ambiente"; id: string };
+  | { tipo: "ambiente"; id: string }
+  | { tipo: "mueble"; id: string };
 
 /* Catálogo (backend/assambl/catalogo/ar.json) */
 
@@ -306,6 +331,28 @@ export function buscarAbertura(casa: Casa, id: string): { muro: Muro; abertura: 
 
 export function superficieCubierta(casa: Casa): number | null {
   return casa.huella_m && casa.huella_m.length >= 3 ? areaPoligono(casa.huella_m) : null;
+}
+
+/** Superficie de galerías (exterior, techada). */
+export function superficieGaleria(casa: Casa): number {
+  return casa.ambientes
+    .filter((a) => USOS_EXTERIORES.includes(a.uso) && a.contorno_m && a.contorno_m.length >= 3)
+    .reduce((s, a) => s + areaPoligono(a.contorno_m!), 0);
+}
+
+export function contiene(poly: Punto[], x: number, y: number): boolean {
+  let dentro = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+/** Altura de los muros (piso terminado a cielorraso). */
+export function alturaMuros(casa: Casa): number {
+  return casa.parametros?.altura_tabiques_m ?? 2.6;
 }
 
 export function casaVacia(nombre = "Casa"): Casa {
