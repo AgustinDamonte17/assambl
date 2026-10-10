@@ -14,8 +14,8 @@ prestadores es el transporte, no los prompts ni la validación, que viven en
 Groq, DeepSeek, Mistral, Together, Ollama o LM Studio: con `IA_URL_BASE` e
 `IA_API_KEY` se apunta a cualquiera de ellos sin tocar código.
 
-`simulado` no sale a internet. Sigue un guion fijo y sirve para desarrollar la
-interfaz, correr las pruebas y usar Assambl sin clave; la interfaz lo muestra.
+`simulado` no sale a internet. Devuelve una lectura de demostración y sirve para
+desarrollar la interfaz, correr las pruebas y usar Assambl sin clave; la interfaz lo muestra.
 """
 
 from __future__ import annotations

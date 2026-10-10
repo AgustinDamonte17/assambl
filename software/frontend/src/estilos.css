@@ -111,4 +111,14 @@ input[type="range"] {
   animation: blink 1.1s steps(1) infinite;
 }
 
+/* La planta base de Lumo aparece cada vez que cambia una decisión. */
+@keyframes planta-aparece {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+.planta-aparece { animation: planta-aparece 0.45s ease-out; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) {
+  .planta-aparece { animation: none; }
+}
+
 .editor-planta { touch-action: none; user-select: none; }

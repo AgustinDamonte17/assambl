@@ -1,11 +1,12 @@
 # Capa 02 · Casa — planta, volumen e interior
 
-**Versión 0.2 · 10 de octubre de 2026 · Documento de trabajo**
+**Versión 0.3 · 10 de octubre de 2026 · Documento de trabajo**
 
 Este documento fija cómo el usuario llega a la planta de su casa, cómo la edita y cómo la ve levantada y
 amoblada antes de pasar a la estructura. El código vive en `frontend/src/pasos/casa/` (interfaz),
-`backend/assambl/capas/casa.py` (generador de plantas), `backend/assambl/capas/interior.py` (muebles y
-galería), `backend/assambl/reglas/` (reglas R03 y RI) y `backend/assambl/ia/` (Lumo y proveedores de IA).
+`backend/assambl/capas/planta_base.py` (la planta base de Lumo), `backend/assambl/capas/casa.py` (muros y
+aberturas a partir de rectángulos), `backend/assambl/capas/interior.py` (muebles y galería),
+`backend/assambl/reglas/` (reglas R03 y RI) y `backend/assambl/ia/` (Lumo, lectura de imágenes y proveedores).
 
 **Orden de las capas.** La secuencia no sigue al pie de la letra la numeración del MVP_01: se ajusta a medida
 que se construye. Hoy va Terreno → Casa (planta, volumen e interior) → Estructura → … → Plomería → Eléctrico →
@@ -18,10 +19,10 @@ producto mismo.
 
 | | |
 | --- | --- |
-| ![Inicio](paso_casa/1_inicio.png) Cómo empezar | ![Lumo](paso_casa/2_lumo.png) Charla con Lumo |
-| ![Alternativas](paso_casa/3_alternativas.png) Elegir un partido | ![Editor](paso_casa/4_editor.png) Editor de planta |
-| ![Estados](paso_casa/5_estados_angus.png) Estados en Angus Ranch | ![Imagen](paso_casa/6_imagen_revisar.png) Planta leída de un bosquejo, a revisar |
-| ![Vista 3D](paso_casa/7_vista3d.png) Vista 3D amoblada, muros cortados | ![Propuesta](paso_casa/8_lumo_propuesta.png) Propuesta de Lumo en vista previa |
+| ![Inicio](paso_casa/1_inicio.png) Cómo empezar | ![Diseñá con Lumo](paso_casa/2_disena_con_lumo.png) Diseñá con Lumo |
+| ![Editor](paso_casa/4_editor.png) Editor de planta | ![Estados](paso_casa/5_estados_angus.png) Estados en Angus Ranch |
+| ![Imagen](paso_casa/6_imagen_revisar.png) Planta leída de un bosquejo, a revisar | ![Vista 3D](paso_casa/7_vista3d.png) Vista 3D amoblada, muros cortados |
+| ![Propuesta](paso_casa/8_lumo_propuesta.png) Propuesta de Lumo en vista previa | |
 
 ## 1. Para quién
 
@@ -29,60 +30,47 @@ El usuario **no** es arquitecto ni modelador 3D. Es alguien entusiasmado con con
 que nunca usó un programa de dibujo. De ahí salen cinco principios que atraviesan el paso:
 
 1. **Nunca un lienzo en blanco sin ayuda.** La primera pantalla ofrece maneras de empezar, no herramientas.
-2. **La IA entiende; las reglas construyen.** El asistente conversa y lee imágenes, pero no escribe muros:
-   produce un *programa* (qué ambientes, qué tamaño) o *rectángulos aproximados*, y la geometría la arma
-   `capas/casa.py` con reglas deterministas. Es lo que pide MVP_01 §4.4: la interfaz y el asistente llaman
-   las mismas operaciones y ninguno escribe geometría por su cuenta.
+2. **Las reglas construyen.** Ni Lumo ni la IA que lee imágenes escriben muros: producen *rectángulos* (uno
+   por ambiente) y la geometría la arma `capas/casa.py` con reglas deterministas. Es lo que pide MVP_01 §4.4:
+   la interfaz y el asistente llaman las mismas operaciones y ninguno escribe geometría por su cuenta.
 3. **Todo es un punto de partida.** Lo que sale de cualquier entrada se abre en el mismo editor.
-4. **Se ve qué está verificado y qué no.** Cada pieza muestra su estado sobre el plano (§5).
+4. **Se ve qué está verificado y qué no.** Cada pieza muestra su estado sobre el plano (§6).
 5. **Español rioplatense, sin jerga.** Si hay un término técnico, se explica en una línea.
 
 ## 2. El recorrido
 
 ```
                     ┌──────────────────────────────┐
-                    │  ¿Cómo querés empezar tu casa?│  ← Inicio.tsx
+                    │      Empecemos tu casa       │  ← Inicio.tsx
                     └──────────────┬───────────────┘
-      ┌──────────────┬─────────────┼───────────────┬─────────────────┐
-      ▼              ▼             ▼               ▼                 ▼
- 1 Contala con   2 Armala con   3 Subí un       Dibujar desde     Ver un ejemplo
- tus palabras    Lumo           bosquejo        cero (básico)     (Angus Ranch)
- (IA, texto)     (IA, guiado)   (IA, imagen)
-      │              │             │               │                 │
-      └──────┬───────┘             │               │                 │
-             ▼                     ▼               │                 │
-        Charla.tsx          ImportarImagen.tsx     │                 │
-   pregunta solo lo que   lectura + planta encima  │                 │
-   falta · opciones con   de la imagen · dudas     │                 │
-   su consecuencia        con opciones             │                 │
-             │                     │               │                 │
-             ▼                     │               │                 │
-     Alternativas.tsx              │               │                 │
-   2–3 partidos del mismo          │               │                 │
-   programa: elegir uno            │               │                 │
-             │                     │               │                 │
-             └─────────────────────┴───────┬───────┴─────────────────┘
+              ┌────────────────────┼───────────────┬─────────────────┐
+              ▼                    ▼               ▼                 ▼
+       Diseñá con Lumo        Subí un bosquejo  Dibujar desde     Ver un ejemplo
+       (camino principal)     (IA, imagen)      cero (básico)     (Angus Ranch)
+              │                    │               │                 │
+              ▼                    ▼               │                 │
+      DisenarConLumo.tsx    ImportarImagen.tsx     │                 │
+   tres decisiones · la     lectura + planta encima│                 │
+   planta base se arma a    de la imagen · dudas   │                 │
+   la vista y se explica    con opciones           │                 │
+              │                    │               │                 │
+              └────────────────────┴───────┬───────┴─────────────────┘
                                            ▼
                               Editor de planta 2D (EditorPlanta + PanelEditor)
                               verificación en vivo con R03 · deshacer · estados
-                                           ▲
-                                           │  misma casa, misma selección, mismo deshacer
-                                           ▼
-                              Vista 3D (VistaCasa3D + PanelInterior)
-                              casa levantada y amoblada · galería · Lumo
+                              Lumo siempre a mano: pedidos en palabras y «Resolver»
+                                            ▲
+                                            │  misma casa, misma selección, mismo deshacer
+                                            ▼
+                               Vista 3D (VistaCasa3D + PanelInterior)
+                               casa levantada y amoblada · galería · Lumo
 ```
 
-**Prioridades** (como se acordó): las entradas 1 y 2 están completas; la 3 (dibujo libre) existe en su
-versión básica —el mismo editor con la planta vacía— y no tiene asistencia propia todavía.
+**Criterio:** primero un solo camino bien resuelto, después se complejiza. Lumo es ese camino. Antes había
+una charla abierta que terminaba en tres plantas para elegir; se quitó porque las plantas no convencían y
+elegir entre tres no ayudaba a quien no sabe de plantas.
 
-### 2.1 Entrada 1a · «Contala con tus palabras» (prompt libre)
-
-- Un cuadro de texto con tres ejemplos que se pueden tocar para completarlo.
-- El asistente extrae el programa y **solo pregunta si falta algo que cambia la forma de la casa**
-  (cantidad de dormitorios, tamaño aproximado). Si alcanza, salta directo a las alternativas.
-- Siempre se puede seguir charlando para ajustar («sumá un lavadero», «que el baño sea más grande»).
-
-### 2.2 Entrada 1b · «Armala con Lumo» (orientador)
+### 2.1 Diseñá con Lumo
 
 **Lumo** es el asistente de Assambl en toda la aplicación: una llama índigo con ojos ovalados y sonrisa fija.
 Su definición de diseño es `software/lumo/lumo-final.html` (forma, paleta, los diez estados y cuándo se usa
@@ -92,42 +80,77 @@ del mismo dibujo, así que nunca cambia la forma:
 | Estado | Cuándo aparece en la app |
 | --- | --- |
 | `idle` | En la barra superior y en la charla sin actividad |
-| `wave` | Tarjeta «Armala con Lumo» del inicio |
+| `wave` | Tarjeta «Diseñá con Lumo» del inicio |
 | `listen` | Mientras el usuario escribe |
 | `think` | Entre el envío y la respuesta; leyendo un bosquejo |
-| `build` | Armando plantas o amoblando la casa |
+| `build` | Rearmando la planta base o amoblando la casa |
 | `reply` | Último mensaje de la charla |
-| `success` | Alternativas listas, propuesta de muebles lista para aplicar |
+| `success` | Planta base lista, propuesta de muebles lista para aplicar |
+| `curious` | Antes de la primera respuesta, mientras la planta todavía no aparece |
 | `oops` | Error recuperable |
 | `sleep` | Sin conexión con la API |
 
 Respeta `prefers-reduced-motion`.
 
-Reglas de conversación (están en el prompt de sistema, `ia/asistente.py`):
+El recorrido son **tres decisiones, siempre las mismas y en el mismo orden** (`ia/lumo.py`):
 
-- **Una pregunta por vez**, siempre con **2 a 4 opciones** y la **consecuencia** de cada una en pocas
-  palabras («Integrada · un solo ambiente, más luz y menos muros»). Siempre se puede escribir en vez de elegir.
-- Primero lo que más cambia la casa: dormitorios → tamaño → baños → cocina integrada o separada → extras.
-- Si el usuario no sabe, se sugiere la opción más común y se sigue. En 5 a 7 preguntas debe estar listo.
-- Fuera del dominio (dos plantas, curvas, más de 200 m²) se explica por qué y se ofrece lo más parecido.
-- A la derecha, «Lo que va anotando Lumo» muestra el programa en vivo: ambientes, superficies y total.
-- Si el programa pide galería, las tres alternativas la traen dibujada del lado del sol (§4.4).
-
-### 2.3 Momento de decisión · alternativas
-
-Cuando el programa alcanza, se muestran **tres partidos** del mismo pedido (`capas/casa.py → alternativas`):
-
-| Partido | Qué es | A cambio de |
+| Decisión | Opciones | Qué cambia |
 | --- | --- | --- |
-| Compacta en dos franjas | Estar a un lado; pasillo corto; dormitorios al sol, baños y lavadero del lado opuesto | — (menos muro exterior) |
-| Lineal, todo al sol | Una tira de ambientes, pasillo del lado frío | Más fachada y más muro exterior |
-| Compacta, estar al este | La compacta espejada: estar con sol de mañana | — |
+| Dormitorios | 1 a 4 | Qué ambiente ocupa cada lugar y si la casa tiene ala de entrada |
+| Cocina | Abierta o cerrada | Si es parte del estar o un ambiente propio |
+| Tamaño | Compacta, cómoda o amplia | Las medidas; cada opción muestra los m² reales que saldrían |
 
-Cada tarjeta muestra la planta en miniatura con estados, superficie cubierta, frente × fondo y **metros de
-muro exterior** (el dato que un entusiasta no mira y que más pesa en costo y en pérdida de calor). «Al sol»
-significa norte en el hemisferio sur y sur en el norte: se usa la latitud de la capa 01 si existe.
+- **Una pregunta por vez**, cada opción con su consecuencia en pocas palabras. Siempre se puede escribir en
+  vez de elegir; lo escrito se lee por palabras clave.
+- **La planta aparece con la primera respuesta.** Lo que falta decidir va con el valor más común (tres
+  dormitorios, cocina abierta, tamaño cómodo) y se ve punteado en los controles hasta que el usuario lo elige.
+- **Todo se puede cambiar.** Debajo de la planta hay un control por decisión; tocar otro valor rearma la casa.
+- **La casa se explica.** Cuatro textos cortos dicen por qué quedó ordenada así.
+- No usa un modelo de lenguaje: es inmediato, igual para todos y no depende de tener una clave de IA.
+- Desde el editor, «Cambiar decisiones con Lumo» vuelve con las decisiones de la planta (se guardan en
+  `casa.origen.decisiones`).
 
-### 2.4 Entrada 2 · «Subí un bosquejo o un plano»
+### 2.2 La planta base
+
+`capas/planta_base.py` arma **una sola planta**, con un orden que se puede explicar. Ese orden sale de leer
+cómo está resuelta Angus Ranch y quedarse con lo que la hace funcionar:
+
+1. **Una barra alargada de este a oeste**, con el frente largo hacia el sol (norte en el hemisferio sur; en el
+   norte la planta se espeja).
+2. **Estar, comedor y cocina en el centro, de fachada a fachada.** No hay pasillos: el centro reparte hacia
+   los dos extremos y ventila cruzado.
+3. **La suite principal en un extremo**: dormitorio, vestidor y baño. Enfrente, otro ambiente; entre los dos,
+   un rincón del estar al que dan sus puertas.
+4. **La entrada en el otro extremo**, por un hall chico entre dos ambientes.
+5. **Baño y lavadero en un anexo del lado frío**, pegados a la cocina: una sola zona de cañerías, y el frente
+   del sol queda libre para vivir.
+
+Las decisiones no cambian el esquema, cambian quién ocupa cada lugar:
+
+| Dormitorios | Frente a la suite | Ala de entrada |
+| --- | --- | --- |
+| 1 | Escritorio | No hay: se entra por un costado del estar |
+| 2 | Dormitorio 2 | No hay: se entra por un costado del estar |
+| 3 | Dormitorio 2 | Dormitorio 3 y escritorio, con el hall entre los dos |
+| 4 | Dormitorio 2 | Dormitorios 3 y 4, con el hall entre los dos |
+
+Con cocina cerrada, la cocina es un ambiente alargado frente a la suite que avanza sobre el centro, con un
+paso hacia el comedor; la franja crece para darle lugar. «Amplia» con tres dormitorios y cocina abierta mide
+lo mismo que Angus Ranch.
+
+El estar es **un solo ambiente** aunque no sea rectangular: toma el rincón frente a la suite y el hall de
+entrada. Para eso los rectángulos llevan un `grupo`, y los que comparten grupo forman un solo contorno sin muro
+entre ellos. Un rectángulo también puede pedir dónde va su puerta (`puerta`) o la entrada de la casa
+(`acceso`); si no lo pide, el generador elige.
+
+Las 48 variantes (dormitorios × cocina × tamaño × hemisferio) pasan todas las reglas R03 sin advertencias; lo
+verifica `tests/test_casa.py`.
+
+**Qué queda afuera por ahora:** superficie exacta, cantidad de baños (siempre el de la suite y uno general),
+garage y otros partidos. La galería no es una decisión de Lumo: se suma desde la vista 3D (§4.4). Las
+plantas son generosas (de 99 a 173 m²) porque heredan las proporciones de Angus Ranch.
+
+### 2.3 Subí un bosquejo o un plano
 
 1. Se arrastra una imagen (PNG/JPG). El navegador la achica a 1600 px antes de enviarla.
 2. Opcionales: **ancho total del frente** (para escalar si el dibujo no tiene cotas) y aclaraciones.
@@ -141,9 +164,10 @@ significa norte en el hemisferio sur y sur en el norte: se usa la latitud de la 
 6. **Todas las piezas nacen `pendiente_revision`.** El usuario corrige y confirma, pieza por pieza
    («✓ Revisado») o en bloque («Ya revisé todo»).
 
-Un ambiente en L se lee como dos rectángulos «Estar (a)» y «Estar (b)»; entre ellos no se pone muro.
+Un ambiente en L se lee como dos rectángulos «Estar (a)» y «Estar (b)»: forman un solo ambiente, sin muro
+entre ellos.
 
-### 2.5 Dibujo libre y ejemplo
+### 2.4 Dibujo libre y ejemplo
 
 - **Dibujar desde cero** abre el editor vacío con una indicación para empezar con la herramienta Muro.
 - **Ver un ejemplo** carga `casos/angus_ranch.assambl.json` (el caso de regresión de V11). Sirve para
@@ -165,6 +189,14 @@ norte, barra de escala, coordenadas del cursor, el lote de la capa 01 (línea ve
 Además: rueda para acercar, espacio + arrastrar o botón derecho para desplazarse, Supr para borrar, Esc para
 soltar, Ctrl+Z / Ctrl+Shift+Z para deshacer y rehacer (80 pasos).
 
+Arriba a la izquierda del lienzo está el interruptor **Cotas**: muestra las medidas exteriores de la casa
+(una línea por cada lado de la huella), el ancho × fondo de cada ambiente y, al lado, los **m² cubiertos** y
+la suma de los ambientes. Sirve para ver qué le hace a la superficie total agrandar un ambiente.
+
+**Ambientes.** Doble clic sobre un ambiente lleva el cursor a su nombre. En sus propiedades, «Integrar con»
+saca el muro que lo separa de un vecino y los une en un solo ambiente (aunque el resultado no sea
+rectangular), y «Quitar etiqueta» le saca el nombre y deja el espacio con sus muros, para darle otro uso.
+
 El panel derecho tiene las propiedades de lo elegido (sistema y largo del muro; catálogo, posición, ancho,
 antepecho, dintel, bisagra y sentido de la puerta; nombre y uso del ambiente), la lista **«Para resolver»**
 (cada ítem lleva a su pieza y la resalta al pasar el mouse), la leyenda de estados con cantidades y un resumen
@@ -174,6 +206,52 @@ Todas las ediciones son operaciones puras en `operaciones.ts` (`agregarMuro`, `m
 `agregarAbertura`, `modificarAbertura`, `agregarAmbiente`, `marcarRevisado`…) que devuelven una casa nueva.
 La huella se recalcula encadenando los muros exteriores. Lo que la casa trae de otras capas (cubiertas,
 instalaciones, mobiliario) se conserva sin tocar.
+
+### 3.1 Lumo en el editor
+
+Arriba del panel derecho, siempre visible, está Lumo con un campo para escribirle (`LumoEditor.tsx`). Hace
+dos cosas, con el mismo trato:
+
+1. **Pedidos en palabras.** «Quiero ampliar este ambiente», «cambiá la entrada de lugar», «cocina abierta,
+   integrada al living». Un modelo de lenguaje (`ia/lumo_editor.py`) traduce el pedido a **acciones de una
+   lista cerrada**; no escribe muros ni coordenadas. «Este» es lo que esté elegido en la planta.
+2. **«Resolver».** Cada ítem de «Para resolver» tiene un botón. Para lo que tiene una salida clara, Lumo
+   actúa con reglas, sin IA (`resolver.ts`); lo que no, se lo pasa al modelo como cualquier otro pedido.
+
+En los dos casos:
+
+- **Lumo aplica el cambio y pide confirmación**: cuenta qué hizo y deja «Dejar así» y «Volver atrás». Si la
+  planta siguió cambiando por otro lado, para volver se usa deshacer.
+- **Si falta un dato, pregunta** con opciones en vez de adivinar (hacia qué lado ampliar, por dónde entrar).
+- **Si el cambio deja problemas nuevos, lo avisa** en el mismo mensaje, apenas las reglas lo miran.
+- **Si no se puede, dice por qué** y la planta no cambia: las acciones son todo o nada.
+
+Las acciones (`acciones.ts`) son decisiones de diseño armadas con las operaciones de siempre:
+
+| Acción | Qué hace |
+| --- | --- |
+| `ampliar` | Corre el muro de un lado del ambiente. Si el muro es compartido, cambian los vecinos, y lo dice |
+| `integrar` | Saca el muro entre dos ambientes vecinos y une sus contornos en uno |
+| `renombrar`, `quitar_ambiente`, `crear_ambiente` | Nombre, uso y etiqueta de un espacio |
+| `agregar_abertura` | Ventana en un muro exterior del ambiente, o puerta hacia un vecino, donde entra |
+| `cambiar_abertura`, `acomodar_abertura`, `quitar_abertura` | Reemplazo por otro ítem del catálogo, o corrimiento hasta donde entra |
+| `mover_entrada` | Saca la puerta de entrada y la pone en otro lado de la casa |
+| `mover_muro`, `quitar_muro` | Las operaciones básicas, cuando el pedido es así de literal |
+
+Qué resuelve Lumo sin IA:
+
+| Problema | Qué hace |
+| --- | --- |
+| R03.09 · sin ventana | Agrega una ventana en un muro exterior del ambiente |
+| R03.10 · sin puerta | Agrega una puerta hacia el ambiente de paso más cercano |
+| R03.05 · vano que pide cálculo | Lo cambia por el ítem más ancho que sale de tabla |
+| R03.04 · abertura que no entra | La corre hasta donde entra |
+| R03.11 · falta un baño para todos | Pregunta: hacerlo en el espacio libre, abrir el baño en suite hacia el estar, o convertir un ambiente |
+| R03.12 a R03.14 · falta dormitorio, cocina o entrada | Pregunta con las opciones que tiene la planta |
+| R03.15 · espacio sin uso | Lo marca como ambiente para darle un uso |
+
+Sin clave de IA, los pedidos en palabras no están disponibles (Lumo lo dice); «Resolver» sí, en todo lo de la
+tabla.
 
 ## 4. La vista 3D y el interior
 
@@ -302,9 +380,24 @@ pieza es el peor que recibe. Se ejecutan en el backend a cada cambio (250 ms de 
 | R03.08 | Dormitorio ≥ 7,5 m² y 2,4 m de lado; baño ≥ 2,4 m² | `pendiente_revision` |
 | R03.09 | Dormitorios, estar y oficina tienen ventana en un muro exterior | `pendiente_datos` |
 | R03.10 | Cada ambiente tiene puerta o paso (o está abierto a otro) | `pendiente_datos` |
+| R03.11 | **Grave.** Hay un baño al que se llega sin pasar por un dormitorio | `pendiente_datos` |
+| R03.12 | **Grave.** Hay al menos un dormitorio | `pendiente_datos` |
+| R03.13 | **Grave.** Hay estar y hay cocina (propia o nombrada en el estar) | `pendiente_datos` |
+| R03.14 | **Grave.** Algún muro exterior tiene una puerta | `pendiente_datos` |
+| R03.15 | **Sugerencia.** No quedan espacios de más de 3 m² sin ambiente dentro de la casa | `propuesto` |
 
 Los umbrales son de partida (MVP_01 §3.3: deben ratificarse con el especialista). Nota: medida en vano bruto,
 una corrediza de 2,40 m ya pide cálculo; por eso el generador propone corredizas de 2,00 m.
+
+De R03.11 en adelante las reglas miran **la casa entera**, no una pieza, y llevan un campo `gravedad`:
+
+- **`grave`**: a la casa le falta algo que no puede faltar. La interfaz lo muestra primero en la lista y en
+  una franja «Antes de seguir» sobre la planta, con su botón Resolver. El caso que las motivó: borrar el baño
+  y quedarse solo con el de la suite.
+- **`sugerencia`**: no es un error, es algo para mirar. Va al final de la lista y no cuenta como problema
+  nuevo cuando Lumo evalúa un cambio.
+
+Se aplican cuando la planta ya tiene tres ambientes o más: antes, recién empieza.
 
 `reglas/r_interior.py` (versión 0.1) se ejecuta junto con las R03 y nombra el mueble que tiene el problema.
 
@@ -323,7 +416,9 @@ una corrediza de 2,40 m ya pide cálculo; por eso el generador propone corrediza
 ### 8.1 Proveedor intercambiable
 
 Todo el producto habla con la IA por una sola operación, `completar_json(sistema, mensajes, imagenes)`
-(`ia/proveedores.py`). Los prompts y la validación viven en `ia/asistente.py` y no dependen del prestador.
+(`ia/proveedores.py`). La usan la lectura de imágenes (`ia/asistente.py`) y los pedidos en palabras del
+editor (`ia/lumo_editor.py`); los prompts y la validación no dependen del prestador. El recorrido de Lumo
+para armar la planta base no la necesita.
 Se cambia de prestador **solo desde el `.env`**:
 
 | Variable | Para qué |
@@ -335,11 +430,10 @@ Se cambia de prestador **solo desde el `.env`**:
 | `IA_URL_BASE`, `IA_API_KEY` | Cualquier servicio compatible con Chat Completions (OpenRouter, Groq, DeepSeek, Mistral, Together, Ollama, LM Studio…). |
 
 - `openai` usa Chat Completions por HTTP con salida en modo JSON; `anthropic` usa el SDK oficial.
-- `simulado` no sale a internet: sigue un guion fijo (preguntas del orientador y lectura del texto por
-  palabras clave) y, para imágenes, devuelve una planta de demostración **marcada como tal**. Es lo que se usa
-  sin clave, en las pruebas y para desarrollar la interfaz. La interfaz avisa «IA en demostración».
+- `simulado` no sale a internet: para imágenes devuelve una planta de demostración **marcada como tal**. Es
+  lo que se usa sin clave, en las pruebas y para desarrollar la interfaz. La interfaz avisa «IA en demostración».
 - La respuesta se valida con pydantic; si no valida, se le devuelve el error al modelo **una vez** para que la
-  corrija. Después se normaliza: ids únicos y superficies que cierran con la superficie objetivo.
+  corrija.
 - `GET /api/casa/ia` informa proveedor y modelo activos (sin exponer la clave).
 
 Agregar otro prestador es escribir una subclase de `Proveedor` con `completar_json` y sumarla en
@@ -347,7 +441,9 @@ Agregar otro prestador es escribir una subclase de `Proveedor` con `completar_js
 
 ### 8.2 Privacidad
 
-Las imágenes y el texto que el usuario escribe se envían al prestador configurado. Conviene decirlo en la
+Se envían al prestador configurado: las imágenes y las aclaraciones que el usuario escribe al subirlas, y lo
+que le escribe a Lumo en el editor junto con un resumen de la planta (ambientes, medidas, aberturas). Las
+respuestas a las tres preguntas de Lumo y los «Resolver» que se hacen con reglas no salen de la aplicación. Conviene decirlo en la
 interfaz antes de la prueba con usuarios y revisar la política de retención del prestador elegido.
 
 ## 9. Rutas
@@ -355,8 +451,8 @@ interfaz antes de la prueba con usuarios y revisar la política de retención de
 ```
 GET  /api/casa/ia                    proveedor de IA activo
 GET  /api/casa/catalogo              catálogo del mercado (aberturas)
-POST /api/casa/conversar             un turno de charla → mensaje, pregunta con opciones, programa, listo
-POST /api/casa/alternativas          programa → 3 partidos con su casa y su análisis R03
+POST /api/casa/lumo                  decisiones (y texto) → mensaje, pregunta que sigue, planta base y su análisis
+POST /api/casa/lumo/editar           pedido en palabras + resumen de la planta → acciones para el editor, o una pregunta
 POST /api/casa/interpretar-imagen    imagen (data URL) → lectura, planta a revisar, análisis
 POST /api/casa/analizar              casa → estado por pieza y verificaciones R03 y RI
 POST /api/casa/amoblar               casa (+ ambientes, reemplazar) → casa amoblada y notas
@@ -367,15 +463,21 @@ POST /api/casa/interior/conversar    pedido a Lumo → mensaje, operaciones, cas
 
 ## 10. Pendientes
 
-- **Probar con la clave real de OpenAI** el orientador, el texto libre y la lectura de bosquejos (hasta ahora
-  se probó el recorrido completo con el proveedor simulado y el contrato con un proveedor falso en las pruebas).
-  Armar un set de 10–15 bosquejos reales para medir la lectura de imágenes.
-- **Lumo en la planta 2D:** hoy Lumo cambia muebles y mueve muros desde la vista 3D; falta llevar la misma
-  charla al editor de planta (abrir vanos, partir ambientes).
+- **Probar con la clave real de OpenAI** los pedidos en palabras del editor, Lumo en la vista 3D y la lectura
+  de bosquejos (hasta ahora se probaron con el proveedor simulado y el contrato con un proveedor falso en las
+  pruebas). Armar un set de 10–15 bosquejos reales para medir la lectura de imágenes.
+- **Pulir la planta base** con el uso: proporciones de cada ambiente, tamaños más chicos, y qué decisiones
+  sumar después de las tres actuales (baños, galería, garage).
+- **Captura nueva del editor** con Lumo arriba del panel y el botón «Resolver».
+- **Lumo en el editor:** medir con pedidos reales qué entiende y qué no, y sumar las acciones que falten
+  (dibujar un ambiente nuevo, dividir uno en dos). Mostrar el cambio propuesto antes de aplicarlo, como ya
+  hace en la vista 3D.
+- **Más observaciones sutiles**, además del espacio sin uso: recorridos largos, ambientes desproporcionados,
+  dormitorios que dan al estar.
 - **Amoblado:** afinar las plantas chicas con cocina integrada (a veces no entran a la vez estar y comedor) y
   sumar más variantes de distribución por ambiente.
 - **Techo y alturas en 3D:** cubierta y cielorraso cuando se construya la estructura.
 - **Implantación:** mover y girar la casa sobre el lote, con retiros dibujados (hoy se centra en el lote).
 - **Dibujo libre asistido:** detectar ambientes cerrados por muros y proponer nombres.
-- Partidos en L y en U.
-- Prueba de usabilidad con 5 entusiastas: ¿entienden los estados sin la leyenda? ¿qué entrada eligen?
+- Prueba de usabilidad con 5 entusiastas: ¿entienden los estados sin la leyenda? ¿les sirve la explicación
+  de Lumo?

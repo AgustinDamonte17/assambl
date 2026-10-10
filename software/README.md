@@ -11,10 +11,10 @@ software/
       modelo/        Tipos del proyecto (espejo TS del esquema casa.assambl.json) y geometría plana
       estado/        Estado del proyecto en memoria, autosave y guardar/abrir
       api/           Cliente HTTP hacia el backend
-      componentes/   Shell, barra de pasos, controles reutilizables
+      componentes/   Shell, barra de pasos, controles reutilizables y Lumo, la mascota
       pasos/         Un directorio por capa del MVP; la interfaz es secuencial y guiada
         terreno/     Capa 01: ubicación, lote, visor 3D, clima
-        casa/        Capa Casa: cómo empezar, alternativas, editor de planta 2D y vista 3D amoblada
+        casa/        Capa Casa: cómo empezar (Lumo, imagen, dibujo), editor de planta 2D y vista 3D amoblada
   backend/
     api/             FastAPI: rutas HTTP finas que llaman al paquete assambl
     assambl/         Paquete Python del producto (estructura de MVP_01 §4.6)
@@ -23,9 +23,9 @@ software/
       fuentes/       Datos externos: nasadem.py, power.py (y nominatim.py solo para buscar)
       clima/         sol.py (posición solar) y resumen.py (temperaturas, vientos, radiación)
       generadores/   glb.py (escritor glTF) y blender.py (script .py de la escena)
-      capas/         Composición por capa: terreno.py, casa.py (plantas desde ambientes)
+      capas/         Composición por capa: terreno.py, planta_base.py (la casa de Lumo), casa.py (muros desde ambientes)
       reglas/        r01_terreno.py … r14_electrico.py, cada regla con ID, versión y origen (hoy r01 y r03)
-      ia/            Asistente de diseño y proveedores de IA intercambiables (OpenAI, Anthropic, simulado)
+      ia/            Lumo (recorrido guiado, editor y vista 3D), lectura de imágenes y proveedores de IA intercambiables
       catalogo/      ar.json (perfil Argentina): aberturas y mobiliario (muebles y artefactos)
     tests/           pytest (test_*.py) y sondas manuales (probar_*.py)
     cache/           Mosaicos, clima y salidas; regenerable, ignorada por git
@@ -80,9 +80,9 @@ NASA POWER no necesita credencial, así que el clima funciona siempre.
 
 ## Asistente de IA: Lumo
 
-Lumo es el asistente de Assambl en toda la aplicación. En el paso Casa conversa con el usuario para armar el
-programa, lee bosquejos y, en la vista 3D, propone muebles y cambios de los espacios. El prestador de IA se
-elige en el mismo `.env` y se cambia sin tocar código:
+Lumo es el asistente de Assambl en toda la aplicación. En el paso Casa arma la planta base (sin IA: su
+recorrido es fijo), lee bosquejos, traduce pedidos en palabras a cambios de la planta y, en la vista 3D, propone
+muebles y cambios de los espacios. El prestador de IA se elige en el mismo `.env` y se cambia sin tocar código:
 
 ```
 IA_PROVEEDOR=openai          # openai | anthropic | simulado (vacío: el primero con clave)
@@ -92,7 +92,7 @@ OPENAI_API_KEY=sk-...
 # IA_URL_BASE=...            # cualquier servicio compatible con Chat Completions (Ollama, OpenRouter, Groq…)
 ```
 
-Sin clave funciona igual en **modo demostración** (guion fijo, avisado en la interfaz). `GET /api/casa/ia`
+Sin clave, la lectura de imágenes funciona en **modo demostración** (avisado en la interfaz). `GET /api/casa/ia`
 dice qué proveedor está activo. El diseño completo del paso está en [`docs/paso_casa.md`](docs/paso_casa.md).
 
 ## Flujo actual (capa 01 · Terreno)
@@ -106,12 +106,18 @@ El proyecto se guarda automáticamente en el navegador y se exporta/importa como
 
 ### Capa 02 · Casa (planta, volumen e interior)
 
-1. **Cómo empezar.** Contarla con palabras (IA), armarla paso a paso con Lumo (IA con preguntas y opciones),
-   subir un bosquejo o un plano (IA con visión), dibujar desde cero o abrir el ejemplo Angus Ranch.
-2. **Alternativas.** El programa armado en la charla se resuelve en tres partidos de planta para elegir.
-3. **Editor 2D.** Muros a 90° con imanes, puertas y ventanas del catálogo, ambientes con nombre, arrastre de
+1. **Diseñá con Lumo.** Tres decisiones (dormitorios, cocina abierta o cerrada, tamaño) y una planta base que
+   se arma a la vista y explica su orden: estar al centro, suite en un extremo, entrada en el otro, baño y
+   lavadero en un anexo del lado frío. Es la distribución de Angus Ranch vuelta parámetros.
+2. **Otras maneras de empezar.** Subir un bosquejo o un plano (IA con visión), dibujar desde cero o abrir el
+   ejemplo Angus Ranch.
+3. **Lumo en el editor.** Se le escribe en cualquier momento («quiero ampliar este ambiente», «cambiá la
+   entrada de lugar»): aplica el cambio y pide confirmar o volver atrás, o pregunta si le falta un dato. Cada
+   problema de la lista «Para resolver» tiene un botón para que lo resuelva. Lo grave (por ejemplo, quedarse
+   sin un baño para todos) se avisa sobre la planta antes de seguir.
+4. **Editor 2D.** Muros a 90° con imanes, puertas y ventanas del catálogo, ambientes con nombre, arrastre de
    muros que arrastra lo conectado, deshacer, y el estado de cada pieza verificado en vivo con las reglas R03.
-4. **Vista 3D.** La misma casa levantada, con los muros cortados para ver adentro y amoblada con un catálogo
+5. **Vista 3D.** La misma casa levantada, con los muros cortados para ver adentro y amoblada con un catálogo
    de 55 muebles y artefactos en medidas reales. Se mueven y giran en 3D o en la planta, se suma una galería
    y se le piden cambios a Lumo, que los muestra como vista previa. Las reglas RI verifican espacios de uso,
    puertas y pasillos.

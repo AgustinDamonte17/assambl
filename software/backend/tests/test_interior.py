@@ -5,26 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from assambl.capas import casa as capa
+from assambl.capas import planta_base
 from assambl.capas import interior as ci
 from assambl.ia import interior as lumo
-from assambl.modelo.casa import Programa
+from assambl.modelo.casa import Decisiones
 from assambl.reglas import r03_planta, r_interior
 
 ANGUS = Path(__file__).resolve().parents[2] / "casos" / "angus_ranch.assambl.json"
-
-
-def _programa(**extra) -> Programa:
-    return Programa.model_validate({
-        "superficie_objetivo_m2": 110, "cocina_integrada": True, **extra,
-        "ambientes": [
-            {"id": "estar", "nombre": "Estar", "uso": "social", "area_m2": 32},
-            {"id": "dorm_principal", "nombre": "Dormitorio principal", "uso": "dormitorio", "area_m2": 13, "principal": True},
-            {"id": "dorm_2", "nombre": "Dormitorio 2", "uso": "dormitorio", "area_m2": 10},
-            {"id": "bano", "nombre": "Baño", "uso": "bano", "area_m2": 5},
-            {"id": "lavadero", "nombre": "Lavadero", "uso": "lavadero", "area_m2": 4},
-            {"id": "oficina", "nombre": "Oficina", "uso": "oficina", "area_m2": 8},
-        ]})
 
 
 @pytest.fixture(autouse=True)
@@ -35,7 +22,8 @@ def _sin_ia(monkeypatch):
 
 @pytest.fixture(scope="module")
 def plantas() -> list[dict]:
-    return [a["casa"] for a in capa.alternativas(_programa(), lat=-31.4)]
+    return [planta_base.planta_base(Decisiones(dormitorios=n, cocina="abierta", tamano="comoda"), lat=-31.4)["casa"]
+            for n in (2, 3)]
 
 
 def _angus() -> dict:
@@ -88,7 +76,8 @@ def test_amoblado_completo_y_sin_conflictos(plantas):
         assert {"inodoro", "vanitory_60"} <= set(_tipos(amoblada, "bano"))
         assert any(t.startswith("ducha") or t == "banera" for t in _tipos(amoblada, "bano"))
         assert "mesada_bacha" in _tipos(amoblada, "estar")  # cocina integrada
-        assert "escritorio" in _tipos(amoblada, "oficina")
+        for ofi in (a["id"] for a in casa["ambientes"] if a["uso"] == "oficina"):
+            assert "escritorio" in _tipos(amoblada, ofi)
         assert "pileta_lavadero" in _tipos(amoblada, "lavadero")
         malas = [v for v in r_interior.verificar(amoblada)
                  if v["estado"] != "comprobado_por_reglas" and v["id"] in ("RI.01", "RI.02", "RI.04", "RI.05")]
@@ -130,16 +119,6 @@ def test_galeria_al_norte_con_salida(plantas):
     assert salidas
     r = r03_planta.analizar_planta(casa)
     assert r["por_pieza"][gid] == "comprobado_por_reglas"
-
-
-def test_galeria_en_alternativas_si_el_programa_la_pide():
-    from fastapi.testclient import TestClient
-
-    from api.main import app
-    cliente = TestClient(app)
-    r = cliente.post("/api/casa/alternativas", json={"programa": _programa(galeria=True).model_dump(), "lat": -31.4})
-    assert r.status_code == 200
-    assert all(any(a["uso"] == "galeria" for a in alt["casa"]["ambientes"]) for alt in r.json()["alternativas"])
 
 
 # ---------------------------------------------------------------- reglas
