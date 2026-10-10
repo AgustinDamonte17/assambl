@@ -1,15 +1,16 @@
 import type {
-  Alternativa,
   AnalisisPlanta,
   Casa,
+  Decisiones,
   EstadoIA,
-  MensajeChat,
-  Programa,
-  RespuestaAsistente,
   RespuestaImagen,
+  RespuestaLumo,
   ItemCatalogo,
+  MensajeChat,
   PiezaInterior,
+  Pregunta,
 } from "../modelo/casa";
+import type { Accion } from "../pasos/casa/acciones";
 import type { AnalisisLote, Punto, RespuestaClima, RespuestaEscena, Trayectoria } from "../modelo/proyecto";
 
 async function pedir<T>(url: string, init?: RequestInit): Promise<T> {
@@ -87,17 +88,19 @@ export const api = {
       (c) => c.familias.aberturas.items,
     ),
 
-  conversar: (modo: "libre" | "orientador", historial: MensajeChat[], programa: Programa | null, opciones: string[] = []) =>
-    pedir<RespuestaAsistente>("/api/casa/conversar", {
+  /** Un turno con Lumo. `texto` es lo que se escribió en vez de tocar una opción. */
+  lumo: (decisiones: Decisiones, texto: string, lat: number | null, cambio: keyof Decisiones | null = null) =>
+    pedir<RespuestaLumo>("/api/casa/lumo", {
       method: "POST",
-      body: JSON.stringify({ modo, historial, programa, opciones }),
+      body: JSON.stringify({ decisiones, texto, lat, cambio }),
     }),
 
-  alternativas: (programa: Programa, lat: number | null) =>
-    pedir<{ alternativas: Alternativa[] }>("/api/casa/alternativas", {
+  /** Un pedido en palabras dentro del editor: vuelve con acciones para ejecutar o con una pregunta. */
+  lumoEditar: (texto: string, contexto: unknown, historial: { rol: "usuario" | "asistente"; texto: string }[]) =>
+    pedir<{ mensaje: string; pregunta?: Pregunta | null; acciones: Accion[]; simulado: boolean }>("/api/casa/lumo/editar", {
       method: "POST",
-      body: JSON.stringify({ programa, lat }),
-    }).then((r) => r.alternativas),
+      body: JSON.stringify({ texto, contexto, historial }),
+    }),
 
   interpretarImagen: (imagen: string, notas: string, ancho_total_m: number | null, lat: number | null) =>
     pedir<RespuestaImagen>("/api/casa/interpretar-imagen", {

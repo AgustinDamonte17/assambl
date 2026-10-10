@@ -1,11 +1,11 @@
 """Capa 03 · Casa: de ambientes rectangulares a una planta con muros y aberturas.
 
-La inteligencia artificial nunca escribe muros. Entiende lo que el usuario quiere
-(el programa) o lo que muestra un bosquejo (ambientes aproximados), y a partir de
-ahí la geometría la arma este módulo con reglas deterministas:
+Nadie más escribe muros: ni Lumo ni la IA que lee bosquejos. Los dos entregan
+ambientes como rectángulos, y a partir de ahí la geometría la arma este módulo
+con reglas deterministas:
 
-1. `alternativas(programa)` reparte los ambientes del programa en dos o tres
-   partidos de planta (compacta, lineal, espejada) como rectángulos de ejes.
+1. `capas/planta_base.py` decide dónde va cada ambiente (la planta base que
+   propone Lumo) y lo expresa como rectángulos de ejes.
 2. `normalizar_rectangulos()` limpia rectángulos leídos de una imagen: alinea
    bordes casi coincidentes y los lleva a la grilla de 5 cm.
 3. `planta_desde_rectangulos()` convierte los rectángulos en muros exteriores,
@@ -26,11 +26,10 @@ from functools import lru_cache
 from pathlib import Path
 
 from ..geometria import poligono
-from ..modelo.casa import AREA_TIPICA_M2, ESQUEMA_CASA, Programa, Rectangulo
+from ..modelo.casa import ESQUEMA_CASA, Rectangulo
 from ..modelo.estados import Estado
 
 GRILLA_M = 0.05
-PASILLO_M = 1.1
 
 # Sistemas por defecto, tomados de Angus Ranch (MVP_01 §3.3).
 SISTEMAS: dict[str, dict] = {
@@ -59,12 +58,6 @@ SISTEMAS: dict[str, dict] = {
         "capas": [{"capa": "entramado", "seccion_mm": [45, 90], "modulo_mm": 600, "material": "madera_estructura"}],
         "terminacion": "revoque_calido",
     },
-}
-
-# Ancho mínimo razonable por uso (m). Por debajo el ambiente no se amuebla.
-ANCHO_MIN_M: dict[str, float] = {
-    "social": 3.6, "cocina": 2.2, "dormitorio": 2.7, "bano": 1.6, "lavadero": 1.5,
-    "oficina": 2.4, "vestidor": 1.4, "deposito": 1.2, "circulacion": 0.9, "otro": 2.0,
 }
 
 # Qué ambientes no llevan muro entre sí: el pasillo desemboca en el estar.
@@ -199,13 +192,18 @@ class _Grilla:
                     yield ("h", y, self.xs[i], self.xs[i + 1], a, b)
 
 
-def _grupo(nombre: str) -> str:
-    """Un ambiente en L llega partido en «Estar (a)» y «Estar (b)»: entre ellos no va muro."""
-    return re.sub(r"\s*\([a-z]\)$", "", nombre.strip().lower())
+def _grupo_de(r: Rectangulo) -> str:
+    """Ambiente al que pertenece el rectángulo. Un ambiente que no es rectangular
+    llega partido en varios rectángulos con el mismo `grupo` (o, desde una imagen,
+    como «Estar (a)» y «Estar (b)»): entre ellos no va muro y forman un solo contorno."""
+    if r.grupo:
+        return r.grupo
+    m = re.match(r"^(.*\S)\s*\([a-z]\)$", r.nombre.strip(), re.I)
+    return slug(m.group(1)) if m else r.id
 
 
-def _usos(rects: dict[str, Rectangulo]) -> dict[str, str]:
-    return {k: r.uso for k, r in rects.items()}
+def _nombre_de_grupo(r: Rectangulo) -> str:
+    return re.sub(r"\s*\([a-z]\)$", "", r.nombre.strip(), flags=re.I)
 
 
 def planta_desde_rectangulos(
@@ -225,7 +223,11 @@ def planta_desde_rectangulos(
     for par in grilla.superpuestos:
         a, b = sorted(par)
         advertencias.append(f"«{grilla.rects[a].nombre}» y «{grilla.rects[b].nombre}» se superponen; se tomó el primero.")
-    usos = _usos(grilla.rects)
+    grupo_de = {r.id: _grupo_de(r) for r in rects}
+    grupos: dict[str, list[Rectangulo]] = {}
+    for r in rects:
+        grupos.setdefault(grupo_de[r.id], []).append(r)
+    usos = {gid: rs[0].uso for gid, rs in grupos.items()}
     sur_asoleado = lat is not None and lat > 0  # hemisferio norte: el sol viene del sur
 
     # 1. Bordes atómicos agrupados por línea y clave, en orden a lo largo de la línea.
@@ -235,14 +237,16 @@ def planta_desde_rectangulos(
             lado = {("v", True): "oeste", ("v", False): "este", ("h", True): "sur", ("h", False): "norte"}[(ori, a is None)]
             clave = ("ext", lado)
         else:
-            if frozenset({usos[a], usos[b]}) in _ABIERTOS or _grupo(grilla.rects[a].nombre) == _grupo(grilla.rects[b].nombre):
+            ga, gb = grupo_de[a], grupo_de[b]
+            if ga == gb or frozenset({usos[ga], usos[gb]}) in _ABIERTOS:
                 continue
-            clave = ("int", tuple(sorted((a, b))))
+            clave = ("int", tuple(sorted((ga, gb))))
         lineas.setdefault((ori, fijo, clave), []).append((t0, t1, a, b))
 
     # 2. Tramos contiguos de la misma clave forman un muro.
     muros: list[dict] = []
-    tramos_ext: dict[str, list[tuple[str, float, float]]] = {}  # muro -> [(ambiente, t0, t1)]
+    tramos_ext: dict[str, list[tuple[str, float, float]]] = {}  # muro -> [(rectángulo, t0, t1)]
+    inicio_de: dict[str, float] = {}  # muro -> coordenada donde empieza su eje
     usados: set[str] = set()
     par_de: dict[str, tuple[str, str]] = {}  # tabique -> ambientes que separa
 
@@ -255,13 +259,13 @@ def planta_desde_rectangulos(
 
     for (ori, fijo, clave), segs in sorted(lineas.items(), key=lambda kv: (kv[0][2][0] != "ext", kv[0][0], kv[0][1])):
         segs.sort()
-        grupos: list[list] = []
+        tramos: list[list] = []
         for s in segs:
-            if grupos and abs(grupos[-1][-1][1] - s[0]) < 1e-6:
-                grupos[-1].append(s)
+            if tramos and abs(tramos[-1][-1][1] - s[0]) < 1e-6:
+                tramos[-1].append(s)
             else:
-                grupos.append([s])
-        for g in grupos:
+                tramos.append([s])
+        for g in tramos:
             t0, t1 = g[0][0], g[-1][1]
             if clave[0] == "ext":
                 lado = clave[1]
@@ -282,6 +286,7 @@ def planta_desde_rectangulos(
                 "aberturas": [],
                 "estado": estado.value,
             }
+            inicio_de[mid] = t0
             if clave[0] == "ext":
                 muro["lado_exterior"] = clave[1]
                 tramos_ext[mid] = [((s[2] or s[3]), s[0] - t0, s[1] - t0) for s in g]
@@ -317,31 +322,58 @@ def planta_desde_rectangulos(
         muro["aberturas"].append(ab)
         return True
 
+    def lado_del_muro(m: dict, rs: list[Rectangulo]) -> str | None:
+        """De qué lado del ambiente queda el muro."""
+        (x0, y0), (x1, y1) = m["eje"]["desde_m"], m["eje"]["hasta_m"]
+        for r in rs:
+            if abs(x0 - x1) < 1e-6 and min(y1, r.y1) - max(y0, r.y0) > 1e-6:
+                if abs(r.x1 - x0) < 1e-6:
+                    return "este"
+                if abs(r.x0 - x0) < 1e-6:
+                    return "oeste"
+            if abs(y0 - y1) < 1e-6 and min(x1, r.x1) - max(x0, r.x0) > 1e-6:
+                if abs(r.y1 - y0) < 1e-6:
+                    return "norte"
+                if abs(r.y0 - y0) < 1e-6:
+                    return "sur"
+        return None
+
     # 3a. Puertas interiores: cada ambiente cerrado se abre hacia el pasillo, el
     # estar o, en última instancia, hacia el ambiente que lo contiene (baño en suite).
+    # Un rectángulo puede pedir su puerta (`puerta`); si no se puede cumplir, se elige igual.
     preferencia = {"circulacion": 0, "social": 1, "cocina": 2, "dormitorio": 3, "vestidor": 4}
-    for rid, r in grilla.rects.items():
-        if r.uso in ("social", "circulacion"):
+    for gid, rs in grupos.items():
+        uso = usos[gid]
+        if uso in ("social", "circulacion"):
             continue
+        nombre_amb = _nombre_de_grupo(rs[0])
         candidatos = []
         for m in muros:
             par = par_de.get(m["id"])
-            if not par or rid not in par:
+            if not par or gid not in par:
                 continue
-            otro = par[1] if par[0] == rid else par[0]
+            otro = par[1] if par[0] == gid else par[0]
             if usos[otro] == "bano":
                 continue
-            candidatos.append((preferencia.get(usos[otro], 5), -_largo(m), m["id"], m))
+            candidatos.append((preferencia.get(usos[otro], 5), -_largo(m), m["id"], m, otro))
         if not candidatos:
-            advertencias.append(f"«{r.nombre}» no linda con ningún ambiente de paso: no se le pudo poner puerta.")
+            advertencias.append(f"«{nombre_amb}» no linda con ningún ambiente de paso: no se le pudo poner puerta.")
             continue
+        deseo = next((r.puerta for r in rs if r.puerta), None)
+        if deseo:
+            pedidos = [c for c in candidatos
+                       if (not deseo.hacia or c[4] == deseo.hacia) and (not deseo.lado or lado_del_muro(c[3], rs) == deseo.lado)]
+            candidatos = pedidos or candidatos
         candidatos.sort(key=lambda c: (c[0], c[1]))
-        codigo = {"bano": "puerta_070", "vestidor": "paso_080", "deposito": "puerta_070", "cocina": "paso_080"}.get(r.uso, "puerta_080")
-        for _, _, _, m in candidatos:
-            if colocar(m, codigo, desde=0.15) or colocar(m, codigo):
+        codigo = {"bano": "puerta_070", "vestidor": "paso_080", "deposito": "puerta_070", "cocina": "paso_080"}.get(uso, "puerta_080")
+        ancho = item_catalogo(codigo)["ancho_m"]
+        for _, _, _, m, _ in candidatos:
+            margen = deseo.margen_m if deseo else 0.15
+            en_extremo = _largo(m) - ancho - margen if deseo and deseo.extremo == "fin" else margen
+            if colocar(m, codigo, desde=en_extremo) or colocar(m, codigo):
                 break
         else:
-            advertencias.append(f"«{r.nombre}»: el muro de acceso es demasiado corto para una puerta.")
+            advertencias.append(f"«{nombre_amb}»: el muro de acceso es demasiado corto para una puerta.")
 
     # 3b. Ventanas y acceso sobre los muros exteriores de cada ambiente.
     orden_lados = ["sur", "este", "oeste", "norte"] if sur_asoleado else ["norte", "este", "oeste", "sur"]
@@ -355,12 +387,13 @@ def planta_desde_rectangulos(
         "otro": ["ventana_100_110"],
     }
 
-    def spans(rid: str) -> list[tuple[int, float, dict, float, float]]:
+    def spans(ids: set[str]) -> list[tuple[int, float, dict, float, float]]:
+        """Tramos de muro exterior de un ambiente: (orden del lado, -largo, muro, t0, t1)."""
         res = []
         for mid, tr in tramos_ext.items():
             m = por_id[mid]
             for amb, t0, t1 in tr:
-                if amb == rid:
+                if amb in ids:
                     res.append((orden_lados.index(m["lado_exterior"]), -(t1 - t0), m, t0, t1))
         # Tramos contiguos del mismo ambiente sobre el mismo muro se unen.
         res.sort(key=lambda s: (s[2]["id"], s[3]))
@@ -373,31 +406,63 @@ def planta_desde_rectangulos(
                 unidos.append(list(s))
         return sorted((tuple(u) for u in unidos), key=lambda s: (s[0], s[1]))  # type: ignore[misc]
 
+    def hoja_hacia_adentro(m: dict) -> dict:
+        # A la izquierda del eje en los muros sur y este.
+        return {"bisagra": "inicio", "apertura_deg": 80 if m["lado_exterior"] in ("sur", "este") else -80}
+
+    # La entrada, donde la pide la planta; si nadie la pide, en el estar.
     acceso_puesto = False
-    for rid, r in grilla.rects.items():
-        opciones = ventanas.get(r.uso)
-        disponibles = spans(rid)
-        if r.uso == "social" and not acceso_puesto and disponibles:
+    pide_acceso = [r for r in rects if r.acceso]
+    for r in pide_acceso:
+        for _, _, m, t0, t1 in spans({r.id}):
+            if m["lado_exterior"] != r.acceso.lado or acceso_puesto:
+                continue
+            centro = r.acceso.centro_m - inicio_de[m["id"]] if r.acceso.centro_m is not None else (t0 + t1) / 2
+            acceso_puesto = colocar(m, "puerta_090", centro=centro, hoja=hoja_hacia_adentro(m))
+
+    def entra(codigo: str, tramo: float) -> bool:
+        return item_catalogo(codigo)["ancho_m"] + 0.4 <= tramo
+
+    for gid, rs in grupos.items():
+        uso = usos[gid]
+        opciones = ventanas.get(uso)
+        disponibles = spans({r.id for r in rs})
+        if uso == "social" and not acceso_puesto and not pide_acceso and disponibles:
             # El acceso va del lado opuesto al sol cuando se puede: la fachada asoleada queda para el estar.
-            por_acceso = sorted(disponibles, key=lambda s: (-s[0], s[1]))
-            for _, _, m, t0, t1 in por_acceso:
-                # La hoja abre hacia adentro: a la izquierda del eje en los muros sur y este.
-                hacia_adentro = 80 if m["lado_exterior"] in ("sur", "este") else -80
-                if t1 - t0 >= 1.5 and colocar(m, "puerta_090", desde=t0 + 0.3, hoja={"bisagra": "inicio", "apertura_deg": hacia_adentro}):
+            for _, _, m, t0, t1 in sorted(disponibles, key=lambda s: (-s[0], s[1])):
+                if t1 - t0 >= 1.5 and colocar(m, "puerta_090", desde=t0 + 0.3, hoja=hoja_hacia_adentro(m)):
                     acceso_puesto = True
                     break
         if not opciones or not disponibles:
             continue
         puesta = False
-        for _, _, m, t0, t1 in disponibles:
-            for codigo in opciones:
-                if item_catalogo(codigo)["ancho_m"] + 0.4 <= t1 - t0 and colocar(m, codigo, centro=(t0 + t1) / 2):
-                    puesta = True
+        if uso == "social":
+            # Hacia el sol, puertas-ventana (dos si el frente es largo); en las otras fachadas,
+            # una ventana por tramo donde entra: el estar ventila cruzado.
+            for orden, _, m, t0, t1 in disponibles:
+                tramo = t1 - t0
+                if orden == 0:
+                    centros = [(t0 + t1) / 2] if tramo < 6.0 else [t0 + tramo * 0.27, t0 + tramo * 0.73]
+                    for c in centros:
+                        for codigo in opciones:
+                            if entra(codigo, tramo / len(centros)) and colocar(m, codigo, centro=c):
+                                puesta = True
+                                break
+                else:
+                    for codigo in ("ventana_150_110", "ventana_100_110"):
+                        if entra(codigo, tramo) and colocar(m, codigo, centro=(t0 + t1) / 2):
+                            puesta = True
+                            break
+        else:
+            for _, _, m, t0, t1 in disponibles:
+                for codigo in opciones:
+                    if entra(codigo, t1 - t0) and colocar(m, codigo, centro=(t0 + t1) / 2):
+                        puesta = True
+                        break
+                if puesta:
                     break
-            if puesta:
-                break
-        if not puesta and r.uso in ("dormitorio", "social", "oficina"):
-            advertencias.append(f"«{r.nombre}» no tiene muro exterior con lugar para una ventana.")
+        if not puesta and uso in ("dormitorio", "social", "oficina"):
+            advertencias.append(f"«{_nombre_de_grupo(rs[0])}» no tiene muro exterior con lugar para una ventana.")
     if not acceso_puesto:
         advertencias.append("No se encontró dónde poner la puerta de acceso; agregala desde el editor.")
 
@@ -408,16 +473,16 @@ def planta_desde_rectangulos(
 
     # 4. Ambientes con contorno interior (cara del muro) y huella exterior.
     ambientes = []
-    for rid, r in grilla.rects.items():
-        contorno = _contorno_interior(r, muros)
-        amb = {
-            "id": rid,
-            "nombre": r.nombre,
-            "uso": r.uso,
+    for gid, rs in grupos.items():
+        ids = {r.id for r in rs}
+        contorno = _contorno_interior(rs[0], muros) if len(rs) == 1 else _contorno_de_grupo(grilla, ids, muros)
+        ambientes.append({
+            "id": gid,
+            "nombre": _nombre_de_grupo(rs[0]),
+            "uso": usos[gid],
             "contorno_m": contorno,
             "estado": estado.value,
-        }
-        ambientes.append(amb)
+        })
 
     huella = _huella(grilla)
     casa = {
@@ -445,41 +510,43 @@ def _espesor(sistema: str) -> float:
     return SISTEMAS.get(sistema, SISTEMAS["tabique"])["espesor_arquitectonico_m"]
 
 
+def _retiro(muros: list[dict], ori: str, fijo: float, a: float, b: float) -> float:
+    """Medio espesor del muro más grueso que corre sobre el borde (ori, fijo) entre a y b."""
+    e = 0.0
+    for m in muros:
+        (x0, y0), (x1, y1) = m["eje"]["desde_m"], m["eje"]["hasta_m"]
+        if ori == "h" and abs(y0 - fijo) < 1e-6 and abs(y1 - fijo) < 1e-6:
+            lo, hi = sorted((x0, x1))
+        elif ori == "v" and abs(x0 - fijo) < 1e-6 and abs(x1 - fijo) < 1e-6:
+            lo, hi = sorted((y0, y1))
+        else:
+            continue
+        if min(hi, b) - max(lo, a) > 1e-6:
+            e = max(e, _espesor(m["sistema"]) / 2)
+    return e
+
+
 def _contorno_interior(r: Rectangulo, muros: list[dict]) -> list[list[float]]:
     """Retira cada lado del rectángulo medio espesor del muro que tiene encima."""
-
-    def retiro(ori: str, fijo: float, a: float, b: float) -> float:
-        e = 0.0
-        for m in muros:
-            (x0, y0), (x1, y1) = m["eje"]["desde_m"], m["eje"]["hasta_m"]
-            if ori == "h" and abs(y0 - fijo) < 1e-6 and abs(y1 - fijo) < 1e-6:
-                lo, hi = sorted((x0, x1))
-            elif ori == "v" and abs(x0 - fijo) < 1e-6 and abs(x1 - fijo) < 1e-6:
-                lo, hi = sorted((y0, y1))
-            else:
-                continue
-            if min(hi, b) - max(lo, a) > 1e-6:
-                e = max(e, _espesor(m["sistema"]) / 2)
-        return e
-
-    x0 = r.x0 + retiro("v", r.x0, r.y0, r.y1)
-    x1 = r.x1 - retiro("v", r.x1, r.y0, r.y1)
-    y0 = r.y0 + retiro("h", r.y0, r.x0, r.x1)
-    y1 = r.y1 - retiro("h", r.y1, r.x0, r.x1)
+    x0 = r.x0 + _retiro(muros, "v", r.x0, r.y0, r.y1)
+    x1 = r.x1 - _retiro(muros, "v", r.x1, r.y0, r.y1)
+    y0 = r.y0 + _retiro(muros, "h", r.y0, r.x0, r.x1)
+    y1 = r.y1 - _retiro(muros, "h", r.y1, r.x0, r.x1)
     return [[round(x0, 3), round(y0, 3)], [round(x1, 3), round(y0, 3)], [round(x1, 3), round(y1, 3)], [round(x0, 3), round(y1, 3)]]
 
 
-def _huella(grilla: _Grilla) -> list[list[float]]:
-    """Contorno exterior de la planta: se recorre el borde de las celdas ocupadas
-    dejando el interior a la izquierda y se desplaza medio espesor de muro exterior."""
+def _lazo(grilla: _Grilla, dentro) -> list[tuple[float, float]]:
+    """Borde de las celdas que cumplen `dentro`, recorrido con el interior a la
+    izquierda y sin vértices colineales."""
     siguiente: dict[tuple[float, float], tuple[float, float]] = {}
     for ori, fijo, t0, t1, a, b in grilla.segmentos():
-        if a is not None and b is not None:
+        da, db = a is not None and dentro(a), b is not None and dentro(b)
+        if da == db:
             continue
         if ori == "v":
-            p, q = ((fijo, t1), (fijo, t0)) if a is None else ((fijo, t0), (fijo, t1))
+            p, q = ((fijo, t1), (fijo, t0)) if not da else ((fijo, t0), (fijo, t1))
         else:
-            p, q = ((t0, fijo), (t1, fijo)) if a is None else ((t1, fijo), (t0, fijo))
+            p, q = ((t0, fijo), (t1, fijo)) if not da else ((t1, fijo), (t0, fijo))
         siguiente[p] = q
     lazos: list[list[tuple[float, float]]] = []
     pendientes = dict(siguiente)
@@ -492,194 +559,57 @@ def _huella(grilla: _Grilla) -> list[list[float]]:
             q = pendientes.pop(q)
         lazos.append(lazo)
     lazo = max(lazos, key=lambda l: abs(poligono.area_con_signo(l)))
-    # Quita vértices colineales.
     limpio = []
     n = len(lazo)
     for i in range(n):
         a, b, c = lazo[i - 1], lazo[i], lazo[(i + 1) % n]
         if abs((b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0])) > 1e-9:
             limpio.append(b)
+    return limpio
+
+
+def _desde_suroeste(puntos: list[list[float]]) -> list[list[float]]:
+    """Empieza en el vértice suroeste, como Angus Ranch."""
+    k = min(range(len(puntos)), key=lambda i: (puntos[i][1] + puntos[i][0], puntos[i][0]))
+    return puntos[k:] + puntos[:k]
+
+
+def _contorno_de_grupo(grilla: _Grilla, ids: set[str], muros: list[dict]) -> list[list[float]]:
+    """Contorno interior de un ambiente formado por varios rectángulos: su borde,
+    con cada lado retirado medio espesor del muro que tiene encima."""
+    lazo = _lazo(grilla, lambda c: c in ids)
+
+    def retiro(a, b) -> float:
+        if abs(a[0] - b[0]) < 1e-9:
+            return _retiro(muros, "v", a[0], *sorted((a[1], b[1])))
+        return _retiro(muros, "h", a[1], *sorted((a[0], b[0])))
+
+    salida = []
+    n = len(lazo)
+    for i in range(n):
+        a, b, c = lazo[i - 1], lazo[i], lazo[(i + 1) % n]
+        n1, n2 = _normal_derecha(a, b), _normal_derecha(b, c)
+        d1, d2 = retiro(a, b), retiro(b, c)
+        salida.append([round(b[0] - d1 * n1[0] - d2 * n2[0], 3), round(b[1] - d1 * n1[1] - d2 * n2[1], 3)])
+    return _desde_suroeste(salida)
+
+
+def _huella(grilla: _Grilla) -> list[list[float]]:
+    """Contorno exterior de la planta: el borde de las celdas ocupadas, desplazado
+    medio espesor de muro exterior hacia afuera."""
+    lazo = _lazo(grilla, lambda c: True)
     d = _espesor("exterior") / 2
     salida = []
-    n = len(limpio)
+    n = len(lazo)
     for i in range(n):
-        a, b, c = limpio[i - 1], limpio[i], limpio[(i + 1) % n]
+        a, b, c = lazo[i - 1], lazo[i], lazo[(i + 1) % n]
         n1 = _normal_derecha(a, b)
         n2 = _normal_derecha(b, c)
         salida.append([_g(b[0] + d * (n1[0] + n2[0])), _g(b[1] + d * (n1[1] + n2[1]))])
-    # Empieza en el vértice suroeste, como Angus Ranch.
-    k = min(range(len(salida)), key=lambda i: (salida[i][1] + salida[i][0], salida[i][0]))
-    return salida[k:] + salida[:k]
+    return _desde_suroeste(salida)
 
 
 def _normal_derecha(a, b) -> tuple[float, float]:
     dx, dy = b[0] - a[0], b[1] - a[1]
     l = math.hypot(dx, dy) or 1.0
     return (dy / l, -dx / l)
-
-
-# ---------------------------------------------------------------- alternativas
-
-def _area(amb) -> float:
-    return float(amb.area_m2 or AREA_TIPICA_M2.get(amb.uso, 8.0))
-
-
-def _preparar(programa: Programa):
-    ambs = [a for a in programa.ambientes if a.uso != "circulacion"]
-    sociales = [a for a in ambs if a.uso == "social"]
-    cocinas = [a for a in ambs if a.uso == "cocina"]
-    area_social = sum(_area(a) for a in sociales) or AREA_TIPICA_M2["social"]
-    nombre_social = sociales[0].nombre if sociales else "Estar y comedor"
-    id_social = sociales[0].id if sociales else "estar"
-    if cocinas and programa.cocina_integrada is not False and programa.cocina_integrada is not None:
-        area_social += sum(_area(a) for a in cocinas)
-        cocinas = []
-        if "cocina" not in nombre_social.lower():
-            nombre_social = f"{nombre_social} y cocina"
-    resto = [a for a in ambs if a.uso not in ("social", "cocina")]
-    return (id_social, nombre_social, area_social), cocinas, resto
-
-
-def _anchos(lista, profundidad: float) -> list[float]:
-    return [max(ANCHO_MIN_M.get(a.uso, 2.0), _area(a) / profundidad) for a in lista]
-
-
-def _estirar(anchos: list[float], total: float) -> list[float]:
-    s = sum(anchos)
-    if s <= 0 or total <= s:
-        return anchos
-    return [w * total / s for w in anchos]
-
-
-def _fila(lista, anchos, x: float, y0: float, y1: float) -> list[Rectangulo]:
-    rects = []
-    for a, w in zip(lista, anchos):
-        rects.append(Rectangulo(id=slug(a.id), nombre=a.nombre, uso=a.uso, x0=_g(x), y0=y0, x1=_g(x + w), y1=y1))
-        x += w
-    if rects:  # el último cierra exacto, sin arrastrar redondeos
-        rects[-1] = rects[-1].model_copy(update={"x1": _g(x)})
-    return rects
-
-
-def _compacta(programa: Programa) -> list[Rectangulo]:
-    (sid, snombre, sarea), cocinas, resto = _preparar(programa)
-    dn, ds = 3.6, 2.4
-    prof = dn + PASILLO_M + ds
-    norte = [a for a in resto if a.uso in ("dormitorio", "oficina")]
-    sur = [a for a in resto if a.uso not in ("dormitorio", "oficina")]
-    # Orden: lo público cerca del estar, el dormitorio principal al fondo.
-    norte.sort(key=lambda a: (a.uso != "oficina", a.principal))
-    sur.sort(key=lambda a: ({"lavadero": 0, "deposito": 1, "bano": 2, "vestidor": 3}.get(a.uso, 4), a.principal))
-    # Si la franja norte queda mucho más larga, un dormitorio secundario cruza al sur.
-    while True:
-        wn, ws = sum(_anchos(norte, dn)), sum(_anchos(sur, ds))
-        movibles = [a for a in norte if a.uso == "dormitorio" and not a.principal]
-        if wn - ws <= 3.0 or len(movibles) < 2:
-            break
-        mover = movibles[-1]
-        norte.remove(mover)
-        sur.append(mover)
-    if any(a.uso == "dormitorio" for a in sur):
-        ds = 3.0  # un dormitorio en la franja sur necesita más profundidad
-        prof = dn + PASILLO_M + ds
-    wn, ws = _anchos(norte, dn), _anchos(sur, ds)
-    ancho_priv = max(sum(wn), sum(ws), 2.0)
-    wn, ws = _estirar(wn, ancho_priv), _estirar(ws, ancho_priv)
-
-    ancho_social = max(ANCHO_MIN_M["social"], sarea / prof)
-    rects: list[Rectangulo] = []
-    if cocinas:
-        c = cocinas[0]
-        rects.append(Rectangulo(id=slug(c.id), nombre=c.nombre, uso="cocina", x0=0, y0=0, x1=_g(ancho_social), y1=ds))
-        rects.append(Rectangulo(id=slug(sid), nombre=snombre, uso="social", x0=0, y0=ds, x1=_g(ancho_social), y1=_g(prof)))
-    else:
-        rects.append(Rectangulo(id=slug(sid), nombre=snombre, uso="social", x0=0, y0=0, x1=_g(ancho_social), y1=_g(prof)))
-    x = _g(ancho_social)
-    rects += _fila(sur, ws, x, 0.0, ds)
-    if resto:
-        rects.append(Rectangulo(id="pasillo", nombre="Pasillo", uso="circulacion", x0=x, y0=ds, x1=_g(x + ancho_priv), y1=_g(ds + PASILLO_M)))
-    rects += _fila(norte, wn, x, _g(ds + PASILLO_M), _g(prof))
-    return _cerrar_filas(rects)
-
-
-def _lineal(programa: Programa) -> list[Rectangulo]:
-    (sid, snombre, sarea), cocinas, resto = _preparar(programa)
-    dn = 3.8
-    prof = dn + PASILLO_M
-    fila = list(cocinas) + sorted(resto, key=lambda a: (
-        {"lavadero": 0, "oficina": 1, "dormitorio": 2, "bano": 3, "vestidor": 4}.get(a.uso, 5), a.principal))
-    # Baño y vestidor del principal quedan junto a él, al final de la tira.
-    ancho_social = max(ANCHO_MIN_M["social"], sarea / prof)
-    rects = [Rectangulo(id=slug(sid), nombre=snombre, uso="social", x0=0, y0=0, x1=_g(ancho_social), y1=_g(prof))]
-    x = _g(ancho_social)
-    anchos = _anchos(fila, dn)
-    rects += _fila(fila, anchos, x, PASILLO_M, _g(prof))
-    if fila:
-        rects.append(Rectangulo(id="pasillo", nombre="Pasillo", uso="circulacion", x0=x, y0=0, x1=rects[-1].x1, y1=PASILLO_M))
-    return _cerrar_filas(rects)
-
-
-def _cerrar_filas(rects: list[Rectangulo]) -> list[Rectangulo]:
-    """Iguala el borde este de las filas para que la planta cierre en un rectángulo."""
-    fin = max(r.x1 for r in rects)
-    for i, r in enumerate(rects):
-        es_ultimo = not any(o.x0 >= r.x1 - 1e-6 and o.y0 < r.y1 and r.y0 < o.y1 for o in rects if o is not r)
-        if es_ultimo and r.x1 < fin:
-            rects[i] = r.model_copy(update={"x1": fin})
-    return rects
-
-
-def _espejar_x(rects: list[Rectangulo]) -> list[Rectangulo]:
-    fin = max(r.x1 for r in rects)
-    return [r.model_copy(update={"x0": _g(fin - r.x1), "x1": _g(fin - r.x0)}) for r in rects]
-
-
-def _espejar_y(rects: list[Rectangulo]) -> list[Rectangulo]:
-    fin = max(r.y1 for r in rects)
-    return [r.model_copy(update={"y0": _g(fin - r.y1), "y1": _g(fin - r.y0)}) for r in rects]
-
-
-def alternativas(programa: Programa, lat: float | None = None, estado: Estado = Estado.PROPUESTO) -> list[dict]:
-    """Dos o tres partidos de planta para el mismo programa. Todos respetan el
-    dominio del MVP_01 (una planta, ortogonal) y ponen el estar y los dormitorios
-    hacia el sol: el norte en el hemisferio sur."""
-    sol = "sur" if lat is not None and lat > 0 else "norte"
-    partidos = [
-        ("compacta", "Compacta en dos franjas",
-         f"Estar a un lado y un pasillo corto que reparte. Dormitorios hacia el {sol}; baños y lavadero del lado opuesto. "
-         "Menos perímetro de muro exterior: más económica de construir y de calefaccionar.",
-         _compacta(programa)),
-        ("lineal", "Lineal, todo al sol",
-         f"Una tira de ambientes con el pasillo del lado frío. Todos los ambientes miran al {sol}. "
-         "Más fachada y más muro exterior, a cambio de luz en cada ambiente.",
-         _lineal(programa)),
-        ("compacta_espejada", "Compacta, estar al este",
-         "Igual que la compacta, con el estar del lado del sol de la mañana y los dormitorios hacia el oeste.",
-         _espejar_x(_compacta(programa))),
-    ]
-    salida = []
-    for pid, nombre, descripcion, rects in partidos:
-        if sol == "sur":
-            rects = _espejar_y(rects)
-        casa, adv = planta_desde_rectangulos(rects, estado=estado, lat=lat,
-                                             origen={"fuente": "assambl/capas/casa.py", "partido": pid,
-                                                     "nota": "Alternativa generada a partir del programa."})
-        huella = casa["huella_m"]
-        xs = [p[0] for p in huella]
-        ys = [p[1] for p in huella]
-        salida.append({
-            "id": pid,
-            "nombre": nombre,
-            "descripcion": descripcion,
-            "rectangulos": [r.model_dump() for r in rects],
-            "casa": casa,
-            "advertencias": adv,
-            "resumen": {
-                "superficie_cubierta_m2": round(poligono.area([tuple(p) for p in huella]), 1),
-                "ancho_m": round(max(xs) - min(xs), 2),
-                "profundidad_m": round(max(ys) - min(ys), 2),
-                "muro_exterior_m": round(sum(_largo(m) for m in casa["muros"] if m["sistema"] == "exterior"), 1),
-                "ambientes": len(casa["ambientes"]),
-            },
-        })
-    return salida

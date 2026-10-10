@@ -2,8 +2,8 @@
 
 - `GET  /api/casa/ia`                   qué proveedor de IA está activo
 - `GET  /api/casa/catalogo`             aberturas del catálogo del mercado
-- `POST /api/casa/conversar`            un turno de la charla con el asistente
-- `POST /api/casa/alternativas`         partidos de planta para un programa
+- `POST /api/casa/lumo`                 un turno con Lumo: la pregunta que sigue y la planta base
+- `POST /api/casa/lumo/editar`          un pedido en palabras → acciones para el editor, o una pregunta
 - `POST /api/casa/interpretar-imagen`   bosquejo o plano → planta a revisar
 - `POST /api/casa/analizar`             reglas R03 y RI sobre la planta: estado por pieza
 - `POST /api/casa/amoblar`              propuesta de muebles y artefactos por ambiente
@@ -20,10 +20,10 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from assambl.capas import casa as capa
-from assambl.capas import interior
-from assambl.ia import asistente, proveedores
+from assambl.capas import interior, planta_base
+from assambl.ia import asistente, lumo, lumo_editor, proveedores
 from assambl.ia import interior as lumo_interior
-from assambl.modelo.casa import MensajeChat, Programa, RespuestaAsistente
+from assambl.modelo.casa import Decisiones, MensajeChat
 from assambl.modelo.estados import Estado
 from assambl.reglas import r03_planta
 
@@ -49,38 +49,43 @@ def catalogo() -> dict:
     return capa.catalogo()
 
 
-class PedidoConversar(BaseModel):
-    modo: Literal["libre", "orientador"] = "orientador"
-    historial: list[MensajeChat] = []
-    programa: Programa | None = None
-    opciones: list[str] = Field(default=[], description="Ids de las opciones que tocó el usuario en el último turno")
-
-
-@router.post("/conversar", response_model=RespuestaAsistente)
-async def conversar(pedido: PedidoConversar) -> RespuestaAsistente:
-    try:
-        return await asistente.conversar(_proveedor(), pedido.modo, pedido.historial[-30:], pedido.programa,
-                                         pedido.opciones)
-    except proveedores.ErrorIA as e:
-        raise HTTPException(502, str(e)) from e
-
-
-class PedidoAlternativas(BaseModel):
-    programa: Programa
+class PedidoLumo(BaseModel):
+    decisiones: Decisiones = Decisiones()
+    texto: str = Field(default="", max_length=500, description="Respuesta escrita, si no se tocó una opción")
+    cambio: Literal["dormitorios", "cocina", "tamano"] | None = Field(
+        default=None, description="Decisión cambiada desde los controles, fuera del orden de las preguntas")
     lat: float | None = Field(default=None, ge=-90, le=90)
 
 
-@router.post("/alternativas")
-def alternativas(pedido: PedidoAlternativas) -> dict:
-    if not [a for a in pedido.programa.ambientes if a.uso != "circulacion"]:
-        raise HTTPException(422, "El programa no tiene ambientes")
-    alts = capa.alternativas(pedido.programa, lat=pedido.lat)
-    for a in alts:
-        if pedido.programa.galeria:
-            a["casa"], _, notas = interior.agregar_galeria(a["casa"], lat=pedido.lat)
-            a["advertencias"] = a.get("advertencias", []) + notas
-        a["analisis"] = r03_planta.analizar_planta(a["casa"])
-    return {"alternativas": alts}
+@router.post("/lumo")
+def turno_lumo(pedido: PedidoLumo) -> dict:
+    """La planta base aparece en cuanto se sabe cuántos dormitorios; lo que falta decidir va con el valor más común."""
+    r = lumo.responder(pedido.decisiones, pedido.texto, pedido.cambio)
+    propuesta = None
+    if r.decisiones.dormitorios is not None:
+        propuesta = planta_base.planta_base(r.decisiones, lat=pedido.lat)
+        propuesta["analisis"] = r03_planta.analizar_planta(propuesta["casa"])
+        if r.listo:
+            mensaje = (lumo.mensaje_cambio(pedido.cambio, r.decisiones, propuesta["resumen"]) if pedido.cambio
+                       else lumo.mensaje_listo(propuesta["resumen"]))
+            r = r.model_copy(update={"mensaje": mensaje})
+    return {**r.model_dump(), "propuesta": propuesta}
+
+
+class PedidoEditar(BaseModel):
+    texto: str = Field(min_length=1, max_length=600)
+    contexto: dict = Field(description="Resumen de la planta que arma el editor: ambientes, muros, selección")
+    historial: list[lumo_editor.MensajeEditor] = []
+
+
+@router.post("/lumo/editar")
+async def lumo_editar(pedido: PedidoEditar) -> dict:
+    proveedor = _proveedor()
+    try:
+        turno = await lumo_editor.pedir_cambios(proveedor, pedido.texto, pedido.contexto, pedido.historial)
+    except proveedores.ErrorIA as e:
+        raise HTTPException(502, str(e)) from e
+    return {**turno.model_dump(exclude_none=True), "simulado": proveedor.simulado}
 
 
 class PedidoImagen(BaseModel):

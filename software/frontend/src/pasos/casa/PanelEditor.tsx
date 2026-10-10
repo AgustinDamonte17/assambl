@@ -1,6 +1,6 @@
 /** Panel del editor: herramientas, propiedades de lo seleccionado, lo que falta resolver y la leyenda de estados. */
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import type { Estado } from "../../modelo/proyecto";
 import {
   areaPoligono,
@@ -12,12 +12,15 @@ import {
   type AnalisisPlanta,
   type Casa,
   type ItemCatalogo,
+  type Ambiente,
   type Pieza,
   type Uso,
+  type VerificacionPlanta,
 } from "../../modelo/casa";
 import { Boton, Dato, Etiqueta, Seccion } from "../../componentes/ui";
 import { buscarPieza, piezasInterior } from "../../modelo/muebles";
 import { PropiedadesMueble } from "./PropiedadesMueble";
+import { ejecutar, vecinosDe } from "./acciones";
 import type { Herramienta } from "./EditorPlanta";
 import { ASPECTO, contarDeclaradas, contarEstados, estadoDe, ORDEN_ESTADOS } from "./estados";
 import {
@@ -60,6 +63,12 @@ interface Props {
   setSistemaMuro: (s: string) => void;
   verEstados: boolean;
   setVerEstados: (v: boolean) => void;
+  cotas: boolean;
+  setCotas: (v: boolean) => void;
+  /** Lumo resuelve un problema de la lista. */
+  resolver: (v: VerificacionPlanta) => void;
+  /** Cambia cada vez que se pide renombrar un ambiente desde la planta. */
+  focoNombre: number;
   opacidadCalco: number | null;
   setOpacidadCalco: (v: number) => void;
   quitarCalco: () => void;
@@ -82,7 +91,9 @@ export function piezaDeId(casa: Casa, id: string): Pieza | null {
 export default function PanelEditor(p: Props) {
   const { casa, analisis } = p;
   const cuenta = contarEstados(casa, analisis);
-  const pendientes = (analisis?.verificaciones ?? []).filter((v) => v.estado !== "comprobado_por_reglas");
+  // Primero lo grave, al final las sugerencias.
+  const peso = (v: VerificacionPlanta) => (v.gravedad === "grave" ? 0 : v.gravedad === "sugerencia" ? 2 : 1);
+  const pendientes = (analisis?.verificaciones ?? []).filter((v) => v.estado !== "comprobado_por_reglas").sort((a, b) => peso(a) - peso(b));
   const aRevisar = contarDeclaradas(casa);
   const sup = superficieCubierta(casa);
   const ayuda = HERRAMIENTAS.find((h) => h.id === p.herramienta)?.ayuda;
@@ -176,26 +187,37 @@ export default function PanelEditor(p: Props) {
         ) : (
           <ul className="flex flex-col gap-1">
             {pendientes.map((v, i) => (
-              <li key={i}>
+              <li
+                key={i}
+                className={`border-l-2 pl-2 py-1 hover:bg-concrete-2 ${v.gravedad === "grave" ? "bg-signal/10" : ""}`}
+                style={{ borderColor: v.gravedad === "grave" ? "var(--signal)" : ASPECTO[v.estado].acento }}
+                onMouseEnter={() => p.resaltar(v.piezas)}
+                onMouseLeave={() => p.resaltar([])}
+              >
                 <button
-                  className="w-full text-left border-l-2 pl-2 py-0.5 hover:bg-concrete-2"
-                  style={{ borderColor: ASPECTO[v.estado].acento }}
-                  onMouseEnter={() => p.resaltar(v.piezas)}
-                  onMouseLeave={() => p.resaltar([])}
+                  className="w-full text-left"
                   onClick={() => {
                     const pieza = v.piezas[0] ? piezaDeId(casa, v.piezas[0]) : null;
                     if (pieza) p.setSeleccion(pieza);
                   }}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-label font-medium text-[11px]" style={{ color: ASPECTO[v.estado].acento }}>
-                      {ASPECTO[v.estado].glifo}
+                  <div className="flex items-start gap-1.5">
+                    <span className="font-label font-medium text-[11px]" style={{ color: v.gravedad === "grave" ? "var(--signal)" : ASPECTO[v.estado].acento }}>
+                      {v.gravedad === "grave" ? "▲" : v.gravedad === "sugerencia" ? "◇" : ASPECTO[v.estado].glifo}
                     </span>
                     <span className="text-xs leading-snug">{v.detalle || v.descripcion}</span>
                   </div>
-                  <div className="text-[10px] text-rebar leading-snug">
+                  <div className="text-[10px] text-rebar leading-snug mt-0.5">
+                    {v.gravedad === "grave" ? "Grave · " : v.gravedad === "sugerencia" ? "Sugerencia · " : ""}
                     <span className="font-label">{v.id}</span> · {v.descripcion}
                   </div>
+                </button>
+                <button
+                  className="mt-1 border border-ink/40 px-2 py-0.5 text-[10px] uppercase tracking-wide hover:border-signal hover:text-signal"
+                  onClick={() => p.resolver(v)}
+                  title="Lumo lo resuelve, o te pregunta cómo"
+                >
+                  Resolver
                 </button>
               </li>
             ))}
@@ -227,6 +249,10 @@ export default function PanelEditor(p: Props) {
       </Seccion>
 
       <Seccion titulo="Vista">
+        <label className="flex items-center gap-2 text-[11px] mb-2">
+          <input type="checkbox" checked={p.cotas} onChange={(e) => p.setCotas(e.target.checked)} />
+          Mostrar cotas y metros cuadrados
+        </label>
         <div className="flex gap-2 flex-wrap">
           <Boton onClick={p.encuadrar}>Encuadrar</Boton>
           {p.opacidadCalco !== null && <Boton onClick={p.quitarCalco}>Quitar dibujo de fondo</Boton>}
@@ -329,18 +355,23 @@ function Propiedades(p: Props) {
       <Etiqueta estado={estado} />
     </div>
   );
-  const pie = (borrar: () => void) => (
+  const pie = (borrar: () => void, comoBorrar = "Borrar", ayudaBorrar?: string) => (
     <>
       {reglas.map((v, i) => (
         <p key={i} className="text-[11px] leading-snug border-l-2 pl-2 mt-1" style={{ borderColor: ASPECTO[v.estado].acento }}>
-          {v.detalle || v.descripcion}
+          {v.detalle || v.descripcion}{" "}
+          <button className="underline underline-offset-2 hover:text-signal" onClick={() => p.resolver(v)}>
+            Resolver
+          </button>
         </p>
       ))}
       <div className="flex gap-2 mt-2">
         <Boton onClick={revisar} disabled={estado === "revisado"} title="Confirmás que esta pieza está bien">
           ✓ Revisado
         </Boton>
-        <Boton onClick={borrar}>Borrar</Boton>
+        <Boton onClick={borrar} title={ayudaBorrar}>
+          {comoBorrar}
+        </Boton>
       </div>
     </>
   );
@@ -454,18 +485,16 @@ function Propiedades(p: Props) {
 
   const a = casa.ambientes.find((x) => x.id === seleccion.id);
   if (!a) return null;
+  const vecinos = [...new Map(vecinosDe(casa, a).filter((v) => v.muro.sistema !== "exterior").map((v) => [v.ambiente.id, v.ambiente])).values()];
   return (
     <div>
       {encabezado(a.nombre)}
       <Fila etiqueta="Nombre">
-        <input
+        <NombreAmbiente
           key={a.id + a.nombre}
-          autoFocus={/^Ambiente \d+$/.test(a.nombre)}
-          defaultValue={a.nombre}
-          onFocus={(e) => e.target.select()}
-          onBlur={(e) => e.target.value.trim() && e.target.value !== a.nombre && p.aplicar(modificarAmbiente(casa, a.id, { nombre: e.target.value.trim() }), seleccion)}
-          onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-          className="bg-concrete-2 border border-line px-1.5 py-0.5 text-xs focus:outline-none focus:border-signal"
+          ambiente={a}
+          foco={p.focoNombre}
+          cambiar={(nombre) => p.aplicar(modificarAmbiente(casa, a.id, { nombre }), seleccion)}
         />
       </Fila>
       <Fila etiqueta="Uso">
@@ -484,7 +513,56 @@ function Propiedades(p: Props) {
       <div className="text-xs mt-1">
         <Dato etiqueta="Superficie" valor={a.contorno_m ? areaPoligono(a.contorno_m).toFixed(1) : "sin contorno"} sufijo={a.contorno_m ? "m²" : undefined} />
       </div>
-      {pie(() => p.aplicar(borrarAmbiente(casa, a.id), null))}
+      {vecinos.length > 0 && (
+        <Fila etiqueta="Integrar con">
+          <select
+            value=""
+            onChange={(e) => {
+              const r = ejecutar(casa, [{ tipo: "integrar", ambiente: a.id, destino: e.target.value }], p.catalogo);
+              if (r.error) alert(r.error);
+              else p.aplicar(r.casa, r.seleccion ?? null);
+            }}
+            className="bg-concrete-2 border border-line px-1 py-0.5 text-xs"
+          >
+            <option value="">elegí un vecino…</option>
+            {vecinos.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.nombre}
+              </option>
+            ))}
+          </select>
+        </Fila>
+      )}
+      <p className="text-[10px] text-rebar leading-snug mt-1">
+        Doble clic sobre el ambiente para cambiarle el nombre. «Integrar con» saca el muro que lo separa del vecino y los
+        une. «Quitar etiqueta» deja el espacio y sus muros, sin nombre, para darle otro uso.
+      </p>
+      {pie(() => p.aplicar(borrarAmbiente(casa, a.id), null), "Quitar etiqueta", "El espacio y sus muros quedan; se va el nombre")}
     </div>
+  );
+}
+
+/** Último pedido de renombrar ya atendido. El campo del nombre se monta recién al elegir el ambiente, así
+ *  que no puede recordarlo él: hay un solo panel, y lo recuerda el módulo. */
+let focoAtendido = 0;
+
+/** El nombre de un ambiente. Toma el foco cuando se pide renombrar desde la planta (doble clic). */
+function NombreAmbiente({ ambiente: a, foco, cambiar }: { ambiente: Ambiente; foco: number; cambiar: (nombre: string) => void }) {
+  const campo = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (foco !== focoAtendido || /^Ambiente (nuevo|\d+)$/.test(a.nombre)) campo.current?.focus();
+    focoAtendido = foco;
+  }, [foco, a.nombre]);
+  return (
+    <input
+      ref={campo}
+      defaultValue={a.nombre}
+      onFocus={(e) => e.target.select()}
+      onBlur={(e) => e.target.value.trim() && e.target.value !== a.nombre && cambiar(e.target.value.trim())}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === "Escape") (e.target as HTMLInputElement).blur();
+      }}
+      className="bg-concrete-2 border border-line px-1.5 py-0.5 text-xs focus:outline-none focus:border-signal"
+    />
   );
 }
