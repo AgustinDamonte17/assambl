@@ -91,7 +91,7 @@ export default function PanelModelo() {
               <span className="flex-1">Contorno del lote</span>
               <EtiquetaNaturaleza naturaleza="calculo_local" />
             </div>
-            <div className="text-[10px] text-rebar mt-0.5">
+            <div className="text-[11px] text-rebar mt-0.5">
               Resolución: exacta. La forma la definís vos; la altura sale de apoyar el contorno sobre la malla del
               relieve, no de medir el terreno.
             </div>
@@ -102,7 +102,7 @@ export default function PanelModelo() {
                 <span className="flex-1">Posición del sol</span>
                 <EtiquetaNaturaleza naturaleza="calculo_local" />
               </div>
-              <div className="text-[10px] text-rebar mt-0.5">
+              <div className="text-[11px] text-rebar mt-0.5">
                 Resolución: {trayectoria.procedencia.resolucion}. {trayectoria.algoritmo}.
               </div>
             </li>
@@ -112,7 +112,7 @@ export default function PanelModelo() {
               <span className="flex-1">Sombras</span>
               <EtiquetaNaturaleza naturaleza="calculo_local" />
             </div>
-            <div className="text-[10px] text-rebar mt-0.5">
+            <div className="text-[11px] text-rebar mt-0.5">
               Calculadas a partir del modelo 3D. Heredan la resolución del relieve: con posts cada{" "}
               {escena.paso_m[1]} m no representan el sombreado de un árbol ni de una medianera.
             </div>
@@ -140,13 +140,13 @@ export default function PanelModelo() {
             <Boton className="w-full">Descargar script de Blender .py</Boton>
           </a>
         </div>
-        <p className="text-[10px] text-rebar mt-2 leading-snug">
+        <p className="text-[11px] text-rebar mt-2 leading-snug">
           El script trae el relieve como rejilla de posts, el contorno del lote apoyado y el sol orientado a la fecha y
           hora elegidas.
         </p>
       </Seccion>
 
-      <p className="text-[10px] text-rebar mt-4 leading-snug">
+      <p className="text-[11px] text-rebar mt-4 leading-snug">
         Arrastrá para orbitar, rueda para acercar, botón derecho para desplazar.
       </p>
     </div>

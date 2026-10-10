@@ -24,8 +24,20 @@
   --color-resolved: var(--resolved);
   --color-warn: var(--warn);
   --color-line: var(--line);
+}
+
+/* Tipografía: tres roles. La regla completa está en .claude/skills/assambl-ui/SKILL.md.
+   - head: títulos de pantalla (h1, 800) y de tarjeta o sección (700).
+   - body: todo lo que se lee (párrafos, botones, chips, diálogo, ayuda). 400, y 500 para énfasis.
+   - label: solo rótulos cortos y datos (números de capa, tags, eyebrows, medidas, IDs, fechas).
+   display queda solo para el logo ASSAMBL(). */
+@theme {
   --font-display: "Archivo Black", "Arial Black", sans-serif;
-  --font-mono: "IBM Plex Mono", Consolas, monospace;
+  --font-head: "Chivo", system-ui, sans-serif;
+  --font-body: "Chivo", system-ui, sans-serif;
+  --font-label: "Chivo Mono", ui-monospace, monospace;
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-label);
 }
 
 html,
@@ -35,8 +47,13 @@ body,
   margin: 0;
   background: var(--concrete);
   color: var(--ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 13px;
+}
+
+/* Los datos se leen en columna: cifras de ancho fijo. */
+.font-label {
+  font-variant-numeric: tabular-nums;
 }
 
 ::selection {
@@ -44,9 +61,13 @@ body,
   color: var(--ink);
 }
 
+/* Los campos numéricos son datos; los de texto heredan --font-body. */
 input[type="number"],
-input[type="text"] {
-  font-family: var(--font-mono);
+input[type="date"],
+input[type="time"],
+input[inputmode="decimal"] {
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
 }
 
 input[type="range"] {
@@ -54,14 +75,14 @@ input[type="range"] {
 }
 
 .leaflet-container {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   background: var(--concrete-3);
 }
 
 .leaflet-control-layers,
 .leaflet-bar a {
   border-radius: 0 !important;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
 }
 
 .vertice-lote {

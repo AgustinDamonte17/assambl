@@ -327,7 +327,7 @@ export default function EditorPlanta(p: Props) {
         <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="var(--signal)" strokeWidth={e} strokeOpacity={0.35} strokeLinecap="square" />
         <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="var(--signal)" strokeWidth={1.5} />
         <rect x={(a[0] + b[0]) / 2 - 26} y={(a[1] + b[1]) / 2 - 22} width={52} height={16} fill="var(--ink)" />
-        <text x={(a[0] + b[0]) / 2} y={(a[1] + b[1]) / 2 - 10} textAnchor="middle" fontSize={11} fill="var(--concrete)">
+        <text x={(a[0] + b[0]) / 2} y={(a[1] + b[1]) / 2 - 10} textAnchor="middle" fontSize={11} fill="var(--concrete)" className="font-label">
           {l.toFixed(2)} m
         </text>
       </g>
@@ -364,7 +364,7 @@ export default function EditorPlanta(p: Props) {
           return (
             <g pointerEvents="none">
               <rect x={Math.min(a[0], b[0])} y={Math.min(a[1], b[1])} width={Math.abs(b[0] - a[0])} height={Math.abs(b[1] - a[1])} fill="var(--signal)" fillOpacity={0.12} stroke="var(--signal)" strokeDasharray="4 3" />
-              <text x={(a[0] + b[0]) / 2} y={(a[1] + b[1]) / 2} textAnchor="middle" fontSize={11}>
+              <text x={(a[0] + b[0]) / 2} y={(a[1] + b[1]) / 2} textAnchor="middle" fontSize={11} className="font-label">
                 {w.toFixed(2)} × {h.toFixed(2)} m · {(w * h).toFixed(1)} m²
               </text>
             </g>
@@ -376,7 +376,7 @@ export default function EditorPlanta(p: Props) {
     arrastre?.tipo === "muro" && arrastre.delta !== 0 && cursor ? (
       <g pointerEvents="none">
         <rect x={aPantalla(vista, cursor)[0] + 12} y={aPantalla(vista, cursor)[1] - 26} width={70} height={16} fill="var(--ink)" />
-        <text x={aPantalla(vista, cursor)[0] + 47} y={aPantalla(vista, cursor)[1] - 14} textAnchor="middle" fontSize={11} fill="var(--concrete)">
+        <text x={aPantalla(vista, cursor)[0] + 47} y={aPantalla(vista, cursor)[1] - 14} textAnchor="middle" fontSize={11} fill="var(--concrete)" className="font-label">
           {arrastre.delta > 0 ? "+" : ""}
           {arrastre.delta.toFixed(2)} m
         </text>
@@ -426,7 +426,7 @@ export default function EditorPlanta(p: Props) {
               strokeWidth={1.2}
               strokeDasharray="8 4"
             />
-            <text x={aPantalla(vista, p.lote[0])[0] + 4} y={aPantalla(vista, p.lote[0])[1] - 4} fontSize={10} fill="var(--resolved)">
+            <text x={aPantalla(vista, p.lote[0])[0] + 4} y={aPantalla(vista, p.lote[0])[1] - 4} fontSize={10} fill="var(--resolved)" className="font-label">
               lote
             </text>
           </g>
@@ -462,18 +462,18 @@ export default function EditorPlanta(p: Props) {
         <g transform={`translate(${tam.w - 40}, 44)`} pointerEvents="none">
           <circle r={18} fill="var(--concrete-2)" stroke="var(--line)" />
           <path d="M0,-14 L6,6 L0,2 L-6,6 Z" fill="var(--ink)" />
-          <text y={-20} textAnchor="middle" fontSize={10} fontWeight={700}>
+          <text y={-20} textAnchor="middle" fontSize={10} fontWeight={500} className="font-label">
             N
           </text>
         </g>
         <g transform={`translate(16, ${tam.h - 18})`} pointerEvents="none">
           <rect width={escalaBarra * vista.escala} height={4} fill="var(--ink)" />
-          <text y={-5} fontSize={10}>
+          <text y={-5} fontSize={10} className="font-label">
             {escalaBarra} m
           </text>
         </g>
         {cursor && (
-          <text x={tam.w - 12} y={tam.h - 10} textAnchor="end" fontSize={10} fill="var(--rebar)" pointerEvents="none">
+          <text x={tam.w - 12} y={tam.h - 10} textAnchor="end" fontSize={10} fill="var(--rebar)" pointerEvents="none" className="font-label">
             x {cursor[0].toFixed(2)} · y {cursor[1].toFixed(2)} m
           </text>
         )}

@@ -79,7 +79,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
           <Campo etiqueta="Rumbo frente" sufijo="°" value={rumboFrente} onChange={(e) => setRumboFrente(e.target.value)} inputMode="decimal" />
         </div>
         <div className="flex justify-between items-center mt-2">
-          <span className="text-[10px] text-rebar">Centrado en el origen. Rumbo 90° = frente sobre el lado sur, mirando al este.</span>
+          <span className="text-[11px] text-rebar leading-snug">Centrado en el origen. Rumbo 90° = frente sobre el lado sur, mirando al este.</span>
           <Boton onClick={crearRectangulo}>Crear</Boton>
         </div>
       </Seccion>
@@ -100,7 +100,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
         {lados.length === 0 ? (
           <p className="text-rebar">Sin lados todavía.</p>
         ) : (
-          <table className="w-full">
+          <table className="w-full font-label">
             <thead className="text-[10px] uppercase tracking-wide text-rebar">
               <tr>
                 <th className="text-left font-normal py-1">#</th>
@@ -129,14 +129,14 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
             </tbody>
           </table>
         )}
-        <p className="text-[10px] text-rebar mt-2 leading-snug">
+        <p className="text-[11px] text-rebar mt-2 leading-snug">
           Al editar un lado se recalculan los vértices siguientes; el último lado cierra el polígono y se deriva.
         </p>
       </Seccion>
 
       {v.length > 0 && (
         <Seccion titulo={`Vértices (${v.length})`}>
-          <table className="w-full">
+          <table className="w-full font-label">
             <thead className="text-[10px] uppercase tracking-wide text-rebar">
               <tr>
                 <th className="text-left font-normal py-1">#</th>
@@ -179,7 +179,7 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
             ) : (
               <Dato
                 etiqueta="Pendiente"
-                valor={<span className="text-rebar">{escena ? "sin relieve disponible" : "generá la escena (paso 1)"}</span>}
+                valor={<span className="font-body text-rebar">{escena ? "sin relieve disponible" : "generá la escena (paso 1)"}</span>}
               />
             )}
             {errorAnalisis && <p className="text-signal mt-1">{errorAnalisis}</p>}
@@ -189,12 +189,12 @@ export default function PanelLote({ irAModelo }: { irAModelo: () => void }) {
                   <li key={ver.id} className="leading-snug">
                     <div className="flex items-start justify-between gap-2">
                       <span>
-                        <span className="text-rebar mr-1">{ver.id}</span>
+                        <span className="font-label text-rebar mr-1">{ver.id}</span>
                         {ver.descripcion}
                       </span>
                       <Etiqueta estado={ver.estado} />
                     </div>
-                    {ver.detalle && <div className="text-[10px] text-rebar mt-0.5">{ver.detalle}</div>}
+                    {ver.detalle && <div className="text-[11px] text-rebar mt-0.5">{ver.detalle}</div>}
                   </li>
                 ))}
               </ul>

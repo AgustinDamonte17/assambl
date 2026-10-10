@@ -154,14 +154,14 @@ export default function ImportarImagen({ archivoInicial, lat, aceptar, volver }:
         <button className="text-xs text-rebar hover:text-ink self-start" onClick={volver}>
           ← Otras formas de empezar
         </button>
-        <h2 className="font-semibold">Planta desde una imagen</h2>
-        <p className="text-xs text-rebar leading-relaxed">
+        <h2 className="font-head font-bold">Planta desde una imagen</h2>
+        <p className="text-[13px] text-rebar leading-relaxed">
           Funciona mejor con un dibujo prolijo, visto desde arriba y con alguna medida escrita. Si no hay medidas,
           decinos cuánto mide el frente y la IA escala el resto.
         </p>
         <Campo etiqueta="Ancho total del frente (opcional)" sufijo="m" inputMode="decimal" value={ancho} onChange={(e) => setAncho(e.target.value)} placeholder="ej. 12" />
         <label className="flex flex-col gap-1">
-          <span className="text-[11px] uppercase tracking-wide text-rebar">Aclaraciones (opcional)</span>
+          <span className="font-label text-[11px] uppercase tracking-wide text-rebar">Aclaraciones (opcional)</span>
           <textarea
             rows={3}
             value={notas}
@@ -194,15 +194,15 @@ export default function ImportarImagen({ archivoInicial, lat, aceptar, volver }:
                   resultado.lectura.escala.fuente}
               </span>
               <span className="text-rebar">Confianza</span>
-              <span className="text-right">{Math.round(resultado.lectura.confianza * 100)} %</span>
+              <span className="font-label text-right">{Math.round(resultado.lectura.confianza * 100)} %</span>
               <span className="text-rebar">Ambientes</span>
-              <span className="text-right">{resultado.rectangulos.length}</span>
+              <span className="font-label text-right">{resultado.rectangulos.length}</span>
               <span className="text-rebar">Estado</span>
               <span className="text-right">
                 <Etiqueta estado="pendiente_revision" />
               </span>
             </div>
-            {resultado.lectura.escala.detalle && <p className="text-[10px] text-rebar">{resultado.lectura.escala.detalle}</p>}
+            {resultado.lectura.escala.detalle && <p className="text-[11px] text-rebar leading-snug">{resultado.lectura.escala.detalle}</p>}
             {resultado.advertencias.map((a, i) => (
               <Aviso key={i}>{a}</Aviso>
             ))}
@@ -213,7 +213,7 @@ export default function ImportarImagen({ archivoInicial, lat, aceptar, volver }:
                   {p.opciones.map((o) => (
                     <button
                       key={o.id}
-                      className="text-[11px] border border-ink/30 px-2 py-0.5 hover:border-signal"
+                      className="text-xs border border-ink/30 px-2 py-0.5 hover:border-signal"
                       title={o.detalle}
                       onClick={() => interpretar(`${p.texto} → ${o.etiqueta}`)}
                     >
@@ -226,7 +226,7 @@ export default function ImportarImagen({ archivoInicial, lat, aceptar, volver }:
             <Boton primario onClick={() => aceptar(resultado, calcoDesde(resultado, imagen!))}>
               Usar esta planta y revisarla →
             </Boton>
-            <p className="text-[10px] text-rebar">
+            <p className="text-[11px] text-rebar leading-snug">
               En el editor vas a ver tu dibujo de fondo para corregir lo que la IA leyó mal.
             </p>
           </div>

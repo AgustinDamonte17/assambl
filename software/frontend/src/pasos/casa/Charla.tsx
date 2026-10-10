@@ -41,7 +41,7 @@ export default function Charla({ modo, historial, respuesta, cargando, error, en
           <button className="text-xs text-rebar hover:text-ink" onClick={volver}>
             ← Otras formas de empezar
           </button>
-          <span className="text-[11px] uppercase tracking-widest text-rebar">
+          <span className="font-label text-[11px] uppercase tracking-widest text-rebar">
             {modo === "orientador" ? "Paso a paso con Monti" : "Contala con tus palabras"}
           </span>
         </div>
@@ -73,7 +73,7 @@ export default function Charla({ modo, historial, respuesta, cargando, error, en
 
             {!cargando && pregunta && (
               <div className="pl-[52px]">
-                <div className="text-sm font-semibold mb-2">{pregunta.texto}</div>
+                <div className="text-sm font-medium mb-2">{pregunta.texto}</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {pregunta.opciones.map((o) => {
                     const marcada = marcadas.includes(o.id);
@@ -92,7 +92,7 @@ export default function Charla({ modo, historial, respuesta, cargando, error, en
                         }`}
                       >
                         <div className="text-sm">{o.etiqueta}</div>
-                        {o.detalle && <div className="text-[11px] text-rebar mt-0.5">{o.detalle}</div>}
+                        {o.detalle && <div className="text-xs text-rebar mt-0.5 leading-snug">{o.detalle}</div>}
                       </button>
                     );
                   })}
@@ -156,7 +156,7 @@ export function ResumenPrograma({ programa }: { programa: Programa | null }) {
   const total = ambs.reduce((s, a) => s + (a.area_m2 ?? 0), 0);
   return (
     <div>
-      <h3 className="text-[11px] uppercase tracking-widest text-rebar mb-2">Lo que va anotando Monti</h3>
+      <h3 className="font-label text-[11px] uppercase tracking-widest text-rebar mb-2">Lo que va anotando Monti</h3>
       {!ambs.length ? (
         <p className="text-xs text-rebar leading-relaxed">
           Acá aparece el programa de tu casa: los ambientes que necesitás y su tamaño aproximado. Es lo que después
@@ -167,7 +167,7 @@ export function ResumenPrograma({ programa }: { programa: Programa | null }) {
           {programa?.superficie_objetivo_m2 ? (
             <div className="flex justify-between py-1 border-b border-line mb-2">
               <span className="text-rebar">Superficie buscada</span>
-              <span>{programa.superficie_objetivo_m2.toFixed(0)} m²</span>
+              <span className="font-label">{programa.superficie_objetivo_m2.toFixed(0)} m²</span>
             </div>
           ) : null}
           <ul className="text-xs">
@@ -177,21 +177,21 @@ export function ResumenPrograma({ programa }: { programa: Programa | null }) {
                   {a.nombre}
                   <span className="text-rebar text-[10px] ml-1">{nombreUso(a.uso)}</span>
                 </span>
-                <span className="text-rebar">{a.area_m2 ? `${a.area_m2.toFixed(1)} m²` : "—"}</span>
+                <span className="font-label text-rebar">{a.area_m2 ? `${a.area_m2.toFixed(1)} m²` : "—"}</span>
               </li>
             ))}
           </ul>
           <div className="flex justify-between py-1 text-xs mt-1">
             <span className="text-rebar">Ambientes</span>
-            <span>{total.toFixed(0)} m²</span>
+            <span className="font-label">{total.toFixed(0)} m²</span>
           </div>
-          <p className="text-[10px] text-rebar mt-2 leading-snug">
+          <p className="text-[11px] text-rebar mt-2 leading-snug">
             A la superficie de los ambientes se suman muros y pasillos. Las medidas son orientativas: se ajustan en el
             editor.
           </p>
           {programa?.notas?.length ? (
             <div className="mt-3">
-              <h4 className="text-[10px] uppercase tracking-wide text-rebar mb-1">Notas</h4>
+              <h4 className="font-label text-[10px] uppercase tracking-wide text-rebar mb-1">Notas</h4>
               <ul className="text-[11px] list-disc pl-4">
                 {programa.notas.map((n, i) => (
                   <li key={i}>{n}</li>

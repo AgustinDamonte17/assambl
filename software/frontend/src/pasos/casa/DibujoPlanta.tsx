@@ -127,7 +127,7 @@ export default function DibujoPlanta({
     insignias.push(
       <g key={`i-${id}`} transform={`translate(${p[0]},${p[1]})`} pointerEvents="none">
         <circle r={7} fill="var(--concrete-2)" stroke={a.acento} strokeWidth={1.5} />
-        <text textAnchor="middle" dy="3.5" fontSize="10" fontWeight="700" fill={a.acento}>
+        <text textAnchor="middle" dy="3.5" fontSize="10" fontWeight="500" fill={a.acento} className="font-label">
           {a.glifo}
         </text>
       </g>,
@@ -235,10 +235,10 @@ export default function DibujoPlanta({
           insignia(amb.id, e, [c[0] + (chico ? 14 : Math.min(anchoPx / 2 - 12, 48)), c[1] - 16], true);
           return (
             <g key={`t-${amb.id}`} pointerEvents="none" textAnchor="middle">
-              <text x={c[0]} y={c[1]} fontSize={chico ? 9 : 11} fill="var(--ink)" fontWeight={600}>
+              <text x={c[0]} y={c[1]} fontSize={chico ? 9 : 11} fill="var(--ink)" fontWeight={700}>
                 {chico ? amb.nombre.split(" ")[0] : amb.nombre}
               </text>
-              <text x={c[0]} y={c[1] + 13} fontSize={9} fill="var(--rebar)">
+              <text x={c[0]} y={c[1] + 13} fontSize={9} fill="var(--rebar)" className="font-label">
                 {area.toFixed(1)} m²
               </text>
             </g>

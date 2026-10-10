@@ -152,7 +152,7 @@ export default function PanelUbicacion({ apiOk, irALote }: { apiOk: boolean | nu
             }}
             className="w-20 bg-concrete-2 border border-line px-2 py-1 text-right"
           />
-          <span className="text-rebar">m</span>
+          <span className="font-label text-rebar">m</span>
         </div>
         <p className="text-rebar mt-1 leading-snug">
           Margen de relieve alrededor del origen, entre {MARGEN_MIN_M} y {MARGEN_MAX_M} m. Con 500 m la escena queda en
