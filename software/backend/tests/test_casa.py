@@ -1,4 +1,4 @@
-"""Capa 03 · Casa: generador de plantas, reglas R03, guion del asistente y proveedores de IA."""
+"""Capa 03 · Casa: planta base, generador de muros, reglas R03, Lumo y proveedores de IA."""
 
 import asyncio
 import json
@@ -7,42 +7,61 @@ from pathlib import Path
 import pytest
 
 from assambl import config
-from assambl.capas import casa
+from assambl.capas import casa, planta_base
 from assambl.geometria import poligono
-from assambl.ia import asistente, guion, proveedores
-from assambl.modelo.casa import MensajeChat, Programa, Rectangulo
+from assambl.ia import asistente, lumo, lumo_editor, proveedores
+from assambl.modelo.casa import Decisiones, PuertaDeseada, Rectangulo
 from assambl.modelo.estados import Estado
 from assambl.reglas import r03_planta
 
 ANGUS = Path(__file__).resolve().parents[2] / "casos" / "angus_ranch.assambl.json"
 
 
-def programa_familia() -> Programa:
-    return guion.programa_desde_conteos(3, 2, 120, cocina_integrada=True, extras=["lavadero", "oficina"])
+# ---------------------------------------------------------------- planta base
 
+TODAS = [Decisiones(dormitorios=n, cocina=c, tamano=t)
+         for n in (1, 2, 3, 4) for c in ("abierta", "cerrada") for t in ("compacta", "comoda", "amplia")]
 
-# ---------------------------------------------------------------- generador
 
 @pytest.mark.parametrize("lat", [-31.4, 40.4])
-def test_alternativas_cierran_y_todos_los_ambientes_tienen_puerta(lat):
-    alts = casa.alternativas(programa_familia(), lat=lat)
-    assert [a["id"] for a in alts] == ["compacta", "lineal", "compacta_espejada"]
-    for a in alts:
-        c = a["casa"]
-        assert not a["advertencias"], a["advertencias"]
-        # La huella encierra exactamente la suma de rectángulos más medio muro exterior.
-        area_rect = sum((r["x1"] - r["x0"]) * (r["y1"] - r["y0"]) for r in a["rectangulos"])
-        assert poligono.area([tuple(p) for p in c["huella_m"]]) > area_rect
-        analisis = r03_planta.analizar_planta(c)
-        problemas = [v for v in analisis["verificaciones"] if v["estado"] != "comprobado_por_reglas"]
-        assert not problemas, problemas
+def test_la_planta_base_cumple_las_reglas_en_todas_sus_variantes(lat):
+    for d in TODAS:
+        p = planta_base.planta_base(d, lat=lat)
+        c = p["casa"]
+        assert not p["advertencias"], (d, p["advertencias"])
+        problemas = [v for v in r03_planta.analizar_planta(c)["verificaciones"] if v["estado"] != "comprobado_por_reglas"]
+        assert not problemas, (d, problemas)
+        usos = [a["uso"] for a in c["ambientes"]]
+        assert usos.count("dormitorio") == d.dormitorios
+        assert usos.count("social") == 1 and usos.count("bano") == 2 and "lavadero" in usos
+        assert ("cocina" in usos) == (d.cocina == "cerrada")
+        assert "circulacion" not in usos  # el estar reparte: no hay pasillos
+
+
+def test_la_planta_base_sigue_el_orden_de_angus_ranch():
+    c = planta_base.planta_base(Decisiones(dormitorios=3, cocina="abierta", tamano="amplia"), lat=-31.4)["casa"]
+    amb = {a["id"]: a["contorno_m"] for a in c["ambientes"]}
+    centro = lambda k: poligono.centroide([tuple(v) for v in amb[k]])  # noqa: E731
+    xs = [v[0] for v in c["huella_m"]]
+    ys = [v[1] for v in c["huella_m"]]
+    # La suite en el extremo oeste, sobre el frente del sol; el ala de entrada en el este.
+    assert centro("dorm_principal")[0] < centro("estar")[0] < centro("dorm_3")[0]
+    assert max(v[1] for v in amb["dorm_principal"]) == pytest.approx(max(ys) - 0.2)
+    # Baño y lavadero en el anexo del lado frío.
+    assert max(v[1] for v in amb["bano"]) < min(v[1] for v in amb["dorm_principal"])
+    # El estar es un solo ambiente que toma el rincón de la suite y el hall de entrada.
+    assert len(amb["estar"]) > 4
+    este = next(m for m in c["muros"] if m.get("lado_exterior") == "este")
+    assert [o["catalogo"] for o in este["aberturas"] if o["tipo"] == "puerta"] == ["puerta_090"]
+    # Mismas medidas generales que Angus Ranch, con un margen por los ambientes más holgados.
+    assert max(xs) - min(xs) == pytest.approx(18.0, abs=0.6) and max(ys) - min(ys) == pytest.approx(10.4, abs=0.3)
 
 
 def test_el_estar_mira_al_sol_segun_el_hemisferio():
     for lat, lado in [(-31.4, "norte"), (40.4, "sur")]:
-        c = casa.alternativas(programa_familia(), lat=lat)[0]["casa"]
-        fachada = next(m for m in c["muros"] if m.get("lado_exterior") == lado)
-        assert any(o["tipo"] == "ventana_corrediza" for o in fachada["aberturas"])
+        c = planta_base.planta_base(Decisiones(dormitorios=2), lat=lat)["casa"]
+        fachada = max((m for m in c["muros"] if m.get("lado_exterior") == lado), key=casa._largo)
+        assert sum(o["tipo"] == "ventana_corrediza" for o in fachada["aberturas"]) >= 1
 
 
 def test_muros_exteriores_y_tabiques():
@@ -62,13 +81,27 @@ def test_muros_exteriores_y_tabiques():
     assert all(m["estado"] == "propuesto" for m in c["muros"])
 
 
-def test_ambiente_en_l_no_lleva_muro_interno():
+def test_ambiente_en_l_es_un_solo_ambiente_sin_muro_interno():
     c, _ = casa.planta_desde_rectangulos([
         Rectangulo(id="a", nombre="Estar (a)", uso="social", x0=0, y0=0, x1=4, y1=6),
         Rectangulo(id="b", nombre="Estar (b)", uso="social", x0=4, y0=0, x1=8, y1=3),
     ])
     assert all(m["sistema"] == "exterior" for m in c["muros"])
     assert len(c["huella_m"]) == 6
+    (estar,) = c["ambientes"]
+    assert estar["nombre"] == "Estar"
+    assert estar["contorno_m"] == [[0.1, 0.1], [7.9, 0.1], [7.9, 2.9], [3.9, 2.9], [3.9, 5.9], [0.1, 5.9]]
+
+
+def test_la_puerta_va_donde_la_pide_el_rectangulo():
+    rects = [
+        Rectangulo(id="estar", nombre="Estar", uso="social", x0=0, y0=0, x1=5, y1=6),
+        Rectangulo(id="dorm", nombre="Dormitorio", uso="dormitorio", x0=5, y0=0, x1=8.5, y1=6,
+                   puerta=PuertaDeseada(hacia="estar", extremo="fin")),
+    ]
+    c, _ = casa.planta_desde_rectangulos(rects)
+    tabique = next(m for m in c["muros"] if m["sistema"] == "tabique")
+    assert tabique["aberturas"][0]["posicion_m"] == pytest.approx(6 - 0.8 - 0.15)
 
 
 def test_normalizar_alinea_bordes_casi_iguales():
@@ -98,6 +131,49 @@ def test_reglas_sobre_angus_ranch():
     assert r["por_pieza"]["Norte"] == "comprobado_por_reglas"
 
 
+def _base():
+    return planta_base.planta_base(Decisiones(dormitorios=3, cocina="abierta", tamano="comoda"))["casa"]
+
+
+def _graves(c):
+    return {v["id"]: v for v in r03_planta.analizar_planta(c)["verificaciones"]
+            if v.get("gravedad") == "grave" and v["estado"] != "comprobado_por_reglas"}
+
+
+def test_sin_bano_general_es_grave():
+    c = _base()
+    assert not _graves(c)
+    # Queda solo el baño en suite: sus puertas dan al dormitorio.
+    c["ambientes"] = [a for a in c["ambientes"] if a["id"] != "bano"]
+    g = _graves(c)
+    assert list(g) == ["R03.11"] and "en suite" in g["R03.11"]["detalle"] and g["R03.11"]["piezas"] == ["bano_suite"]
+    c["ambientes"] = [a for a in c["ambientes"] if a["uso"] != "bano"]
+    assert "ningún baño" in _graves(c)["R03.11"]["detalle"]
+
+
+def test_sin_dormitorio_sin_cocina_o_sin_entrada_es_grave():
+    c = _base()
+    for a in c["ambientes"]:
+        if a["uso"] == "dormitorio":
+            a["uso"] = "oficina"
+        if a["uso"] == "social":
+            a["nombre"] = "Estar"
+    for m in c["muros"]:
+        if m["sistema"] == "exterior":
+            m["aberturas"] = [o for o in m["aberturas"] if o["tipo"] != "puerta"]
+    assert set(_graves(c)) == {"R03.12", "R03.13", "R03.14"}
+
+
+def test_espacio_sin_ambiente_es_una_sugerencia():
+    c = _base()
+    quitado = next(a for a in c["ambientes"] if a["id"] == "lavadero")
+    c["ambientes"].remove(quitado)
+    (s,) = [v for v in r03_planta.analizar_planta(c)["verificaciones"] if v["id"] == "R03.15"]
+    assert s["gravedad"] == "sugerencia" and s["estado"] == "propuesto"
+    assert s["parametros"]["rectangular"] and s["parametros"]["area_m2"] == pytest.approx(poligono.area(
+        [tuple(v) for v in quitado["contorno_m"]]), abs=0.6)
+
+
 def test_reglas_detectan_abertura_fuera_del_muro_y_muro_oblicuo():
     c = {"muros": [
         {"id": "A", "sistema": "exterior", "eje": {"desde_m": [0, 0], "hasta_m": [3, 0]},
@@ -109,41 +185,43 @@ def test_reglas_detectan_abertura_fuera_del_muro_y_muro_oblicuo():
     assert r["por_pieza"]["B"] == "pendiente_revision"
 
 
-# ---------------------------------------------------------------- asistente
+# ---------------------------------------------------------------- Lumo
 
-def charlar(modo, respuestas):
-    h, prog, ops, turnos = [], None, [], []
-    prov = proveedores.ProveedorSimulado()
-    for texto, opcion in [(None, None)] + respuestas:
-        if texto:
-            h.append(MensajeChat(rol="usuario", texto=texto))
-        r = asyncio.run(asistente.conversar(prov, modo, h, prog, [opcion] if opcion else []))
-        turnos.append(r)
-        h.append(MensajeChat(rol="asistente", texto=r.mensaje))
-        prog = r.programa
-    return turnos
-
-
-def test_orientador_pregunta_de_a_una_y_termina_listo():
-    turnos = charlar("orientador", [("3 dormitorios", "3"), ("Media", "115"), ("Dos", "2"),
-                                    ("Integrada", "integrada"), ("Lavadero", "lavadero")])
-    assert all(t.pregunta and t.pregunta.opciones for t in turnos[:-1])
-    fin = turnos[-1]
-    assert fin.listo and fin.pregunta is None
-    usos = [a.uso for a in fin.programa.ambientes]
-    assert usos.count("dormitorio") == 3 and usos.count("bano") == 2 and "lavadero" in usos
-    assert fin.programa.superficie_objetivo_m2 == 115
-    total = sum(a.area_m2 for a in fin.programa.ambientes)
-    assert total == pytest.approx(115 * guion.FRACCION_UTIL, rel=0.12)
+def test_lumo_pregunta_de_a_una_y_termina_listo():
+    d = Decisiones()
+    r = lumo.responder(d)
+    assert "Lumo" in r.mensaje and r.pregunta.texto.startswith("¿Cuántos dormitorios")
+    r = lumo.responder(d.model_copy(update={"dormitorios": 3}))
+    assert "cocina" in r.pregunta.texto and not r.listo
+    r = lumo.responder(r.decisiones, "la prefiero cerrada")
+    assert r.decisiones.cocina == "cerrada" and "tamaño" in r.pregunta.texto
+    # Las opciones de tamaño muestran la superficie real de la planta que saldría.
+    assert all("m²" in o.etiqueta for o in r.pregunta.opciones)
+    m2 = [float(o.etiqueta.split("·")[1].split()[0]) for o in r.pregunta.opciones]
+    assert m2 == sorted(m2) and len(set(m2)) == 3
+    r = lumo.responder(r.decisiones, "amplia")
+    assert r.listo and r.pregunta is None
+    assert r.decisiones == Decisiones(dormitorios=3, cocina="cerrada", tamano="amplia")
 
 
-def test_prompt_libre_extrae_y_solo_pregunta_lo_que_falta():
-    t = charlar("libre", [("Quiero una casa de 120 m2 con dos habitaciones, dos baños y un escritorio", None)])[-1]
-    assert t.listo
-    usos = [a.uso for a in t.programa.ambientes]
-    assert usos.count("dormitorio") == 2 and "oficina" in usos
-    t = charlar("libre", [("Una casa luminosa para ir los fines de semana", None)])[-1]
-    assert not t.listo and "dormitorios" in t.pregunta.texto
+def test_lumo_cuenta_el_cambio_cuando_se_toca_otra_decision():
+    listo = Decisiones(dormitorios=2, cocina="abierta", tamano="compacta")
+    r = lumo.responder(listo, cambio="dormitorios")
+    assert r.listo
+    resumen = planta_base.planta_base(listo)["resumen"]
+    assert lumo.mensaje_cambio("dormitorios", listo, resumen).startswith("Dos dormitorios")
+    # A mitad de camino, cuenta el cambio y sigue preguntando lo que falta.
+    r = lumo.responder(Decisiones(dormitorios=2, tamano="amplia"), cambio="tamano")
+    assert r.mensaje.startswith("Tamaño amplio") and "cocina" in r.pregunta.texto
+
+
+def test_lumo_lee_respuestas_escritas_y_avisa_si_no_entiende():
+    assert lumo.interpretar("dormitorios", "somos cuatro, necesitamos tres cuartos") == 3
+    assert lumo.interpretar("dormitorios", "ocho") is None
+    assert lumo.interpretar("cocina", "integrada, con isla") == "abierta"
+    assert lumo.interpretar("tamano", "algo chico") == "compacta"
+    r = lumo.responder(Decisiones(), "no sé")
+    assert "No te entendí" in r.mensaje and r.decisiones.dormitorios is None and r.pregunta
 
 
 def test_imagen_con_proveedor_simulado_avisa_que_es_demostracion():
@@ -169,14 +247,31 @@ class ProveedorFalso(proveedores.Proveedor):
 
 
 def test_respuesta_invalida_se_corrige_una_vez():
-    valida = {"mensaje": "Listo", "pregunta": None, "listo": True, "programa": {
-        "superficie_objetivo_m2": 60, "ambientes": [
-            {"id": "estar", "nombre": "Estar", "uso": "social"},
-            {"id": "dorm", "nombre": "Dormitorio", "uso": "dormitorio", "area_m2": 12}]}}
+    valida = {"resumen": "Una casa chica", "ambientes": [
+        {"id": "estar", "nombre": "Estar", "uso": "social", "x0": 0, "y0": 0, "x1": 5, "y1": 6}]}
     prov = ProveedorFalso(["no es json", "```json\n" + json.dumps(valida) + "\n```"])
-    r = asyncio.run(asistente.conversar(prov, "libre", [MensajeChat(rol="usuario", texto="hola")], None))
-    assert r.listo and len(prov.pedidos) == 2
-    assert all(a.area_m2 for a in r.programa.ambientes)  # completar_programa rellenó el estar
+    prov.vision = True
+    r = asyncio.run(asistente.interpretar_imagen(prov, proveedores.Imagen("AAAA")))
+    assert len(r.ambientes) == 1 and len(prov.pedidos) == 2
+
+
+def test_lumo_en_el_editor_devuelve_acciones_validadas():
+    respuesta = {"mensaje": "Corro el muro norte 1 m.", "pregunta": None,
+                 "acciones": [{"tipo": "ampliar", "ambiente": "dorm_2", "lado": "norte", "metros": 1, "sobra": "x"}]}
+    prov = ProveedorFalso([json.dumps(respuesta)])
+    t = asyncio.run(lumo_editor.pedir_cambios(prov, "agrandá este ambiente", {"seleccion": "dorm_2"}))
+    assert [(a.tipo, a.ambiente, a.lado, a.metros) for a in t.acciones] == [("ampliar", "dorm_2", "norte", 1)]
+    assert "dorm_2" in prov.pedidos[0][-1].texto  # el contexto viaja con el pedido
+    # Una acción que no existe no pasa la validación: se le pide al modelo que corrija.
+    mala = {"mensaje": "x", "acciones": [{"tipo": "demoler"}]}
+    pregunta = {"mensaje": "¿Hacia dónde?", "acciones": [],
+                "pregunta": {"texto": "¿Hacia qué lado?", "opciones": [{"id": "n", "etiqueta": "Norte"}]}}
+    prov = ProveedorFalso([json.dumps(mala), json.dumps(pregunta)])
+    t = asyncio.run(lumo_editor.pedir_cambios(prov, "agrandalo", {}))
+    assert not t.acciones and t.pregunta.opciones[0].etiqueta == "Norte" and len(prov.pedidos) == 2
+    # Sin clave de IA lo dice, no inventa.
+    t = asyncio.run(lumo_editor.pedir_cambios(proveedores.ProveedorSimulado(), "agrandalo", {}))
+    assert not t.acciones and "clave de IA" in t.mensaje
 
 
 def test_eleccion_de_proveedor_por_entorno(monkeypatch):

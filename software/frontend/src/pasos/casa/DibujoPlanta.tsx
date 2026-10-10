@@ -100,6 +100,8 @@ interface Props {
   interactivo?: boolean;
   /** Ambientes translúcidos, para ver un dibujo de fondo. */
   translucido?: boolean;
+  /** Medidas exteriores de la casa y medidas de cada ambiente. */
+  cotas?: boolean;
 }
 
 export default function DibujoPlanta({
@@ -113,6 +115,7 @@ export default function DibujoPlanta({
   onPieza,
   interactivo = false,
   translucido = false,
+  cotas = false,
 }: Props) {
   const cursor = interactivo ? "pointer" : undefined;
   const seleccionado = (id: string) => seleccion?.id === id;
@@ -230,7 +233,10 @@ export default function DibujoPlanta({
           const area = areaPoligono(amb.contorno_m);
           const e = estadoPieza(amb.estado, amb.id, analisis);
           const xs = amb.contorno_m.map((p) => p[0]);
-          const anchoPx = (Math.max(...xs) - Math.min(...xs)) * v.escala;
+          const ys = amb.contorno_m.map((p) => p[1]);
+          const ancho = Math.max(...xs) - Math.min(...xs);
+          const fondo = Math.max(...ys) - Math.min(...ys);
+          const anchoPx = ancho * v.escala;
           const chico = anchoPx < 70;
           insignia(amb.id, e, [c[0] + (chico ? 14 : Math.min(anchoPx / 2 - 12, 48)), c[1] - 16], true);
           return (
@@ -241,10 +247,66 @@ export default function DibujoPlanta({
               <text x={c[0]} y={c[1] + 13} fontSize={9} fill="var(--rebar)">
                 {area.toFixed(1)} m²
               </text>
+              {cotas && !chico && (
+                <text x={c[0]} y={c[1] + 25} fontSize={9} fill="var(--signal)">
+                  {medida(ancho)} × {medida(fondo)}
+                </text>
+              )}
             </g>
           );
         })}
+      {cotas && <CotasExteriores casa={casa} v={v} />}
       {insignias}
+    </g>
+  );
+}
+
+const medida = (m: number) => m.toFixed(2).replace(".", ",");
+
+/** Una línea de cota por cada lado de la huella, del lado de afuera: es la medida exterior de la casa. */
+function CotasExteriores({ casa, v }: { casa: Casa; v: Vista }) {
+  const h = casa.huella_m ?? [];
+  if (h.length < 3) return null;
+  let s = 0;
+  for (let i = 0; i < h.length; i++) s += h[i][0] * h[(i + 1) % h.length][1] - h[(i + 1) % h.length][0] * h[i][1];
+  const sentido = s >= 0 ? 1 : -1; // con la huella en sentido antihorario, afuera queda a la derecha
+  const separacion = 18 / v.escala;
+  return (
+    <g pointerEvents="none">
+      {h.map((a, i) => {
+        const b = h[(i + 1) % h.length];
+        const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (L * v.escala < 34) return null;
+        const n: Punto = [(sentido * (b[1] - a[1])) / L, (sentido * -(b[0] - a[0])) / L];
+        const p = aPantalla(v, [a[0] + n[0] * separacion, a[1] + n[1] * separacion]);
+        const q = aPantalla(v, [b[0] + n[0] * separacion, b[1] + n[1] * separacion]);
+        const medio: Punto = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+        const vertical = Math.abs(p[0] - q[0]) < 1;
+        // El texto se aparta de la línea hacia afuera (en pantalla, la Y crece hacia abajo).
+        const tx = medio[0] + n[0] * 11;
+        const ty = medio[1] - n[1] * 11;
+        return (
+          <g key={i} stroke="var(--signal)" strokeWidth={1}>
+            <line x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} />
+            {[p, q].map((e, k) => (
+              <line key={k} x1={e[0] - (vertical ? 4 : 0)} y1={e[1] - (vertical ? 0 : 4)} x2={e[0] + (vertical ? 4 : 0)} y2={e[1] + (vertical ? 0 : 4)} />
+            ))}
+            <text
+              x={tx}
+              y={ty}
+              stroke="none"
+              fill="var(--signal)"
+              fontSize={10}
+              fontWeight={600}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              transform={vertical ? `rotate(-90 ${tx} ${ty})` : undefined}
+            >
+              {medida(L)}
+            </text>
+          </g>
+        );
+      })}
     </g>
   );
 }

@@ -1,16 +1,12 @@
-"""Asistente de diseño de la capa 03.
+"""Lectura de bosquejos y planos con IA (capa 03).
 
-Dos tareas, las dos con salida validada:
+`interpretar_imagen()` lee un bosquejo o un plano y devuelve ambientes como
+rectángulos aproximados, con la escala que usó y sus dudas. La IA no dibuja
+muros: eso lo hace `capas/casa.py` con reglas. Lo que devuelve el modelo se
+valida con pydantic; si no valida, se le devuelve el error una vez para que lo
+corrija.
 
-- `conversar()` arma el **programa** de la casa charlando con el usuario, en modo
-  libre (el usuario describe y el asistente pregunta solo lo imprescindible) o
-  en modo orientador (Monti conduce con preguntas y opciones).
-- `interpretar_imagen()` lee un bosquejo o un plano y devuelve ambientes como
-  rectángulos aproximados, con la escala que usó y sus dudas.
-
-En ninguno de los dos casos la IA dibuja muros: eso lo hace
-`capas/casa.py` con reglas. Lo que devuelve el modelo se valida con pydantic;
-si no valida, se le devuelve el error una vez para que lo corrija.
+El recorrido guiado de Lumo no pasa por acá: es fijo y vive en `ia/lumo.py`.
 """
 
 from __future__ import annotations
@@ -19,8 +15,7 @@ import json
 
 from pydantic import BaseModel, Field, ValidationError
 
-from ..modelo.casa import USOS, MensajeChat, Pregunta, Programa, Rectangulo, RespuestaAsistente
-from . import guion
+from ..modelo.casa import USOS, Pregunta, Rectangulo
 from .proveedores import ErrorIA, Imagen, Mensaje, Proveedor, extraer_json
 
 DOMINIO = (
@@ -34,58 +29,6 @@ USUARIO = (
     "construir su casa. Hablá en español rioplatense, con frases cortas y sin jerga; si usás un término "
     "técnico, explicalo en pocas palabras. Nunca lo hagas sentir que respondió mal."
 )
-
-FORMATO_CONVERSACION = """Respondé SOLO con un objeto JSON con esta forma:
-{
-  "mensaje": "texto breve para el usuario (máximo 3 oraciones)",
-  "pregunta": null | {
-    "texto": "una sola pregunta",
-    "opciones": [{"id": "corto", "etiqueta": "texto del botón", "detalle": "consecuencia en pocas palabras"}],
-    "multiple": false,
-    "importante": true
-  },
-  "programa": {
-    "superficie_objetivo_m2": número o null,
-    "cocina_integrada": true | false | null,
-    "galeria": true | false | null,
-    "prioridades": ["luz natural", "presupuesto", ...],
-    "notas": ["lo que dijo el usuario que no entra en otro campo"],
-    "ambientes": [{"id": "dorm_principal", "nombre": "Dormitorio principal", "uso": "dormitorio",
-                   "area_m2": 14, "principal": true, "notas": ""}]
-  },
-  "listo": false
-}
-Usos válidos: """ + ", ".join(USOS) + """.
-- "programa" es SIEMPRE el programa completo y actualizado, no solo lo nuevo.
-- Incluí un ambiente "social" (estar y comedor; si la cocina es integrada, también la cocina).
-- No agregues pasillos: los agrega el generador de plantas.
-- Las superficies de los ambientes deben sumar cerca del 80 % de la superficie objetivo; el resto son muros y circulación.
-- "listo" es true cuando alcanza para proponer plantas: se sabe cuántos dormitorios y baños, y el tamaño aproximado."""
-
-MODOS = {
-    "orientador": (
-        "Sos Monti, el orientador de Assambl: un personaje simpático con forma de montante de madera. "
-        "Conducís la charla. Hacé UNA pregunta por vez y ofrecé siempre de 2 a 4 opciones con su consecuencia "
-        "(por ejemplo: «Integrada · un solo ambiente, más luz»). Empezá por lo que más cambia la casa: "
-        "cuántos dormitorios, qué tamaño, cuántos baños, cocina integrada o separada, y extras (lavadero, "
-        "oficina, galería). Si el usuario no sabe, sugerí la opción más común y seguí. En 5 a 7 preguntas "
-        "tenés que estar listo."
-    ),
-    "libre": (
-        "Sos Monti, el asistente de Assambl. El usuario describe su casa con sus palabras. Extraé todo lo que "
-        "puedas al programa y preguntá SOLO por decisiones importantes que falten o sean contradictorias "
-        "(cuántos dormitorios, tamaño aproximado). Cuando preguntes, ofrecé de 2 a 4 opciones. Si ya alcanza, "
-        "marcá listo sin preguntar más: los detalles se ajustan después en el editor."
-    ),
-}
-
-
-def _sistema_conversacion(modo: str) -> str:
-    return "\n\n".join([MODOS.get(modo, MODOS["libre"]), USUARIO, DOMINIO,
-                        "Si pide algo fuera del dominio, explicale amablemente por qué y proponé lo más parecido.",
-                        "Nunca dibujes ni describas muros ni coordenadas: el software genera las plantas a partir del programa.",
-                        FORMATO_CONVERSACION])
-
 
 async def _pedir_validado(proveedor: Proveedor, sistema: str, mensajes: list[Mensaje], modelo: type[BaseModel],
                           imagenes: list[Imagen] | None = None, esfuerzo: str = "bajo") -> BaseModel:
@@ -103,24 +46,6 @@ async def _pedir_validado(proveedor: Proveedor, sistema: str, mensajes: list[Men
             return modelo.model_validate(extraer_json(texto))
         except (ValidationError, json.JSONDecodeError) as e2:
             raise ErrorIA(f"La IA devolvió una respuesta que no se pudo interpretar: {str(e2)[:300]}") from e2
-
-
-async def conversar(proveedor: Proveedor, modo: str, historial: list[MensajeChat], programa: Programa | None,
-                    opciones: list[str] | None = None) -> RespuestaAsistente:
-    if proveedor.simulado:
-        return guion.responder(modo, historial, programa, opciones or [])
-
-    mensajes = [Mensaje(m.rol, m.texto) for m in historial]
-    contexto = ("Programa actual (JSON): " + programa.model_dump_json(exclude_none=True)) if programa and programa.ambientes else \
-        "Todavía no hay programa."
-    if not mensajes:
-        mensajes = [Mensaje("usuario", f"[Inicio de la conversación en modo {modo}. {contexto} Saludá y empezá.]")]
-    else:
-        ultimo = mensajes[-1]
-        mensajes[-1] = Mensaje(ultimo.rol, f"{ultimo.texto}\n\n[{contexto}]")
-    r = await _pedir_validado(proveedor, _sistema_conversacion(modo), mensajes, RespuestaAsistente)
-    assert isinstance(r, RespuestaAsistente)
-    return r.model_copy(update={"programa": guion.completar_programa(r.programa)})
 
 
 # ---------------------------------------------------------------- imágenes

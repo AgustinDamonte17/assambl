@@ -33,6 +33,9 @@ interface Props {
   item: ItemCatalogo | null;
   sistemaMuro: string;
   verEstados: boolean;
+  cotas: boolean;
+  /** Doble clic sobre un ambiente: cambiarle el nombre. */
+  alRenombrar: (id: string) => void;
   calco: Calco | null;
   lote: Punto[] | null;
   resaltadas: Set<string>;
@@ -398,7 +401,11 @@ export default function EditorPlanta(p: Props) {
         onPointerMove={alMover}
         onPointerUp={alSoltar}
         onPointerLeave={() => setCursor(null)}
-        onDoubleClick={() => setCadena(null)}
+        onDoubleClick={(e) => {
+          setCadena(null);
+          const id = (e.target as Element).closest("[data-pieza]")?.getAttribute("data-pieza");
+          if (id && p.herramienta === "seleccionar" && casa.ambientes.some((a) => a.id === id)) p.alRenombrar(id);
+        }}
         onWheel={alRueda}
       >
         <Tramas />
@@ -437,6 +444,7 @@ export default function EditorPlanta(p: Props) {
           analisis={p.analisis}
           translucido={!!p.calco}
           verEstados={p.verEstados}
+          cotas={p.cotas}
           seleccion={p.seleccion}
           resaltadas={p.resaltadas}
           onPieza={alTocarPieza}

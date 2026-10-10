@@ -105,26 +105,16 @@ export interface ItemCatalogo {
   sugerida_para: Uso[];
 }
 
-/* Asistente */
+/* Lumo */
 
-export interface AmbientePrograma {
-  id: string;
-  nombre: string;
-  uso: Uso;
-  area_m2?: number | null;
-  principal?: boolean;
-  notas?: string;
+/** Lo que el usuario decide con Lumo. Lo que falta se completa con el valor más común. */
+export interface Decisiones {
+  dormitorios: number | null;
+  cocina: "abierta" | "cerrada" | null;
+  tamano: "compacta" | "comoda" | "amplia" | null;
 }
 
-export interface Programa {
-  superficie_objetivo_m2?: number | null;
-  ambientes: AmbientePrograma[];
-  cocina_integrada?: boolean | null;
-  galeria?: boolean | null;
-  prioridades?: string[];
-  notas?: string[];
-  [extra: string]: unknown;
-}
+export const SIN_DECISIONES: Decisiones = { dormitorios: null, cocina: null, tamano: null };
 
 export interface Opcion {
   id: string;
@@ -139,16 +129,29 @@ export interface Pregunta {
   importante?: boolean;
 }
 
-export interface MensajeChat {
-  rol: "usuario" | "asistente";
-  texto: string;
+/** La planta base para las decisiones tomadas hasta ahora, con el porqué de su orden. */
+export interface Propuesta {
+  decisiones: Decisiones;
+  rectangulos: Rectangulo[];
+  casa: Casa;
+  advertencias: string[];
+  razones: { titulo: string; texto: string }[];
+  analisis: AnalisisPlanta;
+  resumen: {
+    superficie_cubierta_m2: number;
+    ancho_m: number;
+    profundidad_m: number;
+    muro_exterior_m: number;
+    ambientes: number;
+  };
 }
 
-export interface RespuestaAsistente {
+export interface RespuestaLumo {
   mensaje: string;
   pregunta: Pregunta | null;
-  programa: Programa;
+  decisiones: Decisiones;
   listo: boolean;
+  propuesta: Propuesta | null;
 }
 
 export interface EstadoIA {
@@ -171,6 +174,8 @@ export interface VerificacionPlanta {
   origen: string;
   parametros: Record<string, number>;
   piezas: string[];
+  /** «grave»: a la casa le falta algo que no puede faltar. «sugerencia»: algo para mirar, no un error. */
+  gravedad?: "grave" | "sugerencia";
 }
 
 export interface AnalisisPlanta {
@@ -189,23 +194,8 @@ export interface Rectangulo {
   y0: number;
   x1: number;
   y1: number;
-}
-
-export interface Alternativa {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  rectangulos: Rectangulo[];
-  casa: Casa;
-  advertencias: string[];
-  analisis: AnalisisPlanta;
-  resumen: {
-    superficie_cubierta_m2: number;
-    ancho_m: number;
-    profundidad_m: number;
-    muro_exterior_m: number;
-    ambientes: number;
-  };
+  /** Rectángulos del mismo grupo forman un solo ambiente. */
+  grupo?: string | null;
 }
 
 export interface RespuestaImagen {
@@ -277,9 +267,24 @@ export function areaPoligono(p: Punto[]): number {
   return Math.abs(s) / 2;
 }
 
+/** Centro de área del polígono (no el promedio de vértices, que en un ambiente en L cae sobre un borde). */
 export function centroide(p: Punto[]): Punto {
-  const n = p.length || 1;
-  return [p.reduce((s, v) => s + v[0], 0) / n, p.reduce((s, v) => s + v[1], 0) / n];
+  let a = 0;
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0; i < p.length; i++) {
+    const [x1, y1] = p[i];
+    const [x2, y2] = p[(i + 1) % p.length];
+    const f = x1 * y2 - x2 * y1;
+    a += f;
+    cx += (x1 + x2) * f;
+    cy += (y1 + y2) * f;
+  }
+  if (Math.abs(a) < 1e-9) {
+    const n = p.length || 1;
+    return [p.reduce((s, v) => s + v[0], 0) / n, p.reduce((s, v) => s + v[1], 0) / n];
+  }
+  return [cx / (3 * a), cy / (3 * a)];
 }
 
 export function extension(casa: Casa): { x0: number; y0: number; x1: number; y1: number } | null {

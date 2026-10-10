@@ -1,4 +1,4 @@
-/** Capa 03 · Casa. Recorrido: elegir cómo empezar → (charla → alternativas | imagen | ejemplo | dibujo) → editor.
+/** Capa 03 · Casa. Recorrido: elegir cómo empezar → (Lumo | imagen | ejemplo | dibujo) → editor.
  *  El editor siempre trabaja sobre `proyecto.casa`; lo anterior son maneras de llegar a una primera planta. */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -8,28 +8,30 @@ import type { Proyecto, Punto } from "../../modelo/proyecto";
 import {
   casaVacia,
   extension,
-  type Alternativa,
+  SIN_DECISIONES,
   type AnalisisPlanta,
   type Casa,
+  type Decisiones,
   type EstadoIA,
   type ItemCatalogo,
-  type MensajeChat,
   type Pieza,
-  type RespuestaAsistente,
   type RespuestaImagen,
+  superficieCubierta,
+  areaPoligono,
+  type VerificacionPlanta,
 } from "../../modelo/casa";
 import angus from "assambl-software/casos/angus_ranch.assambl.json";
 import { Etiqueta } from "../../componentes/ui";
-import Alternativas from "./Alternativas";
-import Charla from "./Charla";
+import DisenarConLumo from "./DisenarConLumo";
 import EditorPlanta, { type Herramienta } from "./EditorPlanta";
 import ImportarImagen, { type Calco } from "./ImportarImagen";
 import Inicio, { EstadoAsistente } from "./Inicio";
+import LumoEditor, { type PedidoResolver } from "./LumoEditor";
 import PanelEditor, { piezaDeId } from "./PanelEditor";
 import { contarEstados, ORDEN_ESTADOS } from "./estados";
 import { borrarAbertura, borrarAmbiente, borrarMuro } from "./operaciones";
 
-type Pantalla = "inicio" | "charla" | "alternativas" | "imagen" | "editor";
+type Pantalla = "inicio" | "lumo" | "imagen" | "editor";
 
 /** Catálogo mínimo para dibujar sin API; el completo viene de backend/assambl/catalogo/ar.json. */
 const CATALOGO_LOCAL: ItemCatalogo[] = [
@@ -38,6 +40,7 @@ const CATALOGO_LOCAL: ItemCatalogo[] = [
 ];
 
 const HISTORIA_MAX = 80;
+const SIN_VERIFICACIONES: VerificacionPlanta[] = [];
 
 export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
   const { proyecto, despachar } = useProyecto();
@@ -48,13 +51,12 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
   const [ia, setIa] = useState<EstadoIA | null>(null);
   const [catalogo, setCatalogo] = useState<ItemCatalogo[]>(CATALOGO_LOCAL);
 
-  // Charla
-  const [modo, setModo] = useState<"libre" | "orientador">("orientador");
-  const [historial, setHistorial] = useState<MensajeChat[]>([]);
-  const [respuesta, setRespuesta] = useState<RespuestaAsistente | null>(null);
-  const [cargando, setCargando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [alternativas, setAlternativas] = useState<Alternativa[] | null>(null);
+  // Lumo: desde el inicio arranca de cero; desde el editor retoma las decisiones de la planta.
+  const [retomarLumo, setRetomarLumo] = useState(false);
+  const irALumo = (retomar: boolean) => {
+    setRetomarLumo(retomar);
+    setPantalla("lumo");
+  };
 
   // Imagen
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -68,6 +70,14 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
   const [item, setItem] = useState<ItemCatalogo | null>(null);
   const [sistemaMuro, setSistemaMuro] = useState("exterior");
   const [verEstados, setVerEstados] = useState(true);
+  const [cotas, setCotas] = useState(false);
+  const [pedidoLumo, setPedidoLumo] = useState<PedidoResolver | null>(null);
+  const [focoNombre, setFocoNombre] = useState(0);
+  const resolverConLumo = (v: VerificacionPlanta) => {
+    const pieza = v.piezas[0] && casa ? piezaDeId(casa, v.piezas[0]) : null;
+    if (pieza) setSeleccion(pieza);
+    setPedidoLumo((p) => ({ n: (p?.n ?? 0) + 1, verificacion: v }));
+  };
   const [analisis, setAnalisis] = useState<AnalisisPlanta | null>(null);
   const [resaltadas, setResaltadas] = useState<Set<string>>(new Set());
   const [encuadre, setEncuadre] = useState(0);
@@ -165,57 +175,6 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
     if (herramienta === "abertura" && !item) setItem(catalogo.find((i) => i.codigo === "ventana_150_110") ?? catalogo[0] ?? null);
   }, [herramienta, item, catalogo]);
 
-  /* ------------------------------------------------ charla */
-
-  const turno = async (h: MensajeChat[], opciones: string[], m: "libre" | "orientador" = modo) => {
-    setHistorial(h);
-    setCargando(true);
-    setError(null);
-    try {
-      const r = await api.conversar(m, h, respuesta?.programa ?? null, opciones);
-      setRespuesta(r);
-      setHistorial([...h, { rol: "asistente", texto: r.mensaje }]);
-    } catch (e) {
-      setError(`No pude hablar con el asistente: ${(e as Error).message}`);
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const empezarCharla = (m: "libre" | "orientador", texto?: string) => {
-    setModo(m);
-    setRespuesta(null);
-    setAlternativas(null);
-    setPantalla("charla");
-    const h: MensajeChat[] = texto ? [{ rol: "usuario", texto }] : [];
-    // El turno usa `respuesta` del estado; al empezar va vacío a propósito.
-    setHistorial(h);
-    setCargando(true);
-    setError(null);
-    api
-      .conversar(m, h, null, [])
-      .then((r) => {
-        setRespuesta(r);
-        setHistorial([...h, { rol: "asistente", texto: r.mensaje }]);
-        if (m === "libre" && r.listo) verPlantas(r);
-      })
-      .catch((e) => setError(`No pude hablar con el asistente: ${(e as Error).message}`))
-      .finally(() => setCargando(false));
-  };
-
-  const verPlantas = (r: RespuestaAsistente | null = respuesta) => {
-    if (!r) return;
-    setPantalla("alternativas");
-    setAlternativas(null);
-    setCargando(true);
-    setError(null);
-    api
-      .alternativas(r.programa, lat)
-      .then(setAlternativas)
-      .catch((e) => setError(`No se pudieron armar las plantas: ${(e as Error).message}`))
-      .finally(() => setCargando(false));
-  };
-
   /* ------------------------------------------------ llegar al editor */
 
   const loteEnCasa = useMemo(() => loteLocal(proyecto, casa), [proyecto, casa]);
@@ -253,8 +212,7 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
         ia={ia}
         apiOk={apiOk}
         hayCasa={!!casa}
-        empezarLibre={(t) => empezarCharla("libre", t)}
-        empezarOrientador={() => empezarCharla("orientador")}
+        empezarConLumo={() => irALumo(false)}
         empezarImagen={(f) => {
           setArchivo(f ?? null);
           setPantalla("imagen");
@@ -265,28 +223,13 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
       />
     );
 
-  if (pantalla === "charla")
+  if (pantalla === "lumo")
     return (
-      <Charla
-        modo={modo}
-        historial={historial}
-        respuesta={respuesta}
-        cargando={cargando}
-        error={error}
-        enviar={(texto, opciones) => turno([...historial, { rol: "usuario", texto }], opciones)}
-        verPlantas={() => verPlantas()}
-        volver={() => setPantalla("inicio")}
-      />
-    );
-
-  if (pantalla === "alternativas")
-    return (
-      <Alternativas
-        alternativas={alternativas}
-        cargando={cargando}
-        error={error}
-        elegir={(a) => abrirEnEditor(a.casa)}
-        volver={() => setPantalla("charla")}
+      <DisenarConLumo
+        lat={lat}
+        inicial={retomarLumo ? decisionesDe(casa) : SIN_DECISIONES}
+        elegir={(c) => abrirEnEditor(c)}
+        volver={() => setPantalla(retomarLumo && casa ? "editor" : "inicio")}
       />
     );
 
@@ -302,15 +245,17 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
       </div>
     );
 
+  const graves = (analisis?.verificaciones ?? []).filter((v) => v.gravedad === "grave" && v.estado !== "comprobado_por_reglas");
+
   return (
     <div className="h-full grid grid-rows-[40px_1fr]">
       <div className="flex items-center gap-4 border-b border-line bg-concrete px-4">
         <button className="text-xs text-rebar hover:text-ink" onClick={() => setPantalla("inicio")}>
           ← Formas de empezar
         </button>
-        {alternativas && (
-          <button className="text-xs text-rebar hover:text-ink" onClick={() => setPantalla("alternativas")}>
-            Ver otras alternativas
+        {esDeLumo(casa) && (
+          <button className="text-xs text-rebar hover:text-ink" onClick={() => irALumo(true)}>
+            Cambiar decisiones con Lumo
           </button>
         )}
         <span className="text-[11px] uppercase tracking-widest text-rebar">Planta 2D</span>
@@ -332,6 +277,11 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
             item={item}
             sistemaMuro={sistemaMuro}
             verEstados={verEstados}
+            cotas={cotas}
+            alRenombrar={(id) => {
+              setSeleccion({ tipo: "ambiente", id });
+              setFocoNombre((n) => n + 1);
+            }}
             calco={calco}
             lote={loteEnCasa}
             resaltadas={resaltadas}
@@ -341,13 +291,49 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
           {aviso && (
             <div className="absolute left-1/2 -translate-x-1/2 bottom-6 bg-ink text-concrete text-xs px-3 py-2 shadow">{aviso}</div>
           )}
+          <div className="absolute top-3 left-3 flex items-center gap-3 bg-concrete-2 border border-line px-2.5 py-1.5 text-xs">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <input type="checkbox" checked={cotas} onChange={(e) => setCotas(e.target.checked)} />
+              Cotas
+            </label>
+            {cotas && (
+              <span>
+                <b className="font-display text-base leading-none">{(superficieCubierta(casa) ?? 0).toFixed(1)} m²</b>
+                <span className="text-rebar"> cubiertos · {casa.ambientes.reduce((s, a) => s + (a.contorno_m ? areaPoligono(a.contorno_m) : 0), 0).toFixed(1)} m² de ambientes</span>
+              </span>
+            )}
+          </div>
+          {graves.length > 0 && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 max-w-[min(520px,60%)] flex flex-col gap-1.5">
+              {graves.map((v) => (
+                <div key={v.id} className="bg-signal text-ink px-3 py-2 text-xs leading-snug shadow flex items-start gap-3">
+                  <span>
+                    <b>Antes de seguir:</b> {v.detalle}
+                  </span>
+                  <button className="shrink-0 border border-ink px-2 py-0.5 uppercase tracking-wide text-[10px] hover:bg-ink hover:text-concrete" onClick={() => resolverConLumo(v)}>
+                    Resolver
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {!casa.muros.length && herramienta !== "muro" && (
-            <div className="absolute top-4 left-4 bg-concrete-2 border border-line px-3 py-2 text-xs max-w-xs">
+            <div className="absolute top-14 left-3 bg-concrete-2 border border-line px-3 py-2 text-xs max-w-xs">
               Planta vacía. Elegí la herramienta <b>Muro</b> (tecla M) y hacé clic para marcar las esquinas de la casa.
             </div>
           )}
         </div>
-        <aside className="border-l border-line bg-concrete overflow-y-auto p-4">
+        <aside className="border-l border-line bg-concrete flex flex-col min-h-0">
+          <LumoEditor
+            casa={casa}
+            seleccion={seleccion}
+            catalogo={catalogo}
+            apiOk={apiOk}
+            aplicar={aplicar}
+            pedido={pedidoLumo}
+            verificaciones={analisis?.verificaciones ?? SIN_VERIFICACIONES}
+          />
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
           <PanelEditor
             casa={casa}
             analisis={analisis}
@@ -366,6 +352,10 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
             setSistemaMuro={setSistemaMuro}
             verEstados={verEstados}
             setVerEstados={setVerEstados}
+            cotas={cotas}
+            setCotas={setCotas}
+            resolver={resolverConLumo}
+            focoNombre={focoNombre}
             opacidadCalco={calco ? calco.opacidad : null}
             setOpacidadCalco={(o) => setCalco((c) => (c ? { ...c, opacidad: o } : c))}
             quitarCalco={() => setCalco(null)}
@@ -375,6 +365,7 @@ export default function PasoCasa({ apiOk }: { apiOk: boolean | null }) {
             resaltar={(ids) => setResaltadas(new Set(ids))}
             empezarDeNuevo={() => setPantalla("inicio")}
           />
+          </div>
         </aside>
       </div>
     </div>
@@ -391,9 +382,20 @@ function origenTexto(casa: Casa): string {
   const o = casa.origen as Record<string, unknown> | undefined;
   if (!o) return "";
   if (o.fuente === "imagen") return "Planta leída de una imagen";
-  if (typeof o.partido === "string") return `Alternativa «${o.partido.replace("_", " ")}»`;
+  if (esDeLumo(casa)) return "Planta base de Lumo";
   if (typeof o.fuente === "string" && o.fuente.endsWith(".py")) return `Transcripción de ${o.fuente}`;
   return "";
+}
+
+function esDeLumo(casa: Casa | null): boolean {
+  const fuente = (casa?.origen as Record<string, unknown> | undefined)?.fuente;
+  return typeof fuente === "string" && fuente.endsWith("planta_base.py");
+}
+
+/** Las decisiones con las que Lumo armó la planta, para retomarlas; vacías si la planta no salió de Lumo. */
+function decisionesDe(casa: Casa | null): Decisiones {
+  const d = (casa?.origen as { decisiones?: Partial<Decisiones> } | undefined)?.decisiones;
+  return esDeLumo(casa) && d ? { ...SIN_DECISIONES, ...d } : SIN_DECISIONES;
 }
 
 /** Lote en coordenadas de la casa (deshace la implantación: traslación y giro). */

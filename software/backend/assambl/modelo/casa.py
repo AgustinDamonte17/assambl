@@ -1,4 +1,4 @@
-"""Esquema de la capa 03 · Casa: programa de necesidades y planta (assambl/casa@0.1).
+"""Esquema de la capa 03 · Casa: decisiones del usuario y planta (assambl/casa@0.1).
 
 La planta sigue el formato de `casos/angus_ranch.assambl.json`: muros por eje con
 sus aberturas, ambientes con contorno interior y sistemas constructivos. Los
@@ -6,10 +6,8 @@ modelos son permisivos (`extra="allow"`) porque la casa lleva secciones de otras
 capas (cubiertas, instalaciones, mobiliario) que este paso no toca y debe
 conservar intactas.
 
-El **programa** es lo que el usuario quiere («tres dormitorios, 120 m², estar al
-norte»). Lo construye la conversación con el asistente o el formulario, y de él
-salen las alternativas de planta. No es geometría: es la lista de ambientes con
-superficies objetivo y las decisiones tomadas.
+Las **decisiones** son lo poco que el usuario elige con Lumo (cuántos dormitorios,
+cocina abierta o cerrada, tamaño). No son geometría: de ellas sale la planta base.
 """
 
 from __future__ import annotations
@@ -28,39 +26,19 @@ Uso = Literal[
 ]
 USOS: tuple[str, ...] = Uso.__args__  # type: ignore[attr-defined]
 
-# Superficie orientativa por uso (m²) cuando el usuario no la dice. Son valores
-# de partida para una vivienda de una planta, no mínimos normativos.
-AREA_TIPICA_M2: dict[str, float] = {
-    "social": 30.0, "cocina": 9.0, "dormitorio": 11.0, "bano": 4.5, "lavadero": 4.0,
-    "oficina": 8.0, "vestidor": 4.0, "deposito": 3.0, "circulacion": 6.0, "otro": 8.0,
-}
-
-
 class _Abierto(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-# ---------------------------------------------------------------- programa
-
-class AmbientePrograma(_Abierto):
-    id: str
-    nombre: str
-    uso: Uso = "otro"
-    area_m2: float | None = Field(default=None, gt=0, le=200)
-    principal: bool = Field(default=False, description="Dormitorio principal, en suite, etc.")
-    notas: str = ""
-
-
-class Programa(_Abierto):
-    superficie_objetivo_m2: float | None = Field(default=None, gt=0, le=400)
-    ambientes: list[AmbientePrograma] = []
-    cocina_integrada: bool | None = Field(default=None, description="Cocina dentro del estar-comedor")
-    galeria: bool | None = None
-    prioridades: list[str] = []
-    notas: list[str] = []
-
-
 # ---------------------------------------------------------------- conversación
+
+class Decisiones(BaseModel):
+    """Lo que el usuario decide con Lumo. Lo que falta se completa con el valor más común."""
+
+    dormitorios: int | None = Field(default=None, ge=1, le=4)
+    cocina: Literal["abierta", "cerrada"] | None = None
+    tamano: Literal["compacta", "comoda", "amplia"] | None = None
+
 
 class Opcion(BaseModel):
     id: str
@@ -73,18 +51,6 @@ class Pregunta(BaseModel):
     opciones: list[Opcion] = []
     multiple: bool = False
     importante: bool = Field(default=True, description="Decisión que cambia la forma de la casa")
-
-
-class MensajeChat(BaseModel):
-    rol: Literal["usuario", "asistente"]
-    texto: str
-
-
-class RespuestaAsistente(BaseModel):
-    mensaje: str
-    pregunta: Pregunta | None = None
-    programa: Programa
-    listo: bool = Field(default=False, description="El programa alcanza para proponer plantas")
 
 
 # ---------------------------------------------------------------- planta
@@ -121,9 +87,28 @@ class Ambiente(_Abierto):
     estado: Estado | None = None
 
 
+Lado = Literal["norte", "sur", "este", "oeste"]
+
+
+class PuertaDeseada(BaseModel):
+    """Dónde va la puerta de un ambiente cuando el generador no debe elegirlo solo."""
+
+    hacia: str | None = Field(default=None, description="Id del ambiente al que abre")
+    lado: Lado | None = Field(default=None, description="Lado del rectángulo donde va")
+    extremo: Literal["inicio", "fin"] = Field(default="inicio", description="Extremo del muro, en el sentido de su eje")
+    margen_m: float = Field(default=0.15, ge=0.1, description="Distancia de la puerta a ese extremo")
+
+
+class AccesoDeseado(BaseModel):
+    """Puerta de entrada a la casa sobre un lado exterior del rectángulo."""
+
+    lado: Lado
+    centro_m: float | None = Field(default=None, description="Coordenada del centro de la puerta a lo largo del lado")
+
+
 class Rectangulo(BaseModel):
     """Ambiente como rectángulo de ejes de muro. Es la forma en que el generador
-    de alternativas y la lectura de imágenes describen una planta ortogonal."""
+    de la planta base y la lectura de imágenes describen una planta ortogonal."""
 
     id: str
     nombre: str
@@ -132,3 +117,6 @@ class Rectangulo(BaseModel):
     y0: float
     x1: float
     y1: float
+    grupo: str | None = Field(default=None, description="Rectángulos del mismo grupo forman un solo ambiente, sin muro entre ellos")
+    puerta: PuertaDeseada | None = None
+    acceso: AccesoDeseado | None = None
