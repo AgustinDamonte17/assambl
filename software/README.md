@@ -178,3 +178,21 @@ Las sondas `backend/tests/probar_*.py` sí salen a internet y sirven para verifi
 - Retiros de frente, fondo y laterales dibujados como zona edificable (ya están en el esquema del proyecto).
 - Visor HTML autocontenido con el GLB embebido en base64 (MVP_01 §4.5).
 - Plano de implantación SVG (entregable 6.1).
+
+## Despliegue de prueba en Vercel
+
+El directorio `software/` se despliega tal cual como un proyecto de Vercel: la web sale de `frontend/dist` y la API
+corre como función Python (`api/index.py`, que expone la app de `backend/`). `vercel.json` reescribe `/api/*` hacia
+esa función y el resto hacia la web. `middleware.ts` pide usuario y contraseña antes de servir cualquier cosa.
+
+En Vercel: **Root Directory** `software`, y estas variables de entorno:
+
+```
+ACCESO_USUARIO=...           # usuario y contraseña que se le pasan a quien prueba
+ACCESO_CLAVE=...
+EARTHDATA_TOKEN=...          # opcional: sin él el relieve sale plano
+IA_PROVEEDOR=... / OPENAI_API_KEY=... / ANTHROPIC_API_KEY=...   # opcional: sin clave, Lumo en modo demostración
+```
+
+Sin `ACCESO_USUARIO` y `ACCESO_CLAVE` el sitio responde 503 y no se abre. La caché va a `/tmp` (efímera).
+La escena del terreno queda en memoria de la función: si el visor muestra «Escena no encontrada», se regenera.

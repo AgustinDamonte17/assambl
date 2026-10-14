@@ -6,7 +6,11 @@ import os
 from pathlib import Path
 
 RAIZ_BACKEND = Path(__file__).resolve().parents[1]
-DIR_CACHE = RAIZ_BACKEND / "cache"
+# En Vercel el disco es de solo lectura salvo /tmp, así que la caché va ahí. ASSAMBL_CACHE la fija a mano.
+DIR_CACHE = Path(
+    os.environ.get("ASSAMBL_CACHE")
+    or ("/tmp/assambl-cache" if os.environ.get("VERCEL") else RAIZ_BACKEND / "cache")
+)
 
 # Se busca .env desde el backend hacia arriba: backend/, software/, raíz del repositorio.
 _CANDIDATOS_ENV = [RAIZ_BACKEND / ".env", RAIZ_BACKEND.parent / ".env", RAIZ_BACKEND.parents[1] / ".env"]
