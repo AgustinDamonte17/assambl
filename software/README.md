@@ -183,7 +183,8 @@ Las sondas `backend/tests/probar_*.py` sí salen a internet y sirven para verifi
 
 El directorio `software/` se despliega tal cual como un proyecto de Vercel: la web sale de `frontend/dist` y la API
 corre como función Python (`api/index.py`, que expone la app de `backend/`). `vercel.json` reescribe `/api/*` hacia
-esa función y el resto hacia la web. `middleware.ts` pide usuario y contraseña antes de servir cualquier cosa.
+esa función y el resto hacia la web. `middleware.ts` no sirve nada sin sesión: manda a la portada `/acceso`
+(`frontend/public/acceso.html`), que pide usuario y contraseña; `/salir` cierra la sesión.
 
 En Vercel: **Root Directory** `software`, y estas variables de entorno:
 
