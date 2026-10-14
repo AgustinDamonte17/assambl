@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Assambl · Acceso</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Chivo:wght@400;500;700;800&family=Chivo+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Portada de acceso a la versión de prueba. La sirve middleware.ts en /acceso; es estática para no
+         depender de la app (que solo se carga después de entrar). Tokens y tipografía: los de estilos.css. -->
+    <style>
+      :root {
+        --ink: #111111;
+        --concrete: #e8e6e1;
+        --concrete-2: #f3f2ef;
+        --signal: #ff4f1f;
+        --rebar: #7a7a78;
+        --line: rgba(17, 17, 17, 0.14);
+        --font-display: "Archivo Black", "Arial Black", sans-serif;
+        --font-head: "Chivo", system-ui, sans-serif;
+        --font-body: "Chivo", system-ui, sans-serif;
+        --font-label: "Chivo Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        background: var(--concrete);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+        padding: 24px;
+      }
+      ::selection { background: var(--signal); color: var(--ink); }
+      .label {
+        font-family: var(--font-label);
+        font-variant-numeric: tabular-nums;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 11px;
+        color: var(--rebar);
+      }
+      header { display: flex; justify-content: space-between; gap: 16px; }
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        padding: 32px 0;
+      }
+      .logo {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: clamp(2.4rem, 9vw, 5.5rem);
+        line-height: 1;
+        letter-spacing: -0.045em;
+        margin: 0;
+        white-space: nowrap;
+        user-select: none;
+      }
+      .logo .p { color: var(--signal); }
+      .logo .arg { font-family: var(--font-label); font-size: 0.42em; letter-spacing: 0; vertical-align: 0.35em; }
+      .cursor {
+        display: inline-block;
+        width: 0.16em;
+        height: 0.72em;
+        margin-left: 0.03em;
+        background: var(--signal);
+        animation: blink 1.1s steps(1) infinite;
+      }
+      @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { .cursor { animation: none; } }
+      .lema { margin: -24px 0 0; color: var(--rebar); font-size: 15px; text-align: center; }
+      form {
+        width: 100%;
+        max-width: 360px;
+        background: var(--concrete-2);
+        border: 1px solid var(--line);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      h2 { font-family: var(--font-head); font-weight: 700; font-size: 18px; margin: 4px 0 0; }
+      .intro { margin: -8px 0 0; color: var(--rebar); line-height: 1.5; }
+      label { display: flex; flex-direction: column; gap: 4px; }
+      input {
+        font: inherit;
+        font-size: 14px;
+        color: var(--ink);
+        background: var(--concrete);
+        border: 1px solid var(--line);
+        border-radius: 0;
+        padding: 8px 10px;
+      }
+      input:focus { outline: none; border-color: var(--signal); }
+      button {
+        font-family: var(--font-body);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 12px;
+        border: 1px solid var(--signal);
+        border-radius: 0;
+        background: var(--signal);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      button:hover { background: var(--ink); border-color: var(--ink); color: var(--concrete); }
+      .error {
+        display: none;
+        margin: 0;
+        padding: 8px 10px;
+        border-left: 3px solid var(--signal);
+        background: rgba(255, 79, 31, 0.08);
+        line-height: 1.4;
+      }
+      .error.visible { display: block; }
+      footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      footer .s { color: var(--signal); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="label">assambl</span>
+      <span class="label">Versión de prueba</span>
+    </header>
+
+    <main>
+      <h1 class="logo" aria-label="ASSAMBL(acceso)">
+        ASSAMBL<span class="p">(</span><span class="arg">acceso</span><span class="cursor" aria-hidden="true"></span><span class="p">)</span>
+      </h1>
+      <p class="lema">Vos diseñás. Assambl resuelve.</p>
+
+      <form method="post" action="/acceso">
+        <span class="label">Inicio de sesión</span>
+        <h2>Entrá a Assambl</h2>
+        <p class="intro">Usá el usuario y la contraseña que te pasamos para probar el software.</p>
+        <p class="error" id="error" role="alert">El usuario o la contraseña no coinciden. Probá de nuevo.</p>
+        <label>
+          <span class="label">Usuario</span>
+          <input name="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus />
+        </label>
+        <label>
+          <span class="label">Contraseña</span>
+          <input name="clave" type="password" autocomplete="current-password" required />
+        </label>
+        <input type="hidden" name="siguiente" id="siguiente" value="/" />
+        <button type="submit">Entrar</button>
+      </form>
+    </main>
+
+    <footer>
+      <span class="label"><span class="s">//</span> en desarrollo</span>
+      <span class="label">assambl(casa) → woodframe</span>
+    </footer>
+
+    <script>
+      const p = new URLSearchParams(location.search);
+      if (p.has("error")) document.getElementById("error").classList.add("visible");
+      const s = p.get("siguiente");
+      if (s) document.getElementById("siguiente").value = s;
+    </script>
+  </body>
+</html>
